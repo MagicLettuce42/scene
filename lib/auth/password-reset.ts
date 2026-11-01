@@ -1,6 +1,16 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { validRegistrationEmail } from "./registration";
 
+export class PasswordResetMfaRequired extends Error {
+  constructor() { super("Verify your authenticator code before changing your password."); }
+}
+
+export async function passwordResetNeedsMfa(client: SupabaseClient) {
+  const { data, error } = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (error || !data) throw Error("Your account security could not be checked. Please try again.");
+  return data.nextLevel === "aal2" && data.currentLevel !== "aal2";
+}
+
 export async function requestPasswordReset(client: SupabaseClient, email: string, origin: string) {
   if (!validRegistrationEmail(email)) throw Error("Enter a valid email address.");
   const { error } = await client.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
@@ -26,6 +36,9 @@ export async function openPasswordReset(client: SupabaseClient, href: string, re
 export async function saveResetPassword(client: SupabaseClient, password: string, confirmation: string) {
   if (password.length < 12 || password.length > 128) throw Error("Use a password of 12–128 characters.");
   if (password !== confirmation) throw Error("Your passwords don’t match.");
+  if (await passwordResetNeedsMfa(client)) throw new PasswordResetMfaRequired();
   const { error } = await client.auth.updateUser({ password });
+  if (error?.code === "insufficient_aal") throw new PasswordResetMfaRequired();
+  if (error?.code === "same_password") throw Error("Choose a different password from your current one.");
   if (error) throw Error("Your password could not be updated. Try a different password or request a fresh reset link.");
 }

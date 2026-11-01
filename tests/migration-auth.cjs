@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict'), fs = require('node:fs'), ts = require('typescript');
 require.extensions['.ts'] = (mod, file) => mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, file);
-const { requestPasswordReset, openPasswordReset, saveResetPassword } = require('../lib/auth/password-reset.ts');
+const { requestPasswordReset, openPasswordReset, saveResetPassword, passwordResetNeedsMfa, PasswordResetMfaRequired } = require('../lib/auth/password-reset.ts');
 const { handleAccountDeletion } = require('../supabase/functions/_shared/account-data-handler.ts');
 (async () => {
   let submitted, called = false;
@@ -16,13 +16,24 @@ const { handleAccountDeletion } = require('../supabase/functions/_shared/account
   assert.equal(await openPasswordReset(resetClient, 'https://scene.test/reset-password', () => assert.fail()), false);
   await assert.rejects(openPasswordReset(resetClient, 'https://scene.test/reset-password?error=expired', () => {}), /expired/);
   await assert.rejects(openPasswordReset({ auth: { exchangeCodeForSession: async () => ({ data: { session: null }, error: {} }) } }, 'https://scene.test/reset-password?code=expired', () => {}), /could not be verified/);
-  const update = { auth: { updateUser: async input => { called = input; return { error: null }; } } };
+  const mfa = { getAuthenticatorAssuranceLevel: async () => ({ data: { currentLevel: 'aal1', nextLevel: 'aal1' }, error: null }) };
+  const update = { auth: { mfa, updateUser: async input => { called = input; return { error: null }; } } };
   await assert.rejects(saveResetPassword(update, 'short', 'short'), /12/);
   await assert.rejects(saveResetPassword(update, 'a-long-new-password', 'different'), /match/);
   assert.equal(called, false);
   await saveResetPassword(update, 'a-long-new-password', 'a-long-new-password');
   assert.deepEqual(called, { password: 'a-long-new-password' });
-  await assert.rejects(saveResetPassword({ auth: { updateUser: async () => ({ error: {} }) } }, 'a-long-new-password', 'a-long-new-password'), /could not be updated/);
+  await assert.rejects(saveResetPassword({ auth: { mfa, updateUser: async () => ({ error: {} }) } }, 'a-long-new-password', 'a-long-new-password'), /could not be updated/);
+  let updated = false;
+  const protectedClient = { auth: { mfa: { getAuthenticatorAssuranceLevel: async () => ({ data: { currentLevel: 'aal1', nextLevel: 'aal2' }, error: null }) }, updateUser: async () => { updated = true; return { error: null }; } } };
+  assert.equal(await passwordResetNeedsMfa(protectedClient), true);
+  await assert.rejects(saveResetPassword(protectedClient, 'a-long-new-password', 'a-long-new-password'), PasswordResetMfaRequired);
+  assert.equal(updated, false, 'password updates wait for MFA');
+  protectedClient.auth.mfa.getAuthenticatorAssuranceLevel = async () => ({ data: { currentLevel: 'aal2', nextLevel: 'aal2' }, error: null });
+  await saveResetPassword(protectedClient, 'a-long-new-password', 'a-long-new-password');
+  assert.equal(updated, true, 'verified MFA permits password update');
+  await assert.rejects(saveResetPassword({ auth: { mfa: { getAuthenticatorAssuranceLevel: async () => ({ data: null, error: {} }) }, updateUser: async () => assert.fail() } }, 'a-long-new-password', 'a-long-new-password'), /security could not be checked/);
+  await assert.rejects(saveResetPassword({ auth: { mfa, updateUser: async () => ({ error: { code: 'insufficient_aal' } }) } }, 'a-long-new-password', 'a-long-new-password'), PasswordResetMfaRequired);
   for (const origin of ['https://scene.benlear439.workers.dev', 'https://scene-streaming.airyokapi2.chatgpt.site', 'https://scene-streaming.magiclettuce.chatgpt.site', 'https://evil.invalid', 'https://scene.benlear439.workers.dev.evil.invalid']) {
     const response = await handleAccountDeletion(new Request('https://function.test', { method: 'POST', headers: { origin, 'Content-Type': 'application/json' }, body: '{}' }), () => assert.fail('Invalid bodies must never reach account operations'));
     assert.equal(response.status, origin.endsWith('evil.invalid') ? 403 : 400, origin);
