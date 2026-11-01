@@ -155,6 +155,23 @@ function Catalogue() {
     tabsStorageKey = tabMemoryKey(account.id);
   const [activeCollection,setActiveCollection]=useState("");
   const [searchFocused,setSearchFocused]=useState(false);
+  const searchRegion = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!searchFocused) return;
+    // iOS may blur a search field with no relatedTarget before delivering the
+    // row's click. Dismiss only on an interaction outside the whole region.
+    const dismissOutside = (event: Event) => {
+      if (event.target instanceof Node && !searchRegion.current?.contains(event.target)) {
+        setSearchFocused(false);
+      }
+    };
+    document.addEventListener("pointerdown", dismissOutside, true);
+    document.addEventListener("focusin", dismissOutside, true);
+    return () => {
+      document.removeEventListener("pointerdown", dismissOutside, true);
+      document.removeEventListener("focusin", dismissOutside, true);
+    };
+  }, [searchFocused]);
   const [availability, setAvailability] = useState<AvailabilityFilter>("all");
   const [upcomingFilters, setUpcomingFilters] = useState<UpcomingFilters>(defaultUpcoming);
   const [setup, setSetup] = useState(false),
@@ -1174,10 +1191,10 @@ function Catalogue() {
         className={`page compact-page density-${library.home.density} ${view === "films" || view === "series" ? "library-browse" : ""} ${halloweenHome ? "seasonal-home" : discovering && !halloween ? "screening-home" : ""} ${watchlistScreen ? "watchlist-page" : ""}`}
       >
         <AppUpdateNotice pending={library.pending} />
-        <section className="intro" onFocusCapture={()=>setSearchFocused(true)} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node))setSearchFocused(false);}}>
+        <section className="intro">
           <h1 className="sr-only">{heading}</h1>
           <div className={discovering && !halloween ? "discovery-toolbar" : undefined}>
-            <div className="search-region">
+            <div className="search-region" ref={searchRegion} onFocusCapture={()=>setSearchFocused(true)} onKeyDown={e=>{if(e.key==="Escape")setSearchFocused(false);}}>
           <form className="search-form" onSubmit={search} role="search">
             <label htmlFor="search" className="sr-only">
               {library.gamingEnabled

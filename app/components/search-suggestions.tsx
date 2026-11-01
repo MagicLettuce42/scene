@@ -13,14 +13,7 @@ export default function SearchSuggestions({query, accountId, active, onChoose, o
   if(!active||loadedKey!==key)return null;
   const matches=state.accountId===accountId&&state.query===query.trim()?state.titles:[];
   if(query.trim().length<2&&!recent.length)return null;
-  return <div id="search-suggestions" className="search-suggestions" aria-label="Search suggestions"
-    onPointerDown={e=>{
-      // Safari can blur the input without focusing the tapped button. Keep the
-      // input focused until click selects a result, rather than unmounting it
-      // in the parent's blur handler before click is delivered. Keyboard clicks
-      // keep their normal behaviour; touch scrolling still uses touch-action.
-      if(e.isPrimary && e.button===0)e.preventDefault();
-    }}>
+  return <div id="search-suggestions" className="search-suggestions" aria-label="Search suggestions">
     {!query.trim()&&recent.length>0?<><div className="suggestion-heading"><strong>Recent searches</strong><button type="button" onClick={()=>{setRecent([]);try{sessionStorage.removeItem(key);}catch{}}}>Clear</button></div>{recent.map(q=><button type="button" key={q} onClick={()=>onSearch(q)}>{q}</button>)}</>:<>
     {matches.map(t=><button type="button" key={t.id} onClick={()=>{remember(query.trim());onChoose(t);}}><strong>{t.name}</strong><small>{t.year||'Year unknown'} · {t.kind==='movie'?'Film':'TV series'}</small></button>)}
     {query.trim().length>=2&&<button type="button" className="all-search-results" onClick={()=>{remember(query.trim());onSearch(query.trim());}}>Search all results for “{query.trim()}”</button>}</>}
