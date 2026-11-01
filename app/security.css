@@ -1,0 +1,148 @@
+.account-security {
+  margin: 24px 0;
+  padding: 22px 0;
+  border-block: 1px solid var(--border);
+}
+.account-security > h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 19px;
+  margin-bottom: 12px;
+}
+.account-security > p,
+.two-factor > p,
+.security-confirm > p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 12px 0;
+}
+.account-security .security-status {
+  font-weight: 600;
+  color: var(--text);
+}
+.account-security > .button {
+  margin-top: 16px;
+}
+.two-factor {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-raised);
+}
+.two-factor h3 {
+  font-size: 17px;
+  margin-bottom: 12px;
+}
+.two-factor .account-form {
+  margin-top: 18px;
+}
+.two-factor select,
+.mfa-secret input {
+  display: block;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 48px;
+  width: 100%;
+  font-size: 16px;
+}
+.two-factor input:focus,
+.two-factor select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.mfa-qr {
+  display: block;
+  width: 200px;
+  max-width: 100%;
+  height: auto;
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 20px auto;
+}
+.mfa-secret {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.mfa-secret input {
+  font-family: "DM Sans", sans-serif;
+  letter-spacing: 0.04em;
+  font-size: 14px;
+}
+.two-factor .text-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-top: 8px;
+}
+.mfa-backup-note {
+  padding: 12px 14px;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text) !important;
+  margin: 18px 0;
+}
+.recovery-help {
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
+  margin: 18px 0;
+}
+.recovery-help summary {
+  cursor: pointer;
+  color: var(--text);
+  padding: 10px 0;
+  min-height: 44px;
+}
+.recovery-help p {
+  margin: 10px 0;
+}
+.recovery-help a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.security-sessions {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.security-sessions h4 {
+  margin: 0 0 12px;
+}
+.security-sessions .button {
+  margin-top: 12px;
+}
+.security-confirm {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 14px 0;
+}
+.security-confirm > p {
+  width: 100%;
+}
+.two-factor .button,
+.security-confirm .button {
+  white-space: normal;
+  min-height: 44px;
+}
+.account-card.mfa-card {
+  max-width: 490px;
+}
+.mfa-card .two-factor {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}

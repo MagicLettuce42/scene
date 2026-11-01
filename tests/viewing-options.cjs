@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict'),path=require('node:path');
+const {groupViewingOffers,mergeViewingOffers,offerDescription}=require(path.resolve(process.argv[2],'lib/viewing-options.js'));
+const sub={key:'prime',name:'Prime Video',type:'sub',url:'https://example.com/guide',linkKind:'guide'};
+const paid={key:'store',name:'Amazon Video',type:'rent',url:'https://example.com/rent',price:3.49};
+const other={...sub,key:'netflix',name:'Netflix'};
+const free={key:'bbc',name:'BBC iPlayer',type:'free',url:'https://example.com/free'};
+const groups=groupViewingOffers([paid,other,sub,free],['prime','bbc']);
+assert.deepEqual(groups.included,[sub,free]);assert.equal(groups.paid,undefined);
+assert.equal(groupViewingOffers([paid],['prime']).included.length,0);
+assert.deepEqual(groupViewingOffers([paid],[]).included,[]);
+const direct={...sub,url:'https://example.com/direct',linkKind:'direct'};
+const merged=mergeViewingOffers([sub,paid],[direct]);
+assert.equal(merged.length,2);assert.equal(merged[0].linkKind,'direct');assert.equal(merged[1].type,'rent');
+assert.equal(offerDescription(free),'TV Licence required');
+assert.equal(offerDescription(paid),'');
+assert.equal(offerDescription({...sub,price:9.99}),'Included with a subscription');
+assert.equal(offerDescription({...free,price:0}),'TV Licence required');
+console.log('PASS: selected subscriptions and free options only; no prices displayed.');

@@ -1,0 +1,50 @@
+const assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs'),vm=require('node:vm');
+const root=path.resolve(process.argv[2]),get=p=>require(path.join(root,p));
+const arrivals=get('lib/service-arrivals.js'),announcements=get('lib/service-announcements.js'),upcoming=get('lib/upcoming.js'),state=get('lib/library-state.js');
+const at=new Date('2026-10-18T12:00:00Z'),parse=p=>arrivals.parseArrivalQuery(new URLSearchParams(p),at);
+const all=arrivals.matchingAnnouncements(parse({provider:'all',days:'90'}));
+assert.ok(all.length>=10);assert.ok(all.some(a=>a.kind==='movie'));assert.ok(all.some(a=>a.label==='New series'));assert.ok(all.some(a=>a.label==='Season 2'));
+const mine=arrivals.matchingAnnouncements(parse({provider:'mine',services:'netflix,disney',days:'30'}));assert.ok(mine.length);assert.ok(mine.every(a=>['netflix','disney'].includes(a.service)));
+assert.deepEqual(arrivals.matchingAnnouncements(parse({provider:'mine',services:''})),[]);
+assert.deepEqual(arrivals.matchingAnnouncements(parse({provider:'bbc',days:'90'})),[],'no coverage is not invented');
+assert.ok(arrivals.matchingAnnouncements(parse({provider:'all',kind:'movie',days:'90'})).every(a=>a.kind==='movie'));
+assert.ok(arrivals.matchingAnnouncements(parse({provider:'all',days:'7'})).every(a=>a.date<='2026-10-24'));
+for(const p of [{provider:'unknown'},{services:'netflix,evil'},{days:'999'},{kind:'person'}])assert.equal(parse(p),null);
+assert.equal(all.find(a=>a.id==='way-warrior-kid').date,'2026-11-25','latest provider announcement supersedes earlier date');
+assert.equal(new Set(all.map(a=>a.id)).size,all.length);
+for(const a of all){assert.ok(new URL(a.sourceUrl).protocol==='https:');assert.ok(a.date>='2026-10-18');}
+const settings=upcoming.cleanUpcomingFilters({section:'services',provider:'netflix',serviceKind:'tv',days:90});assert.equal(settings.provider,'netflix');assert.equal(settings.serviceKind,'tv');assert.equal(upcoming.cleanUpcomingFilters({provider:'evil'}).provider,'mine');
+let member=false;const auth=get('lib/auth/server.js');auth.requireSceneMember=async()=>member?{error:null,user:{id:'alice'}}:{error:Response.json({error:'Sign in'},{status:401})};
+const route=get('app/api/upcoming/services/route.js'),detail=get('app/api/title/[id]/route.js');
+delete process.env.TMDB_API_KEY;delete process.env.WATCHMODE_API_KEY;global.fetch=async()=>{throw Error('Unexpected upstream call')};
+const request=p=>new Request('https://scene.test/api/upcoming/services?'+new URLSearchParams(p));
+(async()=>{
+ assert.equal((await route.GET(request({provider:'evil'}))).status,401);member=true;assert.equal((await route.GET(request({provider:'evil'}))).status,400);
+ const data=await arrivals.serviceArrivals(parse({provider:'mine',services:'netflix',days:'90'}));assert.ok(data.titles.length);assert.equal(data.coverage,'selected-announcements');assert.equal(data.reviewedOn,'2026-10-18');
+ for(const title of data.titles){assert.equal(title.upcomingRelease.kind,'streaming');assert.equal(title.upcomingRelease.service,'netflix');assert.deepEqual(title.offers,[],'announced arrival is not a current viewing offer');}
+ const title=data.titles[0],mutation=state.validateMutation({id:'arrivals-save-title',revision:0,operations:[{type:'title',title,fields:{saved:true}}]});assert.ok(mutation);
+ const saved=state.projectLibrary(state.applyOperations(state.emptyLibrary(),mutation.mutation.operations)).saved[0];assert.deepEqual(saved.upcomingRelease,title.upcomingRelease);
+ for(const patch of [{service:'fake'},{region:'US'},{sourceUrl:'javascript:alert(1)'},{verifiedOn:'2026-02-30'}])assert.equal(state.cleanTitle({...title,upcomingRelease:{...title.upcomingRelease,...patch}}).upcomingRelease,undefined);
+ const opened=await detail.GET(new Request('https://scene.test/api/title/'+title.id),{params:Promise.resolve({id:title.id})});assert.equal(opened.status,200);assert.equal((await opened.json()).title.upcomingRelease.service,'netflix');
+ const unknown=await detail.GET(new Request('https://scene.test/api/title/arrival-unknown'),{params:Promise.resolve({id:'arrival-unknown'})});assert.equal(unknown.status,404);
+ process.env.TMDB_API_KEY='fixture-only';let calls=0;
+ global.fetch=async input=>{calls++;const u=new URL(input);if(u.pathname==='/3/search/movie')return Response.json({results:[{id:51,title:'Possible Love',release_date:'2026-11-06'}]});if(u.pathname==='/3/movie/51')return Response.json({id:51,title:'Possible Love',release_date:'2026-11-06',poster_path:'/film.jpg'});throw Error('No matching fixture');};
+ const enriched=await arrivals.serviceArrivalTitle('arrival-possible-love');assert.equal(enriched.tmdbId,51);assert.equal(enriched.upcomingRelease.service,'netflix');assert.equal(enriched.id,'arrival-possible-love');assert.equal(calls,2);
+ const React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+ const badge=renderToStaticMarkup(React.createElement(get('app/components/release-badge.js').default,{release:{...title.upcomingRelease,date:'2099-11-06'},detail:true}));assert.match(badge,/Netflix/);assert.match(badge,/official announcement/);assert.ok(!badge.includes('Cinema release date'));
+ const install=renderToStaticMarkup(React.createElement(get('app/components/install-scene.js').default));assert.match(install,/Chrome on Android/);assert.match(install,/Install app/);
+ const manifest=get('lib/app-manifest.js').appManifest(new Date('2026-09-01T12:00:00Z'));assert.equal(manifest.display,'standalone');assert.equal(manifest.id,'/');assert.equal(manifest.scope,'/');assert.equal(manifest.prefer_related_applications,false);
+ for(const size of [192,512]){const icon=manifest.icons.find(i=>i.sizes===`${size}x${size}`&&i.purpose==='any');assert.ok(icon);const bytes=fs.readFileSync('public'+icon.src);assert.equal(bytes.toString('hex',0,8),'89504e470d0a1a0a');assert.equal(bytes.readUInt32BE(16),size);assert.equal(bytes.readUInt32BE(20),size);}
+ assert.ok(manifest.icons.some(i=>i.purpose==='maskable'));
+ const listeners={},stored=[],deleted=[];let offline=false;
+ const context={URL,Response,Request:class extends Request{constructor(url,opts){super(new URL(url,'https://scene.test'),opts)}},self:{location:{origin:'https://scene.test'},addEventListener:(event,fn)=>listeners[event]=fn,skipWaiting:async()=>{},clients:{claim:async()=>{}}},caches:{open:async()=>({add:async req=>stored.push(req.url)}),keys:async()=>['scene-offline-v0','another-app-cache'],delete:async key=>deleted.push(key),match:async()=>new Response('public offline page')},fetch:async()=>{if(offline)throw Error('offline');return new Response('private signed-in page')}};
+ vm.runInNewContext(fs.readFileSync('public/sw.js','utf8'),context);
+ let wait;listeners.install({waitUntil:p=>wait=p});await wait;assert.deepEqual(stored,['https://scene.test/offline.html']);
+ listeners.activate({waitUntil:p=>wait=p});await wait;assert.deepEqual(deleted,['scene-offline-v0']);
+ const fetchEvent=fields=>{let response;listeners.fetch({request:{method:'GET',mode:'navigate',url:'https://scene.test/',...fields},respondWith:p=>response=p});return response;};
+ assert.equal(await (await fetchEvent({})).text(),'private signed-in page');assert.equal(stored.length,1,'signed-in HTML never cached');
+ for(const fields of [{url:'https://scene.test/api/library'},{url:'https://scene.test/api/upcoming/services'},{url:'https://scene.test/',method:'POST'},{url:'https://other.test/'},{mode:'cors'}])assert.equal(fetchEvent(fields),undefined,'private/API/cross-origin requests bypass service worker');
+ offline=true;assert.equal(await (await fetchEvent({})).text(),'public offline page');assert.equal(stored.length,1);
+ const secure=get('lib/http-security.js').secureResponse;assert.equal(secure(new Request('https://scene.test/sw.js'),new Response()).headers.get('Cache-Control'),'no-cache');assert.equal(secure(new Request('https://scene.test/api/library'),new Response()).headers.get('Cache-Control'),'no-store');
+ console.log('PASS: service/date/media filters, selected-service scope, announcement provenance, metadata fallback and enrichment, saved streaming labels, authenticated endpoints, Android manifest/icons, install guidance, network-first launches, private-data cache exclusion and offline fallback.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

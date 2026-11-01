@@ -1,0 +1,44 @@
+/* Watchlist controls are disclosure panels; saved preferences stay in the parent. */
+.watchlist-heading { display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+.watchlist-heading h2 { display:flex; align-items:center; gap:8px; font-size:1.5rem; line-height:1.4; letter-spacing:-.5px; margin:0; }
+.watchlist-heading-actions { display:flex; align-items:center; gap:4px; margin-left:auto; }
+.watchlist-heading-actions button { min-height:44px; }
+.watchlist-sync-trigger { display:flex; align-items:center; gap:6px; padding:8px; color:var(--muted); font-size:.75rem; border-radius:999px; }
+.watchlist-primary-tabs { display:flex; flex-wrap:wrap; gap:4px; margin:12px 0; border-bottom:1px solid var(--border); }
+.watchlist-primary-tabs button { flex:1 0 auto; min-height:44px; padding:10px 12px; font-size:.875rem; border-bottom:2px solid transparent; color:var(--muted); }
+.watchlist-primary-tabs button[aria-pressed=true] { color:var(--accent); border-bottom-color:var(--accent); font-weight:700; }
+.watchlist-primary-tabs .watchlist-more { display:flex; justify-content:center; align-items:center; gap:4px; flex:0 0 auto; padding:8px; }
+.watchlist-control-row { display:flex; flex-wrap:wrap; gap:6px; }
+.watchlist-control-row:empty { display:none; }
+.watchlist-control-row button { display:flex; flex:1 1 auto; justify-content:center; align-items:center; gap:6px; padding:10px 12px; min-height:44px; font-size:.875rem; border:1px solid var(--border); border-radius:999px; color:var(--muted); background:var(--surface); }
+.watchlist-control-row button[aria-expanded=true], .watchlist-heading-actions button[aria-expanded=true] { color:var(--accent); background:var(--accent-soft); border-color:var(--accent); }
+.watchlist-bar button:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.watchlist-view-label,.watchlist-selection { font-size:.875rem; color:var(--muted); margin:8px 0; overflow-wrap:anywhere; }
+.watchlist-panel-heading { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:12px 14px 0; margin-top:12px; background:var(--surface); border:1px solid var(--border); border-bottom:0; border-radius:16px 16px 0 0; }
+.watchlist-panel { padding:0 14px 16px; margin-bottom:14px; background:var(--surface); border:1px solid var(--border); border-top:0; border-radius:0 0 16px 16px; min-width:0; }
+.watchlist-panel[hidden] { display:none !important; }
+.watchlist-panel .personal-collections,.watchlist-panel .service-scope { margin:0; border:0; padding:10px 0; }
+.watchlist-panel .filter-panel { margin:0; border:0; padding:14px 0 0; background:none; }
+.watchlist-panel .watchlist-tools { margin:0; }
+.watchlist-panel select { min-height:44px; font-size:1rem; max-width:100%; }
+.watchlist-sort,.watchlist-availability-filter { display:grid; gap:8px; font-size:.875rem; padding-top:12px; }
+.watchlist-panel .select-control { max-width:100%; }
+.watchlist-more-panel h3 { font-size:.875rem; color:var(--muted); margin:10px 0; }
+.watchlist-more-panel .inline-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.watchlist-more-panel > .button { margin-top:16px; min-height:44px; }
+.watchlist-panel .sync-status { margin:0; }
+.watchlist-bar .active-dot { flex-shrink:0; }
+.watchlist-page .results-bar { margin:10px 0 16px; }
+@media (max-width:600px) {
+  .watchlist-heading h2 { font-size:1.375rem; }
+  .watchlist-primary-tabs button { padding-inline:9px; }
+  .watchlist-control-row button { padding-inline:8px; }
+}
+@media (max-width:360px) {
+  .watchlist-control-row button > svg { display:none; }
+  .watchlist-primary-tabs .watchlist-more > svg { display:none; }
+}
+@media (min-width:601px) {
+  .watchlist-primary-tabs button { flex:0 1 auto; min-width:105px; }
+  .watchlist-control-row button { flex:0 1 auto; min-width:110px; }
+}

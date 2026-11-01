@@ -1,0 +1,658 @@
+[
+  {
+    "id": "wolverine",
+    "name": "Marvel’s Wolverine",
+    "summary": "An action adventure following Logan into a new conflict in the Marvel universe.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5"
+    ],
+    "released": true,
+    "sourceUrl": "https://www.playstation.com/en-gb/games/marvels-wolverine/",
+    "image": "/games/wolverine.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "forza-horizon-6",
+    "name": "Forza Horizon 6",
+    "summary": "Explore Japan behind the wheel in an open-world racing festival.",
+    "genre": "Racing",
+    "platforms": [
+      "xbox",
+      "pc"
+    ],
+    "released": true,
+    "sourceUrl": "https://www.xbox.com/en-gb/games/forza-horizon-6",
+    "image": "/games/forza-horizon-6.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "mario-kart-world",
+    "name": "Mario Kart World",
+    "summary": "Race across a connected world with Mario and friends.",
+    "genre": "Racing",
+    "platforms": [
+      "switch2"
+    ],
+    "released": true,
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Mario-Kart-World-2790000.html",
+    "image": "/games/mario-kart-world.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "split-fiction",
+    "name": "Split Fiction",
+    "summary": "Team up for a two-player adventure through sci-fi and fantasy worlds.",
+    "genre": "Co-op adventure",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch2"
+    ],
+    "released": true,
+    "sourceUrl": "https://www.ea.com/en/games/split-fiction/split-fiction",
+    "image": "/games/split-fiction.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "hades-ii",
+    "name": "Hades II",
+    "summary": "Battle through the Underworld with witchcraft and ever-changing powers.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "pc",
+      "switch",
+      "switch2",
+      "ps5",
+      "xbox"
+    ],
+    "released": true,
+    "sourceUrl": "https://www.supergiantgames.com/blog/hades2-faq/",
+    "image": "/games/hades-ii.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "donkey-kong-bananza",
+    "name": "Donkey Kong Bananza",
+    "summary": "Join Donkey Kong and Pauline on a smashing underground adventure.",
+    "genre": "Platformer",
+    "platforms": [
+      "switch2"
+    ],
+    "released": true,
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Donkey-Kong-Bananza-2785804.html",
+    "image": "/games/donkey-kong-bananza.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "astro-bot",
+    "name": "ASTRO BOT",
+    "summary": "Explore colourful planets and reunite Astro’s scattered robot crew.",
+    "genre": "Platformer",
+    "platforms": [
+      "ps5"
+    ],
+    "released": true,
+    "sourceUrl": "https://www.playstation.com/en-gb/games/astro-bot/",
+    "image": "/games/astro-bot.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "baldurs-gate-3",
+    "name": "Baldur’s Gate 3",
+    "summary": "Build your party and shape a fantasy adventure through choices and turn-based battles.",
+    "genre": "Role-playing",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc"
+    ],
+    "released": true,
+    "sourceUrl": "https://baldursgate3.game/",
+    "image": "/games/baldurs-gate-3.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "stardew-valley",
+    "name": "Stardew Valley",
+    "summary": "Build a farm, get to know your neighbours and explore life in the valley.",
+    "genre": "Life & simulation",
+    "platforms": [
+      "pc",
+      "switch"
+    ],
+    "released": true,
+    "sourceUrl": "https://www.stardewvalley.net/",
+    "image": "/games/stardew-valley.webp",
+    "imageFit": "contain",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "ghost-of-yotei",
+    "name": "Ghost of Yōtei",
+    "summary": "Follow Atsu across northern Japan on a journey of revenge.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/ghost-of-yotei/",
+    "released": true,
+    "image": "/games/ghost-of-yotei.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "god-of-war-ragnarok",
+    "name": "God of War Ragnarök",
+    "summary": "Journey through the Norse realms with Kratos and Atreus.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5",
+      "pc"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/god-of-war-ragnarok/",
+    "released": true,
+    "image": "/games/god-of-war-ragnarok.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "spider-man-2",
+    "name": "Marvel’s Spider-Man 2",
+    "summary": "Swing through New York as Peter Parker and Miles Morales.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5",
+      "pc"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/marvels-spider-man-2/",
+    "released": true,
+    "image": "/games/spider-man-2.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "ghost-of-tsushima",
+    "name": "Ghost of Tsushima Director’s Cut",
+    "summary": "Explore feudal Japan as a samurai fighting to protect his home.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5",
+      "pc"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/ghost-of-tsushima/",
+    "released": true,
+    "image": "/games/ghost-of-tsushima.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "horizon-forbidden-west",
+    "name": "Horizon Forbidden West",
+    "summary": "Join Aloy in a vast frontier filled with dangerous machines.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5",
+      "pc"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/horizon-forbidden-west/",
+    "released": true,
+    "image": "/games/horizon-forbidden-west.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "returnal",
+    "name": "Returnal",
+    "summary": "Break a deadly cycle on an alien planet that changes with each run.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5",
+      "pc"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/returnal/",
+    "released": true,
+    "image": "/games/returnal.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "ratchet-clank-rift-apart",
+    "name": "Ratchet & Clank: Rift Apart",
+    "summary": "Jump between dimensions in a colourful sci-fi adventure.",
+    "genre": "Platformer",
+    "platforms": [
+      "ps5",
+      "pc"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/ratchet-and-clank-rift-apart/",
+    "released": true,
+    "image": "/games/ratchet-clank-rift-apart.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "the-last-of-us-part-i",
+    "name": "The Last of Us Part I",
+    "summary": "Follow Joel and Ellie through a dangerous post-pandemic world.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5",
+      "pc"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/the-last-of-us-part-i/",
+    "released": true,
+    "image": "/games/the-last-of-us-part-i.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "death-stranding-2",
+    "name": "Death Stranding 2: On the Beach",
+    "summary": "Reconnect a fractured world on another journey with Sam.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5",
+      "pc"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/death-stranding-2-on-the-beach/",
+    "released": true,
+    "image": "/games/death-stranding-2.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "demons-souls",
+    "name": "Demon’s Souls",
+    "summary": "Face formidable demons in the ruined kingdom of Boletaria.",
+    "genre": "Role-playing",
+    "platforms": [
+      "ps5"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/demons-souls/",
+    "released": true,
+    "image": "/games/demons-souls.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "elden-ring",
+    "name": "Elden Ring",
+    "summary": "Explore the Lands Between and forge your own path through an epic fantasy.",
+    "genre": "Role-playing",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc"
+    ],
+    "sourceUrl": "https://en.bandainamcoent.eu/elden-ring/elden-ring",
+    "released": true,
+    "image": "/games/elden-ring.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "cyberpunk-2077",
+    "name": "Cyberpunk 2077",
+    "summary": "Make your mark as a mercenary in the sprawling streets of Night City.",
+    "genre": "Role-playing",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch2"
+    ],
+    "sourceUrl": "https://www.cyberpunk.net/gb/en/",
+    "released": true,
+    "image": "/games/cyberpunk-2077.webp",
+    "checked": "2026-10-18",
+    "edition": "Ultimate Edition"
+  },
+  {
+    "id": "the-witcher-3",
+    "name": "The Witcher 3: Wild Hunt",
+    "summary": "Track monsters and make difficult choices as Geralt of Rivia.",
+    "genre": "Role-playing",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch"
+    ],
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/The-Witcher-3-Wild-Hunt-Complete-Edition-1575086.html",
+    "released": true,
+    "image": "/games/the-witcher-3.webp",
+    "checked": "2026-10-18",
+    "edition": "Complete Edition"
+  },
+  {
+    "id": "expedition-33",
+    "name": "Clair Obscur: Expedition 33",
+    "summary": "Lead an expedition through a surreal world with turn-based battles and timed actions.",
+    "genre": "Role-playing",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc"
+    ],
+    "sourceUrl": "https://www.expedition33.com/",
+    "released": true,
+    "image": "/games/expedition-33.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "hogwarts-legacy",
+    "name": "Hogwarts Legacy",
+    "summary": "Explore Hogwarts and the surrounding wizarding world as a new student.",
+    "genre": "Role-playing",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch",
+      "switch2"
+    ],
+    "sourceUrl": "https://www.hogwartslegacy.com/en-gb/",
+    "released": true,
+    "image": "/games/hogwarts-legacy.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "street-fighter-6",
+    "name": "Street Fighter 6",
+    "summary": "Master your fighter, learn new moves and challenge rivals.",
+    "genre": "Fighting",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch2"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/street-fighter-6/",
+    "released": true,
+    "image": "/games/street-fighter-6.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "tekken-8",
+    "name": "TEKKEN 8",
+    "summary": "Step into fast, dramatic one-on-one battles with a varied roster of fighters.",
+    "genre": "Fighting",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc"
+    ],
+    "sourceUrl": "https://en.bandainamcoent.eu/tekken/tekken-8",
+    "released": true,
+    "image": "/games/tekken-8.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "monster-hunter-wilds",
+    "name": "Monster Hunter Wilds",
+    "summary": "Track powerful monsters and craft equipment in changing environments.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/monster-hunter-wilds/",
+    "released": true,
+    "image": "/games/monster-hunter-wilds.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "it-takes-two",
+    "name": "It Takes Two",
+    "summary": "Work together through inventive challenges in a two-player adventure.",
+    "genre": "Co-op adventure",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch",
+      "switch2"
+    ],
+    "sourceUrl": "https://www.ea.com/en/games/it-takes-two/it-takes-two",
+    "released": true,
+    "image": "/games/it-takes-two.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "jedi-survivor",
+    "name": "Star Wars Jedi: Survivor",
+    "summary": "Continue Cal Kestis’s journey with lightsaber combat and new worlds to explore.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc"
+    ],
+    "sourceUrl": "https://www.ea.com/games/starwars/jedi-survivor",
+    "released": true,
+    "image": "/games/jedi-survivor.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "zelda-tears-kingdom",
+    "name": "The Legend of Zelda: Tears of the Kingdom",
+    "summary": "Explore Hyrule, its skies and its depths with inventive new abilities.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "switch",
+      "switch2"
+    ],
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/The-Legend-of-Zelda-Tears-of-the-Kingdom-1576884.html",
+    "released": true,
+    "image": "/games/zelda-tears-kingdom.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "zelda-breath-wild",
+    "name": "The Legend of Zelda: Breath of the Wild",
+    "summary": "Discover a vast Hyrule at your own pace and prepare to face Calamity Ganon.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "switch",
+      "switch2"
+    ],
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/The-Legend-of-Zelda-Breath-of-the-Wild-1173609.html",
+    "released": true,
+    "image": "/games/zelda-breath-wild.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "super-mario-odyssey",
+    "name": "Super Mario Odyssey",
+    "summary": "Travel between colourful kingdoms with Mario and his companion Cappy.",
+    "genre": "Platformer",
+    "platforms": [
+      "switch"
+    ],
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Super-Mario-Odyssey-1173332.html",
+    "released": true,
+    "image": "/games/super-mario-odyssey.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "super-mario-wonder",
+    "name": "Super Mario Bros. Wonder",
+    "summary": "Discover surprising transformations in a playful side-scrolling Mario adventure.",
+    "genre": "Platformer",
+    "platforms": [
+      "switch",
+      "switch2"
+    ],
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Super-Mario-Bros-Wonder-2404150.html",
+    "released": true,
+    "image": "/games/super-mario-wonder.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "animal-crossing",
+    "name": "Animal Crossing: New Horizons",
+    "summary": "Build your island home, meet neighbours and settle into everyday island life.",
+    "genre": "Life & simulation",
+    "platforms": [
+      "switch",
+      "switch2"
+    ],
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Animal-Crossing-New-Horizons-1438623.html",
+    "released": true,
+    "image": "/games/animal-crossing.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "kirby-forgotten-land",
+    "name": "Kirby and the Forgotten Land",
+    "summary": "Explore a mysterious world with Kirby’s copy abilities and a co-op companion.",
+    "genre": "Platformer",
+    "platforms": [
+      "switch",
+      "switch2"
+    ],
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Kirby-and-the-Forgotten-Land-2045110.html",
+    "released": true,
+    "image": "/games/kirby-forgotten-land.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "pikmin-4",
+    "name": "Pikmin 4",
+    "summary": "Lead tiny Pikmin and a rescue pup through a world of oversized discoveries.",
+    "genre": "Strategy",
+    "platforms": [
+      "switch"
+    ],
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Pikmin-4-2267217.html",
+    "released": true,
+    "image": "/games/pikmin-4.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "luigis-mansion-3",
+    "name": "Luigi’s Mansion 3",
+    "summary": "Search a haunted hotel, solve puzzles and catch ghosts with Luigi.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "switch"
+    ],
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Luigi-s-Mansion-3-1437312.html",
+    "released": true,
+    "image": "/games/luigis-mansion-3.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "indiana-jones",
+    "name": "Indiana Jones and the Great Circle",
+    "summary": "Uncover an ancient mystery through exploration, puzzles and daring escapes.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "xbox",
+      "pc",
+      "ps5",
+      "switch2"
+    ],
+    "sourceUrl": "https://www.playstation.com/en-gb/games/indiana-jones-and-the-great-circle/",
+    "released": true,
+    "image": "/games/indiana-jones.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "age-of-empires-iv",
+    "name": "Age of Empires IV",
+    "summary": "Build a civilisation and command armies in historical strategy battles.",
+    "genre": "Strategy",
+    "platforms": [
+      "xbox",
+      "pc"
+    ],
+    "sourceUrl": "https://www.xbox.com/en-gb/games/age-of-empires-iv",
+    "released": true,
+    "image": "/games/age-of-empires-iv.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "flight-simulator-2024",
+    "name": "Microsoft Flight Simulator 2024",
+    "summary": "Take to the skies and explore aviation across a detailed world.",
+    "genre": "Life & simulation",
+    "platforms": [
+      "xbox",
+      "pc",
+      "ps5"
+    ],
+    "sourceUrl": "https://www.xbox.com/en-gb/games/microsoft-flight-simulator-2024",
+    "released": true,
+    "image": "/games/flight-simulator-2024.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "halo-infinite",
+    "name": "Halo Infinite",
+    "summary": "Step into the armour of Master Chief for sci-fi battles on a mysterious ring.",
+    "genre": "Shooter",
+    "platforms": [
+      "xbox",
+      "pc"
+    ],
+    "sourceUrl": "https://www.xbox.com/en-gb/games/halo-infinite",
+    "released": true,
+    "image": "/games/halo-infinite.webp",
+    "checked": "2026-10-18",
+    "imageFit": "contain"
+  },
+  {
+    "id": "gta-vi",
+    "name": "Grand Theft Auto VI",
+    "summary": "Jason and Lucia’s story unfolds across Vice City and the state of Leonida.",
+    "genre": "Action & adventure",
+    "platforms": [
+      "ps5",
+      "xbox"
+    ],
+    "released": false,
+    "date": "2026-11-19",
+    "sourceUrl": "https://www.rockstargames.com/VI",
+    "image": "/games/gta-vi.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "lets-sing-2027",
+    "name": "Let’s Sing 2027",
+    "summary": "Sing solo or get friends together for a karaoke party.",
+    "genre": "Music & party",
+    "platforms": [
+      "switch",
+      "switch2"
+    ],
+    "released": false,
+    "date": "2026-11-03",
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Let-s-Sing-2027-3171829.html",
+    "image": "/games/lets-sing-2027.webp",
+    "checked": "2026-10-18"
+  },
+  {
+    "id": "frostpunk-switch",
+    "name": "Frostpunk",
+    "edition": "Nintendo Switch release",
+    "summary": "Keep a city alive in a frozen world where every decision matters.",
+    "genre": "Strategy",
+    "platforms": [
+      "switch"
+    ],
+    "released": false,
+    "date": "2026-10-19",
+    "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-download-software/Frostpunk-3215042.html",
+    "image": "/games/frostpunk-switch.webp",
+    "checked": "2026-10-18"
+  }
+]

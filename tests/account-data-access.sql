@@ -1,0 +1,53 @@
+-- Unique disposable fixtures only. Every change is rolled back.
+begin;
+select set_config('scene.data_a',gen_random_uuid()::text,true),set_config('scene.data_b',gen_random_uuid()::text,true),set_config('scene.data_own',gen_random_uuid()::text,true),set_config('scene.data_other',gen_random_uuid()::text,true),set_config('scene.data_factor',gen_random_uuid()::text,true);
+insert into auth.users(id,email,aud,role) select current_setting('scene.data_'||u)::uuid,current_setting('scene.data_'||u)||'@example.invalid','authenticated','authenticated' from unnest(array['a','b']) u;
+insert into public.scene_members(user_id,email,display_name) select current_setting('scene.data_'||u)::uuid,current_setting('scene.data_'||u)||'@example.invalid','Data controls fixture' from unnest(array['a','b']) u;
+insert into auth.sessions(id,user_id,created_at,updated_at,aal) select current_setting('scene.data_'||u)::uuid,current_setting('scene.data_'||u)::uuid,now(),now(),'aal1' from unnest(array['a','b']) u;
+insert into public.scene_libraries(user_id,payload) values(current_setting('scene.data_a')::uuid,'{"entries":{"mine":{"note":"own-private-note"}},"preferences":{"sharePerformance":false},"receipts":["internal-receipt"]}'),(current_setting('scene.data_b')::uuid,'{"entries":{"theirs":{"note":"other-account-private-note"}}}');
+insert into public.scene_lists(id,owner_id,name) values(current_setting('scene.data_own')::uuid,current_setting('scene.data_a')::uuid,'Owned fixture'),(current_setting('scene.data_other')::uuid,current_setting('scene.data_b')::uuid,'Other fixture');
+insert into public.scene_list_members(list_id,user_id) select current_setting('scene.data_'||l)::uuid,current_setting('scene.data_'||u)::uuid from unnest(array['own','other']) l cross join unnest(array['a','b']) u;
+insert into public.scene_list_items(list_id,title_key,title,added_by) values(current_setting('scene.data_own')::uuid,'owned','{"name":"Owned title"}',current_setting('scene.data_b')::uuid),(current_setting('scene.data_other')::uuid,'contributed','{"name":"My contribution"}',current_setting('scene.data_a')::uuid),(current_setting('scene.data_other')::uuid,'retained','{"name":"Their contribution"}',current_setting('scene.data_b')::uuid);
+insert into public.scene_list_votes(list_id,title_key,user_id) values(current_setting('scene.data_other')::uuid,'contributed',current_setting('scene.data_b')::uuid),(current_setting('scene.data_other')::uuid,'retained',current_setting('scene.data_a')::uuid);
+insert into scene_private.movie_night_choices(list_id,user_id,services) values(current_setting('scene.data_other')::uuid,current_setting('scene.data_a')::uuid,array['netflix']);
+insert into scene_private.product_reports(id,reporter_id,kind,message) values(gen_random_uuid(),current_setting('scene.data_a')::uuid,'suggestion','own-feedback'),(gen_random_uuid(),current_setting('scene.data_b')::uuid,'suggestion','other-feedback-private');
+insert into public.scene_invites(token_hash,email,expires_at) values(encode(gen_random_bytes(32),'hex'),current_setting('scene.data_a')||'@example.invalid',now()+interval '1 day');
+insert into public.scene_notification_preferences(user_id,availability_enabled) values(current_setting('scene.data_a')::uuid,true);
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('scene.data_a'),'session_id',current_setting('scene.data_a'),'role','authenticated','aal','aal1')::text,true);
+set local role authenticated;
+do $$declare d jsonb;begin
+ d:=public.scene_account_data('export');
+ if d#>>'{account,id}'<>current_setting('scene.data_a') or d#>>'{library,entries,mine,note}'<>'own-private-note' then raise exception 'Own data export failed';end if;
+ if d::text like '%other-account-private-note%' or d::text like '%other-feedback-private%' or d::text like '%internal-receipt%' or d::text like '%token_hash%' or d::text like '%p256dh%' or d::text like '%password%' then raise exception 'Export exposed excluded data';end if;
+ if jsonb_array_length(d->'sharedTitleContributions')<>1 or jsonb_array_length(d->'sharedVotes')<>1 or jsonb_array_length(d->'movieNightChoices')<>1 or jsonb_array_length(d->'feedback')<>1 then raise exception 'Personal contributions missing from export';end if;
+ d:=public.scene_account_data('summary');
+ if not (d->>'canDelete')::boolean or (d->>'requiresMfa')::boolean or (d->>'ownedLists')::int<>1 or (d->>'sharedContributions')::int<>1 then raise exception 'Deletion summary wrong';end if;
+ for i in 1..5 loop d:=public.scene_account_data('delete-attempt');if not (d->>'allowed')::boolean then raise exception 'Deletion quota rejected too early';end if;end loop;
+ d:=public.scene_account_data('delete-attempt');if (d->>'allowed')::boolean then raise exception 'Deletion quota did not enforce five per hour';end if;
+ begin delete from auth.users where id=current_setting('scene.data_b')::uuid;raise exception 'Member deleted another auth account';exception when insufficient_privilege then null;end;
+end$$;
+reset role;
+insert into auth.mfa_factors(id,user_id,friendly_name,factor_type,status,secret,created_at,updated_at) values(current_setting('scene.data_factor')::uuid,current_setting('scene.data_a')::uuid,'QA','totp','verified','fixture-only',now(),now());
+update auth.sessions set aal='aal2',factor_id=current_setting('scene.data_factor')::uuid where user_id=current_setting('scene.data_a')::uuid;
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('scene.data_a'),'session_id',current_setting('scene.data_a'),'role','authenticated','aal','aal2','amr',jsonb_build_array(jsonb_build_object('method','totp','timestamp',extract(epoch from now()-interval '20 minutes')::bigint)))::text,true);
+set local role authenticated;
+do $$begin if not (public.scene_account_data('summary')->>'requiresMfa')::boolean then raise exception 'Stale MFA allowed deletion';end if;end$$;
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('scene.data_a'),'session_id',current_setting('scene.data_a'),'role','authenticated','aal','aal2','amr',jsonb_build_array(jsonb_build_object('method','totp','timestamp',extract(epoch from now())::bigint)))::text,true);
+set local role authenticated;
+do $$begin if (public.scene_account_data('summary')->>'requiresMfa')::boolean then raise exception 'Recent MFA was rejected';end if;end$$;
+reset role;
+-- Exercise the Auth deletion transaction and its application trigger/FK cascades.
+delete from auth.users where id=current_setting('scene.data_a')::uuid;
+do $$begin
+ if exists(select 1 from public.scene_members where user_id=current_setting('scene.data_a')::uuid) or exists(select 1 from auth.sessions where user_id=current_setting('scene.data_a')::uuid) or exists(select 1 from public.scene_libraries where user_id=current_setting('scene.data_a')::uuid) or exists(select 1 from scene_private.product_reports where reporter_id=current_setting('scene.data_a')::uuid) or exists(select 1 from public.scene_invites where email=current_setting('scene.data_a')||'@example.invalid') or exists(select 1 from public.scene_lists where id=current_setting('scene.data_own')::uuid) or exists(select 1 from scene_private.movie_night_choices where user_id=current_setting('scene.data_a')::uuid) or exists(select 1 from public.scene_list_items where added_by=current_setting('scene.data_a')::uuid) or exists(select 1 from public.scene_list_votes where user_id=current_setting('scene.data_a')::uuid) or exists(select 1 from scene_private.account_delete_limits where user_id=current_setting('scene.data_a')::uuid) then raise exception 'Deletion left active personal records';end if;
+ if not exists(select 1 from public.scene_lists where id=current_setting('scene.data_other')::uuid) or not exists(select 1 from public.scene_list_items where list_id=current_setting('scene.data_other')::uuid and title_key='retained') or not exists(select 1 from public.scene_libraries where user_id=current_setting('scene.data_b')::uuid and payload::text like '%other-account-private-note%') then raise exception 'Deletion damaged another account';end if;
+end$$;
+set local role authenticated;
+do $$begin begin perform public.scene_account_data('export');raise exception 'Deleted session retained data access';exception when insufficient_privilege then null;end;end$$;
+reset role;
+set local role anon;
+do $$begin begin perform public.scene_account_data('export');raise exception 'Anonymous export allowed';exception when insufficient_privilege then null;end;end$$;
+reset role;
+select 'PASS: own-data export, private-field exclusion, deletion summary, password-attempt quota, recent MFA, Auth cascade cleanup, other-account preservation, revoked and anonymous denial.' as result;
+rollback;

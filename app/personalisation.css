@@ -1,0 +1,572 @@
+.home-sections {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+}
+.home-section,
+.home-section > * {
+  min-width: 0;
+  max-width: 100%;
+}
+.home-section:empty {
+  display: none;
+}
+.home-section:has(> .next-up):not(:has(.next-card)) {
+  display: none;
+}
+.home-section > .next-up {
+  margin: 0;
+}
+.home-section > .tonight {
+  margin: 0;
+}
+.for-you h3,
+.calendar-heading h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.for-you h3 > svg {
+  color: var(--accent);
+}
+.personal-pick {
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.recommendation-reason {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.settings-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.settings-fields label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  min-width: 0;
+}
+.settings-fields select,
+.settings-fields input,
+.personal-review textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  padding: 11px 12px;
+  background: var(--surface-raised);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+.extra-filters {
+  flex: 0 0 100%;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+.extra-filters .settings-fields {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.extra-filters .fine-print {
+  margin: 14px 0;
+}
+.extra-filters .button {
+  min-height: 44px;
+}
+.home-settings {
+  margin: 24px 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 18px;
+}
+.home-settings summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+.home-settings summary::-webkit-details-marker {
+  display: none;
+}
+.home-settings .settings-fields {
+  margin: 16px 0 24px;
+}
+.home-settings h3 {
+  font-size: 16px;
+  margin-bottom: 7px;
+}
+.home-section-order {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0;
+}
+.home-section-order li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding: 6px 0;
+}
+.home-section-order label {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex: 1;
+  min-height: 44px;
+  font-size: 13px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.home-section-order input,
+.calendar-controls input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.home-section-order li > div {
+  display: flex;
+}
+.home-section-order .icon-button {
+  width: 44px;
+  height: 44px;
+}
+.home-settings button:disabled,
+.calendar-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.personal-review {
+  min-width: 0;
+  max-width: 100%;
+  margin: 24px 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  background: var(--surface-raised);
+}
+.personal-review-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.personal-review-heading h3 {
+  font-size: 17px;
+  margin: 0;
+}
+.personal-review-heading span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.personal-stars {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  flex-wrap: nowrap;
+  margin-top: 12px;
+}
+.personal-stars > button:not(.text-button) {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.personal-stars > button.selected {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.personal-rating-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
+  min-height: 44px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.personal-rating-summary > .text-button {
+  font-size: 12px;
+  min-height: 44px;
+  flex-shrink: 0;
+}
+.personal-review > .fine-print {
+  margin: 4px 0 18px;
+}
+.personal-review > label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.personal-review textarea {
+  display: block;
+  resize: vertical;
+  line-height: 1.7;
+  min-height: 105px;
+}
+.note-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: 8px;
+}
+.note-status > span:first-child {
+  flex: 1 1 180px;
+  overflow-wrap: anywhere;
+}
+.note-status > span:last-child {
+  flex: 0 0 auto;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.review-card {
+  min-width: 0;
+}
+.review-card > p {
+  font-size: 12px;
+  line-height: 1.65;
+  margin-top: 10px;
+  color: var(--accent);
+}
+.review-card > .private-note-preview {
+  color: var(--muted);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.episode-calendar {
+  margin: 12px 0 24px;
+}
+.calendar-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.calendar-heading h3 {
+  font-size: 20px;
+}
+.calendar-heading .fine-print {
+  margin: 10px 0 18px;
+  max-width: 600px;
+}
+.calendar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 4px 0 18px;
+}
+.calendar-controls > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.calendar-controls .icon-button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+}
+.calendar-controls > label {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 44px;
+}
+.calendar-days {
+  display: grid;
+  gap: 14px;
+}
+.calendar-day {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.calendar-day.today {
+  border-color: var(--accent-border);
+}
+.calendar-day h4 {
+  font-size: 13px;
+  padding: 13px 16px;
+  background: var(--surface-raised);
+  font-weight: 600;
+}
+.calendar-day.today h4 {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.calendar-empty-day {
+  padding: 13px 16px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.calendar-event {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+.calendar-event > div {
+  min-width: 0;
+}
+.calendar-event p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+.episode-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 11px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.episode-check.selected {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent-border);
+}
+.episode-check:disabled {
+  opacity: 0.6;
+}
+.calendar-compact .calendar-days {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.episode-calendar > .fine-print {
+  margin: 15px 0;
+}
+.page.density-comfortable .poster-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 26px 22px;
+}
+.page.density-comfortable .discovery-row {
+  grid-auto-columns: calc((100% - 66px) / 4);
+  gap: 22px;
+}
+.page.density-comfortable .title-name {
+  font-size: 16px;
+}
+.page.density-comfortable .title-meta,
+.page.density-comfortable .title-availability {
+  font-size: 12px;
+}
+.settings-fields :focus-visible,
+.personal-review textarea:focus-visible,
+.home-settings summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+@media (max-width: 1100px) {
+  .page.density-comfortable .poster-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .page.density-comfortable .discovery-row {
+    grid-auto-columns: calc((100% - 44px) / 3);
+  }
+  .calendar-compact .calendar-days {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 650px) {
+  .home-sections {
+    gap: 22px;
+  }
+  .extra-filters .settings-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .filter-panel .extra-filters label {
+    min-width: 0;
+  }
+  .extra-filters .settings-fields label:last-child {
+    grid-column: 1/-1;
+  }
+  .home-settings {
+    padding: 14px;
+  }
+  .home-settings .settings-fields {
+    grid-template-columns: 1fr;
+  }
+  .home-section-order label {
+    font-size: 12px;
+  }
+  .personal-review {
+    padding: 14px;
+  }
+  .personal-stars {
+    gap: 0;
+  }
+  .calendar-heading {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .calendar-heading h3 {
+    font-size: 18px;
+  }
+  .calendar-heading .fine-print {
+    font-size: 11px;
+  }
+  .calendar-controls > div {
+    gap: 5px;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+  .calendar-event {
+    padding: 13px;
+    gap: 10px;
+  }
+  .episode-check {
+    padding: 8px;
+    font-size: 11px;
+  }
+  .calendar-event .shared-title {
+    font-size: 13px;
+  }
+  .calendar-event p {
+    font-size: 11px;
+  }
+  .calendar-event .episode-check span {
+    max-width: 65px;
+    line-height: 1.5;
+  }
+  .page.density-comfortable .poster-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 14px;
+  }
+  .page.density-comfortable .discovery-row {
+    grid-auto-columns: calc((100% - 14px) / 2);
+    gap: 14px;
+  }
+  .page.density-comfortable .title-name {
+    font-size: 14px;
+  }
+  .page.density-comfortable .title-meta,
+  .page.density-comfortable .title-availability {
+    font-size: 11px;
+  }
+  .recommendation-reason {
+    font-size: 11px;
+  }
+  .note-status {
+    font-size: 11px;
+  }
+  .personal-review-heading h3 {
+    font-size: 16px;
+  }
+}
+
+/* Extra filters occupy the entire parent grid, rather than one mobile column. */
+.page .filter-panel {
+  flex-wrap: wrap;
+  align-items: start;
+}
+.filter-panel .extra-filters {
+  grid-column: 1/-1;
+  width: 100%;
+  min-width: 0;
+  align-self: start;
+}
+.filter-panel .extra-filters .settings-fields {
+  align-items: start;
+}
+.filter-panel .extra-filters label {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+}
+.filter-panel .extra-filters select,
+.filter-panel .extra-filters input {
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 11px 12px;
+  font-size: 16px;
+  width: 100%;
+  min-width: 0;
+}
+.filter-panel .extra-filters .fine-print {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.filter-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 22px;
+  margin-top: 18px;
+}
+.filter-actions .text-button {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+@media (max-width: 650px) {
+  .filter-panel .extra-filters .settings-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 14px;
+  }
+  .filter-panel .extra-filters .filter-wide {
+    grid-column: 1/-1;
+  }
+  .filter-panel .extra-filters label {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .filter-panel .extra-filters .fine-print {
+    margin: 18px 0;
+    font-size: 11px;
+  }
+  .filter-actions {
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .filter-actions .button {
+    flex: 1;
+    font-size: 12px;
+    padding: 12px;
+  }
+}

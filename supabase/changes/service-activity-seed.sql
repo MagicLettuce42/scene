@@ -1,0 +1,9 @@
+insert into public.scene_releases(id,title,kind,original_year,release_date,service_key,label,source_url,verified_on,tmdb_id) values
+('treasure-island-2026','Treasure Island','series',2026,'2026-10-12','paramount','New series','https://www.paramountplus.com/sneak-peak/gb/treasure-island-2026-uk/','2026-10-18',null),
+('helluva-boss-s3-part1','Helluva Boss','series',2020,'2026-10-14','prime','Season 3 · Part 1','https://www.aboutamazon.co.uk/news/entertainment/whats-on-prime-video-uk-october-2026','2026-10-18',null),
+('love-of-your-life-2026','Love of Your Life','movie',2026,'2026-10-14','prime','New film','https://www.aboutamazon.co.uk/news/entertainment/whats-on-prime-video-uk-october-2026','2026-10-18',null),
+('handsome-devil-charming-killer-uk','Handsome Devil: Charming Killer','series',2026,'2026-10-15','paramount','Complete series','https://www.paramountplus.com/sneak-peak/gb/new-on-paramount-plus-uk/','2026-10-18',null),
+('tulsa-king-s4','Tulsa King','series',2022,'2026-10-16','paramount','Season 4','https://www.paramountplus.com/sneak-peak/gb/new-on-paramount-plus-uk/','2026-10-18',153312),
+('tenzing-2026','Tenzing','movie',2026,'2026-10-16','apple','New film','https://www.apple.com/uk/tv-pr/news/2026/09/apple-original-films-unveils-tenzing-trailer/','2026-10-18',null)
+on conflict(id) do update set title=excluded.title,kind=excluded.kind,original_year=excluded.original_year,release_date=excluded.release_date,service_key=excluded.service_key,label=excluded.label,source_url=excluded.source_url,verified_on=excluded.verified_on,tmdb_id=coalesce(excluded.tmdb_id,scene_releases.tmdb_id),active=true,updated_at=now();
+update public.scene_release_status set departure_reviewed_at=now(),departure_coverage_note='No exact UK expiry dates could be verified in the latest provider review.' where id=1;

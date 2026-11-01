@@ -1,0 +1,75 @@
+begin;
+select set_config('scene.qa_member',gen_random_uuid()::text,true),set_config('scene.qa_other',gen_random_uuid()::text,true),set_config('scene.qa_session',gen_random_uuid()::text,true),set_config('scene.qa_factor',gen_random_uuid()::text,true);
+insert into auth.users(id,email,aud,role) select v::uuid,v||'@example.invalid','authenticated','authenticated' from unnest(array[current_setting('scene.qa_member'),current_setting('scene.qa_other')]) v;
+insert into public.scene_members(user_id,email,display_name,role) select v::uuid,v||'@example.invalid','Alert fixture','member' from unnest(array[current_setting('scene.qa_member'),current_setting('scene.qa_other')]) v;
+insert into auth.sessions(id,user_id,created_at,updated_at,aal) values(current_setting('scene.qa_session')::uuid,current_setting('scene.qa_member')::uuid,now(),now(),'aal1');
+insert into public.scene_libraries(user_id,payload) values(current_setting('scene.qa_member')::uuid,'{"entries":{"qa":{"title":{"id":"qa","name":"Fixture","kind":"series","tmdbId":999999999},"saved":true}},"preferences":{},"services":{"netflix":true,"prime":false},"receipts":[]}');
+insert into public.scene_watchlist_snapshots(user_id,title_key,hint,attempted_at) values(current_setting('scene.qa_member')::uuid,'tmdb-series-999999999','{}',now());
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('scene.qa_member'),'session_id',current_setting('scene.qa_session'),'role','authenticated','aal','aal1')::text,true);
+set local role authenticated;
+select public.scene_availability_alert_action('preference','{"enabled":true}');
+do $$begin
+ begin perform public.scene_claim_availability_pushes();raise exception 'Queue exposed';exception when insufficient_privilege then null;end;
+ begin insert into public.scene_availability_events(user_id,title_key,service_key,title) values(auth.uid(),'bad','netflix','{}');raise exception 'Client forged event';exception when insufficient_privilege then null;end;
+end$$;
+reset role;
+do $$declare uid uuid:=current_setting('scene.qa_member')::uuid;t jsonb:='{"id":"qa","name":"Fixture","kind":"series","live":true,"dataSource":"tmdb","offers":[]}';eid uuid;sid uuid;queue jsonb;begin
+ -- First check has availability: baseline only, never a retroactive alert.
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),jsonb_set(t,'{offers}','[{"key":"netflix","type":"sub"}]'));
+ if exists(select 1 from public.scene_availability_events where user_id=uid) then raise exception 'Baseline sent alert';end if;
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),t);
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),jsonb_set(t,'{offers}','[{"key":"netflix","type":"rent"},{"key":"prime","type":"sub"}]'));
+ if exists(select 1 from public.scene_availability_events where user_id=uid) then raise exception 'Rental/unselected service alerted';end if;
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),jsonb_set(t,'{offers}','[{"key":"netflix","type":"sub"},{"key":"prime","type":"sub"}]'));
+ if (select count(*) from public.scene_availability_events where user_id=uid)<>1 then raise exception 'New selected availability not detected';end if;
+ select id into eid from public.scene_availability_events where user_id=uid;
+ insert into public.scene_push_subscriptions(user_id,endpoint,p256dh,auth,created_at) values(uid,'https://fcm.googleapis.com/alert-fixture',repeat('a',87),repeat('b',22),now()-interval '1 minute') returning id into sid;
+ if (now() at time zone 'Europe/London')::time between time '09:00' and time '20:59:59' then
+  queue:=public.scene_claim_availability_pushes();if not exists(select 1 from jsonb_array_elements(queue) x where x->>'eventId'=eid::text) then raise exception 'Eligible event not queued';end if;
+  queue:=public.scene_claim_availability_pushes();if exists(select 1 from jsonb_array_elements(queue) x where x->>'eventId'=eid::text) then raise exception 'Duplicate queue claim';end if;
+  delete from scene_private.availability_push_deliveries where subscription_id=sid and event_id=eid;
+ end if;
+ insert into scene_private.availability_push_deliveries(subscription_id,event_id,claimed_at,attempts) values(sid,eid,now(),1);
+ if not public.scene_can_send_availability(eid,sid,now()) then raise exception 'Eligible notification blocked';end if;
+ if public.scene_can_send_availability(eid,sid,now()-interval '1 minute') then raise exception 'Wrong claim allowed';end if;
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),t);
+ if public.scene_can_send_availability(eid,sid,now()) then raise exception 'Vanished availability allowed';end if;
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),jsonb_set(t,'{offers}','[{"key":"netflix","type":"sub"}]'));
+ if (select count(*) from public.scene_availability_events where user_id=uid)<>1 then raise exception 'Repeat alert within 30 days';end if;
+ update public.scene_libraries set payload=jsonb_set(payload,'{services,prime}','true') where user_id=uid;
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),jsonb_set(t,'{offers}','[{"key":"netflix","type":"sub"},{"key":"prime","type":"sub"}]'));
+ if (select count(*) from public.scene_availability_events where user_id=uid)<>1 then raise exception 'New service skipped baseline';end if;
+ update public.scene_libraries set payload=jsonb_set(payload,'{preferences,autoAvailability}','false') where user_id=uid;
+ if public.scene_can_send_availability(eid,sid,now()) then raise exception 'Paused checks allowed push';end if;
+ update public.scene_libraries set payload=jsonb_set(payload,'{preferences,autoAvailability}','true') where user_id=uid;
+ update public.scene_members set active=false where user_id=uid;
+ if public.scene_can_send_availability(eid,sid,now()) then raise exception 'Revoked member allowed push';end if;
+ update public.scene_members set active=true where user_id=uid;
+ perform public.scene_availability_alert_action('preference','{"enabled":false}');
+ if public.scene_can_send_availability(eid,sid,now()) then raise exception 'Opt-out allowed push';end if;
+ perform public.scene_availability_alert_action('preference','{"enabled":true}');
+ update public.scene_libraries set payload=jsonb_set(payload,'{entries,qa,saved}','false') where user_id=uid;
+ if public.scene_can_send_availability(eid,sid,now()) then raise exception 'Removed title allowed push';end if;
+ update public.scene_libraries set payload=jsonb_set(payload,'{entries,qa,saved}','true') where user_id=uid;
+ perform public.scene_availability_alert_action('dismiss',jsonb_build_object('id',eid));
+ if public.scene_can_send_availability(eid,sid,now()) then raise exception 'Dismissed alert allowed push';end if;
+end$$;
+insert into public.scene_availability_events(user_id,title_key,service_key,title) values(current_setting('scene.qa_other')::uuid,'private','netflix','{}');
+set local role authenticated;
+do $$begin if exists(select 1 from public.scene_availability_events where user_id<>auth.uid()) then raise exception 'Cross-account history exposed';end if;end$$;
+reset role;
+insert into auth.mfa_factors(id,user_id,friendly_name,factor_type,status,created_at,updated_at,secret) values(current_setting('scene.qa_factor')::uuid,current_setting('scene.qa_member')::uuid,'Fixture','totp','verified',now(),now(),'fixture');
+set local role authenticated;
+do $$begin
+ if exists(select 1 from public.scene_availability_events) then raise exception 'MFA read bypass';end if;
+ begin perform public.scene_availability_alert_action('preference','{"enabled":true}');raise exception 'MFA write bypass';exception when insufficient_privilege then null;end;
+end$$;
+reset role;
+-- Exercise the same database role as the Edge worker, not only the migration owner.
+set local role service_role;
+select public.scene_claim_availability_pushes();
+select public.scene_can_send_availability(gen_random_uuid(),gen_random_uuid(),now());
+select public.scene_finish_availability_push(gen_random_uuid(),gen_random_uuid(),now(),201);
+reset role;
+rollback;
+select 'PASS: alert baseline, selected services, subscription-only changes, 30-day deduplication, consent rechecks, account isolation, worker-only queue and MFA' as result;

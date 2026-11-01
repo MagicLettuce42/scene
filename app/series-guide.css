@@ -1,0 +1,35 @@
+.series-guide {
+  margin: 22px 0;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.series-guide h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 18px; font-size: 17px; }
+.series-guide h3 svg { color: var(--accent); flex-shrink: 0; }
+.series-guide-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 0; }
+.series-guide-facts dt { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.series-guide-facts dd { margin: 0; font-size: 17px; line-height: 1.5; font-weight: 650; overflow-wrap: anywhere; }
+.series-guide > .fine-print { margin: 18px 0 0; line-height: 1.7; }
+.series-guide-remaining { display: grid; gap: 5px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.series-guide-remaining strong { color: var(--accent); line-height: 1.6; }
+.series-guide-remaining span { font-size: 12px; color: var(--muted); }
+.spoiler-setting { display: flex; align-items: flex-start; gap: 12px; padding: 14px; margin: 16px 0; background: var(--surface-raised); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; }
+.spoiler-setting input { width: 20px; height: 20px; flex: 0 0 20px; margin: 2px 0 0; accent-color: var(--accent); }
+.spoiler-setting strong, .spoiler-setting small { display: block; }
+.spoiler-setting strong { font-size: 14px; line-height: 1.5; }
+.spoiler-setting small { font-size: 12px; color: var(--muted); line-height: 1.6; margin-top: 4px; }
+.spoiler-content { display: inline; }
+.spoiler-text { margin-right: 8px; }
+.spoiler-reveal { display: inline-flex; gap: 7px; align-items: center; min-height: 44px; padding: 7px 10px; border-radius: 8px; border: 1px dashed var(--border-strong); color: var(--accent); background: var(--surface-raised); font-size: 12px; font-weight: 600; line-height: 1.5; text-align: left; vertical-align: middle; max-width: 100%; }
+.spoiler-reveal svg { flex-shrink: 0; }
+.spoiler-reveal:hover { background: var(--surface-hover); }
+.spoiler-reveal:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.episode-row { cursor: default; }
+.episode-checkbox { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 44px; width: 44px; min-height: 44px; cursor: pointer; }
+@media (max-width: 400px) {
+  .series-guide { padding: 16px; }
+  .series-guide-facts { gap: 16px 12px; }
+  .series-guide-facts dd { font-size: 15px; }
+  .episode-row { gap: 8px; }
+}

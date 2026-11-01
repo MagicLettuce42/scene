@@ -1,0 +1,270 @@
+.account-settings {
+  min-width: 0;
+}
+.account-settings-intro {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 12px 0 20px;
+}
+.account-settings-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-raised);
+  margin-top: 18px;
+}
+.account-settings-avatar {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 700;
+}
+.account-settings-identity > div {
+  flex: 1;
+  min-width: 0;
+}
+.account-settings-identity strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.account-settings-identity small {
+  display: block;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.account-settings-role {
+  font-size: 11px;
+  color: var(--muted);
+}
+.account-settings .sync-status {
+  margin: 12px 0 0;
+}
+.account-settings-sections {
+  display: grid;
+  gap: 10px;
+}
+.account-settings-section {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  scroll-margin-top: 20px;
+}
+.account-settings-section > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 80px;
+  padding: 16px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: 10px;
+}
+.account-settings-section > summary::-webkit-details-marker {
+  display: none;
+}
+.account-settings-section > summary:hover {
+  background: var(--surface-hover);
+}
+.account-settings-section > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.account-settings-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.account-settings-copy {
+  flex: 1;
+  min-width: 0;
+}
+.account-settings-copy strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.account-settings-copy small {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.account-settings-status {
+  font-size: 11px;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: 5px;
+  padding: 4px 7px;
+  flex: none;
+  max-width: 90px;
+  text-align: center;
+  line-height: 1.5;
+}
+.account-settings-chevron {
+  flex: none;
+  color: var(--muted);
+}
+.account-settings-section[open] > summary {
+  border-bottom: 1px solid var(--border);
+  border-radius: 10px 10px 0 0;
+}
+.account-settings-section[open] .account-settings-chevron {
+  transform: rotate(180deg);
+}
+.account-settings-body {
+  padding: 20px;
+  min-width: 0;
+}
+.account-settings-body > .account-security,
+.account-settings-body > .install-scene,
+.account-settings-body > .reminder-settings,
+.account-settings-body > .access-manager {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.account-settings-body > .reminder-settings + .account-security,
+.account-settings-body > .account-security + .access-manager {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.account-settings .fine-print {
+  font-size: 12px;
+  line-height: 1.75;
+}
+.account-settings-body h3,
+.account-settings-body .theme-picker legend {
+  font-size: 17px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.account-settings-body > section > p {
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--muted);
+  margin: 10px 0 14px;
+}
+.account-settings-body > .theme-picker {
+  margin: 0;
+}
+.account-settings-body > .home-settings-embedded {
+  margin: 24px 0 0;
+  padding: 24px 0 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+.account-settings-body > .text-button {
+  min-height: 44px;
+  margin-top: 14px;
+}
+.account-settings .invite-form {
+  gap: 12px;
+}
+.account-settings .account-signout {
+  margin-top: 22px;
+  padding-top: 20px;
+}
+@media (max-width: 650px) {
+  .account-settings-section > summary {
+    padding: 14px 12px;
+    gap: 10px;
+    min-height: 82px;
+  }
+  .account-settings-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+  }
+  .account-settings-icon > svg {
+    width: 18px;
+    height: 18px;
+  }
+  .account-settings-copy strong {
+    font-size: 14px;
+  }
+  .account-settings-copy small {
+    font-size: 12px;
+  }
+  .account-settings-status {
+    max-width: 64px;
+    font-size: 11px;
+    padding: 4px 5px;
+  }
+  .account-settings-body {
+    padding: 18px 14px;
+  }
+  .account-settings-identity {
+    padding: 14px 12px;
+    gap: 10px;
+  }
+  .account-settings-role {
+    display: none;
+  }
+  .account-settings .theme-options {
+    gap: 10px;
+  }
+}
+
+/* Grouped account navigation: a calm index, one detail screen at a time. */
+.account-menu { --account-accent: #b99aef; }
+.account-menu-brand { margin: 0 48px 22px 0; }
+.account-menu-brand .scene-wordmark { width: 142px; height: auto; }
+.account-menu > h2 { font-size: 30px; margin: 0 0 8px; letter-spacing: -.7px; }
+.account-profile-link { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 80px; margin: 20px 0 6px; padding: 16px 0; border: 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: transparent; text-align: left; color: var(--text); cursor: pointer; }
+.account-profile-name { font-size: 16px; overflow-wrap: anywhere; min-width: 0; }
+.account-menu .account-settings-avatar { width: 44px; height: 44px; background: var(--accent-soft); }
+.account-menu .account-settings-role { display: inline-block; padding: 4px 8px; border-radius: 20px; font-size: 11px; background: var(--accent-soft); color: var(--text); }
+.account-edit-label { margin-left: auto; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.account-profile-link > svg { flex: none; color: var(--account-accent); }
+.account-menu .account-settings-sections { display: block; }
+.account-menu-group { margin: 26px 0 6px; font-size: 11px !important; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); font-weight: 650; }
+.account-menu-row { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 67px; padding: 14px 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: transparent; color: var(--text); text-align: left; cursor: pointer; }
+.account-menu-row > svg { flex: none; color: var(--account-accent); }
+.account-menu .account-settings-copy strong { font-size: 15px; font-weight: 550; }
+.account-menu .account-settings-copy small { font-size: 12px; line-height: 1.5; margin-top: 2px; }
+.account-menu-row:hover, .account-profile-link:hover { background: var(--surface-hover); }
+.account-menu button:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.account-back { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-bottom: 14px; padding: 0; border: 0; color: var(--muted); background: transparent; cursor: pointer; }
+.account-detail h2 { margin: 0 0 10px; font-size: 26px; line-height: 1.25; }
+.account-detail-intro { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 24px; }
+.account-menu .account-settings-body { padding: 0; }
+.account-menu .account-signout { margin-top: 18px; padding-top: 0; border: 0; }
+.account-menu .account-signout button { min-height: 44px; }
+[data-theme="daylight"] .account-menu { --account-accent: #69469a; }
+@media (max-width: 380px) { .account-profile-link { gap: 8px; } .account-edit-label { font-size: 11px; } .account-menu .account-settings-role { padding: 3px 5px; font-size: 10px; } }
+.account-menu > h2 { font-weight: 700; }
+.account-menu .sync-status, .account-menu > .fine-print { margin: 0; }
+.account-profile-link { margin-top: 16px; min-height: 68px; padding: 12px 0; }
+.account-menu-row { min-height: 55px; padding: 12px 0; }
+.account-menu-group { margin-top: 22px; }
+.account-menu-brand { margin-bottom: 14px; }
+.account-profile-link { margin-top: 10px; margin-bottom: 0; }
+.account-menu-group { margin: 14px 0 0; }
+.account-menu-row { min-height: 50px; padding: 8px 0; }

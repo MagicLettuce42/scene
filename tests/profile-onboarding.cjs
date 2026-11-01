@@ -1,0 +1,71 @@
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const fs = require('node:fs');
+const root = path.resolve(process.argv[2]);
+const photo = require(path.join(root, 'lib/profile-photo.js'));
+const state = require(path.join(root, 'lib/library-state.js'));
+// Small JPEG fixture containing the required bounded image headers, not personal imagery.
+const jpeg = (width = 256, height = 256) => 'data:image/jpeg;base64,' + Buffer.from([
+  255,216,255,192,0,17,8,height>>8,height&255,width>>8,width&255,3,1,17,0,2,17,0,3,17,0,255,218,0,2,0,255,217,
+]).toString('base64');
+const valid = value => state.validateMutation({revision:0,id:'photo-test-operation',operations:[{type:'avatar',value}]});
+assert.equal(photo.validProfilePhoto(jpeg()), true);
+assert.equal(photo.validProfilePhoto(jpeg(257)), false);
+assert.equal(photo.validProfilePhoto(jpeg(0)), false);
+for (const value of [undefined, 5, 'https://example.com/photo.jpg', 'data:image/svg+xml;base64,PHN2Zz4=', 'data:image/png;base64,AA==', 'data:image/jpeg;base64,!!!!', 'data:image/jpeg;base64,'+'A'.repeat(100000)]) {
+  assert.equal(photo.validProfilePhoto(value), false);
+  assert.equal(valid(value), null);
+}
+assert.ok(valid(jpeg())); assert.ok(valid(null));
+for (const type of ['image/jpeg','image/png','image/webp']) assert.equal(photo.validPhotoInput({type,size:1024}),true);
+for (const file of [{type:'image/svg+xml',size:1},{type:'image/jpeg',size:0},{type:'image/jpeg',size:5*1024*1024+1}]) assert.equal(photo.validPhotoInput(file),false);
+const original = state.applyOperations(state.emptyLibrary(),[{type:'avatar',value:jpeg()},{type:'game-platform',key:'pc',value:true}]);
+const complete = state.setupOperations(['netflix'],'yellow',true);
+assert.ok(state.validateMutation({revision:0,id:'setup-test-operation',operations:complete}));
+const ready = state.applyOperations(original,complete);
+assert.equal(state.projectLibrary(ready).gamingEnabled,true);
+assert.equal(state.projectLibrary(ready).onboarded,true);
+assert.equal(state.projectLibrary(ready).avatar,jpeg());
+assert.equal(state.projectLibrary(ready).theme,'yellow');
+assert.ok(state.projectLibrary(ready).gamingPlatforms.includes('pc'));
+assert.equal(original.preferences.gaming,undefined,'onboarding does not mutate prior document');
+const reload = JSON.parse(JSON.stringify(ready));
+assert.equal(state.projectLibrary(reload).avatar,jpeg(),'photo survives persistence');
+const rerun = state.applyOperations(reload,state.setupOperations(['netflix'],'yellow',false));
+assert.equal(state.projectLibrary(rerun).gamingEnabled,false);
+assert.equal(state.projectLibrary(rerun).avatar,jpeg(),'setup rerun preserves photo');
+const edited = state.applyOperations(rerun,[{type:'theme',value:'yellow'},{type:'home',fields:{density:'comfortable'}}]);
+assert.equal(state.projectLibrary(edited).avatar,jpeg(),'unrelated changes preserve photo');
+const removed = state.applyOperations(edited,[{type:'avatar',value:null}]);
+assert.equal(state.projectLibrary(removed).avatar,null);
+assert.equal(state.projectLibrary(edited).avatar,jpeg(),'removal is immutable');
+assert.equal(state.projectLibrary(state.emptyLibrary()).avatar,null,'other account has no photo');
+assert.equal(state.projectLibrary({...ready,preferences:{avatar:'https://bad.example'}}).avatar,null,'invalid stored image falls back');
+const editor = fs.readFileSync('app/components/profile-photo-editor.tsx','utf8');
+assert.match(editor,/sessionBoundary\(\)\.userId === userId/,'asynchronous processing checks account identity');
+assert.match(editor,/current === generation.current/,'stale upload completion ignored');
+assert.match(editor,/role="alert"/,'upload error announced');
+assert.match(editor,/Remove photo/); assert.match(editor,/Use this photo/);
+const welcome = fs.readFileSync('app/components/welcome.tsx','utf8');
+assert.match(welcome,/useState\(gamingEnabled\)/,'setup reuses current preference');
+assert.match(welcome,/onComplete\(choices, palette, gaming\)/);
+console.log('PASS: profile validation, size limits, removal, persistence, account isolation and Gaming setup.');
+(async () => {
+  let crop, encoded = 0, reads = 0;
+  const previous = {Image:global.Image,document:global.document,FileReader:global.FileReader,create:URL.createObjectURL};
+  URL.createObjectURL = () => { throw Error('blob: images blocked by production CSP'); };
+  global.FileReader = class { readAsDataURL() { reads++;this.result='data:image/png;base64,fixture';queueMicrotask(()=>this.onload()); } };
+  global.Image = class { naturalWidth = 800; naturalHeight = 400; set src(value){assert.match(value,/^data:/);} async decode() {} };
+  global.document = {createElement: () => ({getContext: () => ({fillRect(){},drawImage(...args){crop=args;}}),toDataURL(type){assert.equal(type,'image/jpeg');encoded++;return jpeg();}})};
+  assert.equal(await photo.prepareProfilePhoto({type:'image/png',size:5000}),jpeg());
+  assert.deepEqual(crop.slice(1),[200,0,400,400,0,0,256,256],'centre crop and thumbnail resizing');
+  assert.equal(encoded,1);assert.equal(reads,1);
+  global.Image = class {async decode(){throw Error('bad image');}};
+  await assert.rejects(photo.prepareProfilePhoto({type:'image/jpeg',size:5000}),/could not be opened/);
+  await assert.rejects(photo.prepareProfilePhoto({type:'image/svg+xml',size:500}),/JPG, PNG or WebP/);
+  assert.equal(reads,2,'invalid files never read');
+  global.FileReader = class { readAsDataURL() { queueMicrotask(()=>this.onerror()); } };
+  await assert.rejects(photo.prepareProfilePhoto({type:'image/png',size:5000}),/could not be read/);
+  global.Image=previous.Image;global.document=previous.document;global.FileReader=previous.FileReader;URL.createObjectURL=previous.create;
+  console.log('PASS: CSP-compatible data-URI raster conversion, centre crop, resize and file/decode errors.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

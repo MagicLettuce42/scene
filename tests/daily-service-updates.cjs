@@ -1,0 +1,34 @@
+const assert=require('node:assert/strict'),path=require('node:path');
+const root=path.resolve(process.argv[2]),get=p=>require(path.join(root,p));
+const state=get('lib/library-state.js'),snap=get('lib/watchlist-snapshots.js'),activity=get('lib/service-activity.js'),home=get('lib/home-preferences.js'),catalogue=get('supabase/functions/_shared/watchlist-catalogue.js');
+const now=new Date('2026-10-18T18:00:00Z'),title={id:'tv-10',tmdbId:100,name:'Example',year:2024,kind:'series',genres:[],summary:'',poster:null,offers:[],checked:'2026-10-15T00:00:00Z'};
+let doc=state.applyOperations(state.emptyLibrary(),[{type:'title',title,fields:{saved:true,liked:true}},{type:'review',title,fields:{rating:4,note:'My private note'}},{type:'service',key:'netflix',value:true}]);
+const entryKey=Object.keys(doc.entries)[0];doc.entries[entryKey].progress={tracking:true,watched:{'1:1':true}};
+const before=JSON.stringify(doc),fresh={...title,id:'tmdb-tv-100',live:true,dataSource:'tmdb',offers:[{key:'netflix',name:'Netflix',type:'sub',url:'https://www.themoviedb.org/tv/100/watch?locale=GB'}]},row={title_key:state.titleKey(title),title:fresh,checked_at:now.toISOString()};
+let next=snap.applyAvailabilitySnapshots(doc,[row],[],now);
+assert.equal(JSON.stringify(doc),before);assert.equal(next.entries[entryKey].title.id,title.id);assert.equal(next.entries[entryKey].title.offers[0].key,'netflix');
+for(const field of ['saved','liked','rating','note','progress'])assert.deepEqual(next.entries[entryKey][field],doc.entries[entryKey][field]);
+assert.deepEqual(snap.applyAvailabilitySnapshots(doc,[{...row,checked_at:'2026-10-14'}],[],now).entries[entryKey],doc.entries[entryKey]);
+assert.deepEqual(snap.applyAvailabilitySnapshots(doc,[{...row,checked_at:'2099-01-01'}],[],now).entries[entryKey],doc.entries[entryKey]);
+assert.deepEqual(snap.applyAvailabilitySnapshots(doc,[{...row,title_key:'other'}],[],now).entries[entryKey],doc.entries[entryKey]);
+const off=state.applyOperations(doc,[{type:'auto-availability',value:false}]);assert.equal(snap.applyAvailabilitySnapshots(off,[row],[],now),off);assert.equal(state.projectLibrary(off).autoAvailability,false);
+assert.equal(state.validateMutation({id:'fixture-123456',revision:0,operations:[{type:'auto-availability',value:'false'}]}),null);
+const entries=['2026-10-11','2026-10-12','2026-10-18','2026-10-19','2026-11-16','2026-11-17'].map((date,i)=>({id:'item-'+i,name:'Item '+i,date,service:'netflix',kind:'movie'}));
+assert.deepEqual(activity.activityEntries(entries,'new',['netflix'],now).map(e=>e.date),['2026-10-18','2026-10-12']);
+assert.deepEqual(activity.activityEntries(entries,'leaving',['netflix'],now).map(e=>e.date),['2026-10-18','2026-10-19','2026-11-16']);
+assert.equal(activity.activityEntries(entries,'new',[],now).length,0);assert.equal(activity.parseActivityQuery(new URLSearchParams('services=made-up')),null);
+assert.deepEqual(activity.activityWindow('new',new Date('2026-10-18T23:30:00Z')),{from:'2026-10-13',to:'2026-10-19'});
+const legacy=['short','personal','next','tonight','popular','rated','recent','calendar'];assert.deepEqual(home.resolveHome({sections:legacy,hidden:['calendar']}).sections,['halloween',...legacy,'arrivals','leaving']);assert.deepEqual(home.resolveHome({sections:legacy,hidden:['calendar']}).hidden,['calendar']);
+const source={id:100,name:'Example',first_air_date:'2024-01-01','watch/providers':{results:{US:{flatrate:[{provider_id:1,provider_name:'Netflix'}]},GB:{rent:[{provider_id:2,provider_name:'Amazon Video'}],flatrate:[{provider_id:3,provider_name:'Paramount+ Amazon Channel'}],free:[{provider_id:4,provider_name:'BBC iPlayer'}]}}}};
+const normal=catalogue.normaliseSnapshot(source,'series');assert.deepEqual(normal.offers.map(o=>o.key),['addon-paramountamazonchannel','bbc']);assert.equal(normal.offers.some(o=>o.key==='netflix'||o.key==='prime'||o.key==='paramount'),false);
+assert.equal(catalogue.exactMatch([{id:1,name:'Example',first_air_date:'2024-01-01'},{id:2,name:'Example',first_air_date:'1990-01-01'}],title).id,1);
+assert.equal(catalogue.exactMatch([{id:1,name:'Almost Example',first_air_date:'2024-01-01'}],title),null);
+(async()=>{
+ const calls=[];const result=await catalogue.refreshCatalogue({...title,tmdbId:undefined},async(p)=>{calls.push(p);return p==='search/tv'?{results:[{id:100,name:'Example',first_air_date:'2024-01-01'}]}:source;});assert.deepEqual(calls,['search/tv','tv/100']);assert.equal(result.tmdbId,100);
+ const auth=get('lib/auth/server.js');auth.requireSceneMember=async()=>({error:Response.json({}, {status:401})});assert.equal((await get('app/api/services/activity/route.js').GET(new Request('https://scene.test/api/services/activity'))).status,401);
+ assert.equal((await get('app/api/internal/catalogue-setup/route.js').POST(new Request('https://scene.test/api/internal/catalogue-setup',{method:'POST'}))).status,401);
+ // An outage must not be rendered as proof that no titles are leaving.
+ const failedQuery={select(){return this},eq(){return this},gte(){return this},order(){return this},limit:async()=>({error:Error('down')}),maybeSingle:async()=>({error:Error('down')})};
+ await assert.rejects(activity.readDepartures({from:()=>failedQuery}),/could not load/);
+ console.log('PASS: snapshot privacy/preservation/opt-out, date boundaries, UK-only offers, exact matching, home preference migration, authenticated activity API, worker setup protection and expiry outage handling.');
+})().catch(e=>{console.error(e);process.exitCode=1});

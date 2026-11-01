@@ -1,0 +1,558 @@
+[
+  {
+    "id": "tv-44933",
+    "tvmazeId": 44933,
+    "name": "Severance",
+    "year": 2022,
+    "kind": "series",
+    "genres": [
+      "Drama",
+      "Science-Fiction",
+      "Mystery"
+    ],
+    "runtime": 49,
+    "summary": "Mark Scout leads a team at Lumon Industries, whose employees have undergone a severance procedure, which surgically divides their memories between their work and personal lives. This daring experiment in \"work-life balance\" is called into question as Mark finds himself at the center of an unraveling mystery that will force him to confront the true nature of his work… and of himself.",
+    "poster": "/posters/tv-44933.jpg",
+    "rating": 7.7,
+    "sourceUrl": "https://www.tvmaze.com/shows/44933/severance",
+    "officialUrl": "https://tv.apple.com/show/severance/umc.cmc.1srk2goyh2q2zdxcx605w8vtx",
+    "imdbId": "tt11280740",
+    "offers": [
+      {
+        "name": "Apple TV",
+        "key": "apple",
+        "type": "sub",
+        "url": "https://tv.apple.com/show/severance/umc.cmc.1srk2goyh2q2zdxcx605w8vtx"
+      }
+    ],
+    "availabilitySource": "https://www.justwatch.com/uk/tv-series/severance",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "tv-54198",
+    "tvmazeId": 54198,
+    "name": "The Bear",
+    "year": 2022,
+    "kind": "series",
+    "genres": [
+      "Drama",
+      "Comedy",
+      "Food"
+    ],
+    "runtime": 35,
+    "summary": "Carmy, a young fine-dining chef, comes home to Chicago to run his family sandwich shop. As he fights to transform the shop and himself, he works alongside a rough-around-the-edges crew that ultimately reveal themselves as his chosen family.",
+    "poster": "/posters/tv-54198.jpg",
+    "rating": 7.4,
+    "sourceUrl": "https://www.tvmaze.com/shows/54198/the-bear",
+    "officialUrl": "https://www.hulu.com/series/the-bear-05eb6a8e-90ed-4947-8c0b-e6536cbddd5f",
+    "imdbId": "tt14452776",
+    "offers": [
+      {
+        "name": "Disney+",
+        "key": "disney",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/tv-series/the-bear-2022"
+      }
+    ],
+    "availabilitySource": "https://www.justwatch.com/uk/tv-series/the-bear-2022",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "tv-45039",
+    "tvmazeId": 45039,
+    "name": "Slow Horses",
+    "year": 2022,
+    "kind": "series",
+    "genres": [
+      "Drama",
+      "Thriller",
+      "Espionage"
+    ],
+    "runtime": 46,
+    "summary": "Slow Horses follows the story of a group of British intelligence agents who serve in a dumping ground department of MI5 called Slough House after the big mistakes they've made that resulted in the end of their mainstream careers.This quick-witted spy drama follows a dysfunctional team of MI5 agents—and their obnoxious boss, the notorious Jackson Lamb—as they navigate the espionage world's smoke and mirrors to defend England from sinister forces.",
+    "poster": "/posters/tv-45039.jpg",
+    "rating": 8.1,
+    "sourceUrl": "https://www.tvmaze.com/shows/45039/slow-horses",
+    "officialUrl": "https://tv.apple.com/us/show/slow-horses/umc.cmc.2szz3fdt71tl1ulnbp8utgq5o",
+    "imdbId": "tt5875444",
+    "offers": [
+      {
+        "name": "Apple TV",
+        "key": "apple",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/tv-series/slow-horses"
+      }
+    ],
+    "availabilitySource": "https://www.justwatch.com/uk/tv-series/slow-horses",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "tv-49041",
+    "tvmazeId": 49041,
+    "name": "Fallout",
+    "year": 2024,
+    "kind": "series",
+    "genres": [
+      "Drama",
+      "Action",
+      "Science-Fiction"
+    ],
+    "runtime": 57,
+    "summary": "Based on one of the greatest video game series of all time, Fallout is the story of haves and have nots in a world in which there's almost nothing left to have. 200 years after the apocalypse, a peaceful denizen from a cozy fallout shelter is forced to return to the surface and is shocked to discover the wasteland waiting for her.",
+    "poster": "/posters/tv-49041.jpg",
+    "rating": 7.9,
+    "sourceUrl": "https://www.tvmaze.com/shows/49041/fallout",
+    "officialUrl": "https://www.amazon.com/dp/B0CN4HV16N",
+    "imdbId": "tt12637874",
+    "offers": [
+      {
+        "name": "Prime Video",
+        "key": "prime",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/tv-series/fallout-2024"
+      }
+    ],
+    "availabilitySource": "https://www.justwatch.com/uk/tv-series/fallout-2024",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "tv-25504",
+    "tvmazeId": 25504,
+    "name": "Blue Planet II",
+    "year": 2017,
+    "kind": "series",
+    "genres": [
+      "Nature"
+    ],
+    "runtime": 58,
+    "summary": "Wildlife documentary series, presented and narrated by David Attenborough, exploring the planet's oceans.",
+    "poster": "/posters/tv-25504.jpg",
+    "rating": 9,
+    "sourceUrl": "https://www.tvmaze.com/shows/25504/blue-planet-ii",
+    "officialUrl": "http://www.bbc.co.uk/programmes/p04tjbtx",
+    "imdbId": "tt6769208",
+    "offers": [
+      {
+        "name": "BBC iPlayer",
+        "key": "bbc",
+        "type": "free",
+        "url": "https://www.justwatch.com/uk/tv-series/blue-planet-ii"
+      },
+      {
+        "name": "Apple TV Store",
+        "key": "store",
+        "type": "buy",
+        "url": "https://www.justwatch.com/uk/tv-series/blue-planet-ii"
+      }
+    ],
+    "availabilitySource": "https://www.justwatch.com/uk/tv-series/blue-planet-ii",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "tv-2993",
+    "tvmazeId": 2993,
+    "name": "Stranger Things",
+    "year": 2016,
+    "kind": "series",
+    "genres": [
+      "Drama",
+      "Horror",
+      "Science-Fiction"
+    ],
+    "runtime": 65,
+    "summary": "When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces and one strange little girl.",
+    "poster": "/posters/tv-2993.jpg",
+    "rating": 8.4,
+    "sourceUrl": "https://www.tvmaze.com/shows/2993/stranger-things",
+    "officialUrl": "https://www.netflix.com/title/80057281",
+    "imdbId": "tt4574334",
+    "offers": [
+      {
+        "name": "Netflix",
+        "key": "netflix",
+        "type": "sub",
+        "url": "https://www.netflix.com/title/80057281"
+      },
+      {
+        "name": "Sky Go",
+        "key": "sky",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/tv-series/stranger-things"
+      }
+    ],
+    "availabilitySource": "https://www.justwatch.com/uk/tv-series/stranger-things",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "film-interstellar",
+    "name": "Interstellar",
+    "year": 2014,
+    "runtime": 169,
+    "kind": "movie",
+    "genres": [
+      "Science-Fiction",
+      "Drama"
+    ],
+    "summary": "A pilot joins a mission beyond our solar system to find a future for humanity, while his family waits on Earth.",
+    "poster": "/posters/film-interstellar.jpg",
+    "offers": [
+      {
+        "name": "Prime Video",
+        "key": "prime",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/movie/interstellar"
+      },
+      {
+        "name": "NOW Cinema",
+        "key": "now",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/movie/interstellar"
+      },
+      {
+        "name": "HBO Max",
+        "key": "max",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/movie/interstellar"
+      },
+      {
+        "name": "Apple TV Store",
+        "key": "store",
+        "type": "rent",
+        "url": "https://www.justwatch.com/uk/movie/interstellar"
+      },
+      {
+        "name": "Apple TV Store",
+        "key": "store",
+        "type": "buy",
+        "url": "https://www.justwatch.com/uk/movie/interstellar"
+      }
+    ],
+    "sourceUrl": "https://www.justwatch.com/uk/movie/interstellar",
+    "availabilitySource": "https://www.justwatch.com/uk/movie/interstellar",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "film-dune-2020",
+    "name": "Dune",
+    "year": 2021,
+    "runtime": 155,
+    "kind": "movie",
+    "genres": [
+      "Science-Fiction",
+      "Adventure"
+    ],
+    "summary": "A young heir arrives on a desert planet where a precious resource puts his family at the centre of an interstellar struggle.",
+    "poster": "/posters/film-dune-2020.jpg",
+    "offers": [
+      {
+        "name": "NOW Cinema",
+        "key": "now",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/movie/dune-2020"
+      },
+      {
+        "name": "HBO Max",
+        "key": "max",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/movie/dune-2020"
+      },
+      {
+        "name": "Apple TV Store",
+        "key": "store",
+        "type": "rent",
+        "url": "https://www.justwatch.com/uk/movie/dune-2020"
+      },
+      {
+        "name": "Apple TV Store",
+        "key": "store",
+        "type": "buy",
+        "url": "https://www.justwatch.com/uk/movie/dune-2020"
+      }
+    ],
+    "sourceUrl": "https://www.justwatch.com/uk/movie/dune-2020",
+    "availabilitySource": "https://www.justwatch.com/uk/movie/dune-2020",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "film-paddington-2",
+    "name": "Paddington 2",
+    "year": 2017,
+    "runtime": 103,
+    "kind": "movie",
+    "genres": [
+      "Comedy",
+      "Family"
+    ],
+    "summary": "Paddington searches for the perfect birthday present and gets caught up in the theft of a very special book.",
+    "poster": "/posters/film-paddington-2.jpg",
+    "offers": [
+      {
+        "name": "HBO Max",
+        "key": "max",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/movie/paddington-2"
+      },
+      {
+        "name": "Apple TV Store",
+        "key": "store",
+        "type": "rent",
+        "url": "https://www.justwatch.com/uk/movie/paddington-2"
+      },
+      {
+        "name": "Apple TV Store",
+        "key": "store",
+        "type": "buy",
+        "url": "https://www.justwatch.com/uk/movie/paddington-2"
+      }
+    ],
+    "sourceUrl": "https://www.justwatch.com/uk/movie/paddington-2",
+    "availabilitySource": "https://www.justwatch.com/uk/movie/paddington-2",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "film-knives-out",
+    "name": "Knives Out",
+    "year": 2019,
+    "runtime": 131,
+    "kind": "movie",
+    "genres": [
+      "Mystery",
+      "Comedy"
+    ],
+    "summary": "An unconventional detective questions an eccentric family after a celebrated crime novelist is found dead.",
+    "poster": "/posters/film-knives-out.jpg",
+    "offers": [
+      {
+        "name": "Channel 4",
+        "key": "channel4",
+        "type": "free",
+        "url": "https://www.justwatch.com/uk/movie/knives-out"
+      },
+      {
+        "name": "Amazon Video",
+        "key": "amazonstore",
+        "type": "rent",
+        "url": "https://www.justwatch.com/uk/movie/knives-out"
+      },
+      {
+        "name": "Amazon Video",
+        "key": "amazonstore",
+        "type": "buy",
+        "url": "https://www.justwatch.com/uk/movie/knives-out"
+      }
+    ],
+    "sourceUrl": "https://www.justwatch.com/uk/movie/knives-out",
+    "availabilitySource": "https://www.justwatch.com/uk/movie/knives-out",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "film-the-wild-robot",
+    "name": "The Wild Robot",
+    "year": 2024,
+    "runtime": 102,
+    "kind": "movie",
+    "genres": [
+      "Animation",
+      "Family"
+    ],
+    "summary": "A robot stranded in the wilderness learns to live alongside animals and becomes the unexpected guardian of a young goose.",
+    "poster": "/posters/film-the-wild-robot.jpg",
+    "offers": [
+      {
+        "name": "Netflix",
+        "key": "netflix",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/movie/the-wild-robot"
+      },
+      {
+        "name": "Apple TV Store",
+        "key": "store",
+        "type": "rent",
+        "url": "https://www.justwatch.com/uk/movie/the-wild-robot"
+      },
+      {
+        "name": "Apple TV Store",
+        "key": "store",
+        "type": "buy",
+        "url": "https://www.justwatch.com/uk/movie/the-wild-robot"
+      }
+    ],
+    "sourceUrl": "https://www.justwatch.com/uk/movie/the-wild-robot",
+    "availabilitySource": "https://www.justwatch.com/uk/movie/the-wild-robot",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "film-the-grand-budapest-hotel",
+    "name": "The Grand Budapest Hotel",
+    "year": 2014,
+    "runtime": 100,
+    "kind": "movie",
+    "genres": [
+      "Comedy",
+      "Adventure"
+    ],
+    "summary": "A devoted hotel concierge and his young colleague become entangled in a dispute over a valuable painting and a family inheritance.",
+    "poster": "/posters/film-the-grand-budapest-hotel.jpg",
+    "offers": [
+      {
+        "name": "Disney+",
+        "key": "disney",
+        "type": "sub",
+        "url": "https://www.justwatch.com/uk/movie/the-grand-budapest-hotel"
+      },
+      {
+        "name": "Apple TV Store",
+        "key": "store",
+        "type": "rent",
+        "url": "https://www.justwatch.com/uk/movie/the-grand-budapest-hotel"
+      },
+      {
+        "name": "Apple TV Store",
+        "key": "store",
+        "type": "buy",
+        "url": "https://www.justwatch.com/uk/movie/the-grand-budapest-hotel"
+      }
+    ],
+    "sourceUrl": "https://www.justwatch.com/uk/movie/the-grand-budapest-hotel",
+    "availabilitySource": "https://www.justwatch.com/uk/movie/the-grand-budapest-hotel",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "tv-44458",
+    "tvmazeId": 44458,
+    "name": "Ted Lasso",
+    "year": 2020,
+    "kind": "series",
+    "genres": [
+      "Drama",
+      "Comedy",
+      "Sports"
+    ],
+    "runtime": 43,
+    "summary": "Ted Lasso centers on an idealistic — and clueless — all-American football coach hired to manage an English football club — despite having no soccer coaching experience at all.",
+    "poster": "/posters/tv-44458.jpg",
+    "rating": 8.1,
+    "sourceUrl": "https://www.tvmaze.com/shows/44458/ted-lasso",
+    "officialUrl": "https://tv.apple.com/show/ted-lasso/umc.cmc.vtoh0mn0xn7t3c643xqonfzy",
+    "imdbId": "tt10986410",
+    "offers": [
+      {
+        "name": "Apple TV",
+        "key": "apple",
+        "type": "sub",
+        "url": "https://tv.apple.com/show/ted-lasso/umc.cmc.vtoh0mn0xn7t3c643xqonfzy"
+      }
+    ],
+    "availabilitySource": "https://www.justwatch.com/uk/tv-series/ted-lasso",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "tv-58177",
+    "tvmazeId": 58177,
+    "name": "The Traitors (US)",
+    "year": 2023,
+    "kind": "series",
+    "genres": [
+      "Action",
+      "Adventure",
+      "Thriller"
+    ],
+    "runtime": 60,
+    "summary": "Set in a remote castle in the Scottish Highlands and based on the wildly popular Dutch series of the same name, 5-time Emmy-nominated Alan Cumming plays host to twenty larger-than-life personalities (including reality A-listers and America's best game players) who come together to complete a series of challenges with the objective of earning a cash prize of up to $250,000. The catch? Three of the contestants coined \"the traitors\" will devise a plan to steal the prize from the other contestants coined \"the faithful\".",
+    "poster": "/posters/tv-58177.jpg",
+    "rating": 7.3,
+    "sourceUrl": "https://www.tvmaze.com/shows/58177/the-traitors",
+    "officialUrl": "https://www.nbc.com/the-traitors",
+    "imdbId": "tt15557874",
+    "offers": []
+  },
+  {
+    "id": "tv-53647",
+    "tvmazeId": 53647,
+    "name": "Wednesday",
+    "year": 2022,
+    "kind": "series",
+    "genres": [
+      "Comedy",
+      "Mystery",
+      "Supernatural"
+    ],
+    "runtime": 54,
+    "summary": "Smart, sarcastic and a little dead inside, Wednesday Addams investigates a murder spree while making new friends — and foes — at Nevermore Academy.",
+    "poster": "/posters/tv-53647.jpg",
+    "rating": 7.9,
+    "sourceUrl": "https://www.tvmaze.com/shows/53647/wednesday",
+    "officialUrl": "https://www.netflix.com/title/81231974",
+    "imdbId": "tt13443470",
+    "offers": [
+      {
+        "name": "Netflix",
+        "key": "netflix",
+        "type": "sub",
+        "url": "https://www.netflix.com/title/81231974"
+      }
+    ],
+    "availabilitySource": "https://www.justwatch.com/uk/tv-series/wednesday",
+    "checked": "2026-10-17T18:00:00Z"
+  },
+  {
+    "id": "tv-37336",
+    "tvmazeId": 37336,
+    "name": "Shōgun",
+    "year": 2024,
+    "kind": "series",
+    "genres": [
+      "Drama",
+      "Adventure",
+      "History"
+    ],
+    "runtime": 59,
+    "summary": "Shōgun is set in Japan in the year 1600 at the dawn of a century-defining civil war. Lord Yoshii Toranaga is fighting for his life as his enemies on the Council of Regents unite against him, when a mysterious European ship is found marooned in a nearby fishing village.",
+    "poster": "/posters/tv-37336.jpg",
+    "rating": 8.5,
+    "sourceUrl": "https://www.tvmaze.com/shows/37336/shogun",
+    "officialUrl": "https://www.hulu.com/series/shogun-5422a5f9-e4f1-475e-9217-65e8249388d0",
+    "imdbId": "tt2788316",
+    "offers": []
+  },
+  {
+    "id": "tv-46562",
+    "tvmazeId": 46562,
+    "name": "The Last of Us",
+    "year": 2023,
+    "kind": "series",
+    "genres": [
+      "Drama",
+      "Action",
+      "Horror"
+    ],
+    "runtime": 61,
+    "summary": "After a global pandemic destroys civilization, a hardened survivor takes charge of a 14-year-old girl who may be humanity's last hope.",
+    "poster": "/posters/tv-46562.jpg",
+    "rating": 7.9,
+    "sourceUrl": "https://www.tvmaze.com/shows/46562/the-last-of-us",
+    "officialUrl": "https://www.hbo.com/the-last-of-us",
+    "imdbId": "tt3581920",
+    "offers": []
+  },
+  {
+    "id": "tv-305",
+    "tvmazeId": 305,
+    "name": "Black Mirror",
+    "year": 2011,
+    "kind": "series",
+    "genres": [
+      "Drama",
+      "Science-Fiction",
+      "Thriller"
+    ],
+    "runtime": 62,
+    "summary": "Over the last ten years, technology has transformed almost every aspect of our lives before we've had time to stop and question it. In every home; on every desk; in every palm - a plasma screen; a monitor; a smartphone--a black mirror of our 21st Century existence. Black Mirror is a contemporary British re-working of The Twilight Zone with stories that tap into the collective unease about our modern world.",
+    "poster": "/posters/tv-305.jpg",
+    "rating": 8.4,
+    "sourceUrl": "https://www.tvmaze.com/shows/305/black-mirror",
+    "officialUrl": "https://www.netflix.com/title/70264888",
+    "imdbId": "tt2085059",
+    "offers": []
+  }
+]

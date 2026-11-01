@@ -1,0 +1,1 @@
+create index scene_push_deliveries_release on scene_private.push_deliveries(release_id);

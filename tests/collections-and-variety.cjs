@@ -1,0 +1,17 @@
+const assert=require('node:assert/strict'),path=require('node:path');
+const root=path.resolve(process.argv[2]);const state=require(path.join(root,'lib/library-state.js'));
+const {uniqueDiscoverTitles}=require(path.join(root,'app/components/discover-variety.js'));
+const {newCollectionId,collectionId}=require(path.join(root,'lib/collections.js'));assert.ok(collectionId(newCollectionId()));
+const {titles}=require(path.join(root,'lib/catalogue.js'));const [first,second]=titles;
+const id='12345678-1234-4234-8234-123456789012';
+const valid=operations=>state.validateMutation({revision:0,id:'collection-test-mutation',operations});
+const create={type:'collection',id,action:'create',name:'Weekend films'};
+assert.ok(valid([create]));for(const op of [{...create,name:''},{...create,name:'x'.repeat(51)},{...create,id:'__proto__'},{...create,action:'other'},{type:'collection-member',id,key:'__proto__',value:true},{type:'collection-member',id,key:'valid',value:'yes'}])assert.equal(valid([op]),null);
+const original=state.applyOperations(state.emptyLibrary(),[create,{type:'title',title:first,fields:{saved:true}},{type:'title',title:second,fields:{saved:true}}]);
+const add=(t,value=true)=>({type:'collection-member',id,key:state.titleKey(t),value});
+const populated=state.applyOperations(original,[add(first),add(second)]);assert.equal(Object.values(state.projectLibrary(populated).collections[0].members).filter(Boolean).length,2);assert.equal(Object.keys(original.preferences.collections[id].members).length,0);
+const rebased=state.applyOperations(populated,[{type:'collection',id,action:'rename',name:'Family night'},add(first,false)]);assert.equal(rebased.preferences.collections[id].name,'Family night');assert.equal(rebased.preferences.collections[id].members[state.titleKey(second)],true);assert.equal(rebased.preferences.collections[id].members[state.titleKey(first)],false);
+const deleted=state.applyOperations(rebased,[{type:'collection',id,action:'delete'}]);const stale=state.applyOperations(deleted,[create,{type:'collection',id,action:'rename',name:'Old name'},add(first)]);assert.equal(state.projectLibrary(stale).collections.length,0);assert.equal(state.projectLibrary(stale).saved.length,2);
+assert.equal(state.projectLibrary(state.emptyLibrary()).collections.length,0,'another account has no collections');
+const alias={...first,id:'different-id'};assert.deepEqual(uniqueDiscoverTitles([first,alias,second],[first],t=>t),[second]);assert.deepEqual(uniqueDiscoverTitles([first,alias,second],[],t=>t),[first,second]);
+console.log('PASS: collection validation, immutable membership changes, rebase, deletion tombstones, saved-title preservation, account defaults and alias-aware Discover variety.');

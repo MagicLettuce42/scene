@@ -1,0 +1,258 @@
+.halloween-section {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.halloween-section > div {
+  min-width: 0;
+  max-width: 100%;
+}
+.halloween-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 34px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  padding: 6px 12px;
+  border: 1px solid #ffad66;
+  border-radius: 999px;
+  color: #ffad66;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+  background: #16121dc9;
+}
+.halloween-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  min-height: 230px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 30px;
+  margin-bottom: 24px;
+  border: 1px solid #594061;
+  border-radius: 16px;
+  color: #f8f1e8;
+  /* Fill wide cards without stretching the artwork; keep the pumpkins in view. */
+  background: #16121d url("/seasonal/halloween-night.webp") right 75% / cover no-repeat;
+}
+.halloween-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(90deg, #16121df5 0%, #16121dc9 40%, #16121d20 80%);
+}
+.halloween-hero > div { max-width: 62%; }
+.halloween-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100px;
+  aspect-ratio: 1;
+  z-index: -1;
+  background: url("/seasonal/halloween-web.svg") top left / contain no-repeat;
+  opacity: .25;
+  pointer-events: none;
+}
+.halloween-hero h3 {
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  margin: 15px 0 10px;
+  overflow-wrap: anywhere;
+}
+.halloween-hero p {
+  max-width: 290px;
+  color: #ddcee6;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.halloween-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.halloween-heading > div { min-width: 0; flex: 1 1 12rem; }
+.halloween-heading h3 {
+  font-size: 23px;
+  line-height: 1.35;
+  letter-spacing: -.6px;
+}
+.halloween-heading p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 5px;
+}
+.halloween-heading .filter-button { flex-shrink: 0; }
+.halloween-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.halloween-categories button {
+  min-height: 44px;
+  max-width: 100%;
+  white-space: normal;
+  padding: 9px 15px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.halloween-categories button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.halloween-section .discovery-row {
+  min-width: 0;
+  max-width: 100%;
+  grid-auto-columns: clamp(128px, 16vw, 180px);
+}
+.halloween-section > .fine-print { margin-top: 14px; }
+.halloween-section .browse-pagination { margin-top: 18px; }
+.halloween-section .browse-pagination .button {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+}
+.halloween-rating-note { max-width: 550px; }
+.signup-confirmation { display: grid; gap: 16px; }
+.signup-confirmation h2 { font-size: 22px; }
+.signup-confirmation p { line-height: 1.6; overflow-wrap: anywhere; }
+.signup-confirmation .button { max-width: 100%; white-space: normal; }
+.halloween-catalogue-heading > div:first-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.halloween-catalogue-heading > .catalogue-actions { display: none; }
+.seasonal-setting {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 4px 0 22px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.seasonal-setting input { width: 19px; height: 19px; margin-top: 3px; accent-color: var(--accent); flex: none; }
+.seasonal-setting strong { display: block; font-size: 14px; line-height: 1.6; }
+.seasonal-setting small { display: block; color: var(--muted); font-size: 12px; line-height: 1.7; margin-top: 4px; }
+.seasonal-login {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  justify-content: flex-start;
+  padding-top: clamp(40px, 8vh, 85px);
+  padding-bottom: clamp(180px, 25vh, 290px);
+}
+.seasonal-login::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: clamp(320px, 65vh, 640px);
+  z-index: -2;
+  background: linear-gradient(180deg, #16121d, #16121d00 75%), url("/seasonal/halloween-night.webp") 70% bottom / auto 100% no-repeat;
+  pointer-events: none;
+}
+.seasonal-login::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: min(230px, 40vw);
+  aspect-ratio: 1;
+  background: url("/seasonal/halloween-web.svg") left top / contain no-repeat;
+  opacity: .5;
+  z-index: -1;
+  pointer-events: none;
+}
+.seasonal-login .account-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 46px;
+  margin-bottom: 24px;
+}
+.seasonal-login .account-card {
+  max-width: 510px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: center;
+}
+.seasonal-login .account-card h1 {
+  font-size: clamp(29px, 4vw, 38px);
+  line-height: 1.25;
+  margin-top: 25px;
+  letter-spacing: -1px;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.seasonal-login .account-intro { font-size: 16px; margin: 10px 0 24px; }
+.seasonal-login .account-form {
+  text-align: left;
+  padding: 26px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #231b2af5;
+  gap: 20px;
+}
+.seasonal-login .account-form label { color: #ddcee6; }
+.seasonal-login .account-help {
+  padding: 16px 22px;
+  border-radius: 12px;
+  background: #16121de8;
+  line-height: 1.8;
+}
+.seasonal-login .account-footer {
+  max-width: 440px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: #16121dd9;
+}
+@media (max-width: 600px) {
+  .halloween-hero { min-height: 220px; padding: 22px 18px; background-position: 75% bottom; }
+  .halloween-hero > div { max-width: 70%; }
+  .halloween-hero .halloween-badge { font-size: 9px; padding: 5px 9px; gap: 5px; }
+  .halloween-hero h3 { font-size: 27px; }
+  .halloween-hero p { font-size: 13px; }
+  .halloween-heading { gap: 12px; }
+  .halloween-heading h3 { font-size: 21px; }
+  .halloween-heading p { font-size: 12px; }
+  .halloween-categories { gap: 7px; }
+  .halloween-categories button { font-size: 12px; padding-inline: 12px; }
+  .halloween-section .discovery-row { grid-auto-columns: max(104px, calc((100% - 24px) / 2.7)); }
+  .seasonal-login .account-form { padding: 22px 18px; }
+  .seasonal-login .account-brand { font-size: 40px; }
+  .seasonal-login .account-intro { font-size: 15px; }
+}
+@media (max-width: 360px) {
+  .halloween-hero > div { max-width: 100%; }
+  .halloween-hero::before {
+    background: linear-gradient(90deg, #16121dfa, #16121dd9 70%, #16121d80);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
