@@ -16,6 +16,13 @@ const managedLinux = readExecutionProfile() === "managed-linux";
 
 const localBindingConfig = {
   name: "scene",
+  // Preserve runtime settings managed in the Cloudflare dashboard on redeploy.
+  keep_vars: true,
+  // These identify the public client; privileged API keys stay in secrets.
+  vars: {
+    SUPABASE_URL: "https://cqgauurbkmdbxckjdals.supabase.co",
+    SUPABASE_PUBLISHABLE_KEY: "sb_publishable_5UsKXAxrJY3k5fJNkCYnCw_pI30rqkz",
+  },
   main: "./build/sites-worker.ts",
   compatibility_flags: ["nodejs_compat"],
   d1_databases: d1
