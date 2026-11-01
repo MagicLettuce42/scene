@@ -379,6 +379,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
                 {error}
               </p>
             )}
+            {!invite && !signup && <p className="account-help"><a className="text-button" href="/reset-password">Forgot your password?</a></p>}
             <p className="account-help">
               {invite
                 ? "Already completed setup?"

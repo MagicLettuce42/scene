@@ -1,0 +1,31 @@
+const assert = require('node:assert/strict'), fs = require('node:fs'), ts = require('typescript');
+require.extensions['.ts'] = (mod, file) => mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, file);
+const { requestPasswordReset, openPasswordReset, saveResetPassword } = require('../lib/auth/password-reset.ts');
+const { handleAccountDeletion } = require('../supabase/functions/_shared/account-data-handler.ts');
+(async () => {
+  let submitted, called = false;
+  const client = { auth: { resetPasswordForEmail: async (...args) => { submitted = args; return { error: null }; } } };
+  await assert.rejects(requestPasswordReset(client, 'invalid', 'https://scene.benlear439.workers.dev'), /valid email/);
+  assert.equal(submitted, undefined);
+  await requestPasswordReset(client, ' USER@example.invalid ', 'https://scene.benlear439.workers.dev');
+  assert.deepEqual(submitted, ['user@example.invalid', { redirectTo: 'https://scene.benlear439.workers.dev/reset-password' }]);
+  await assert.rejects(requestPasswordReset({ auth: { resetPasswordForEmail: async () => ({ error: { status: 429 } }) } }, 'user@example.invalid', 'https://scene.test'), /Too many attempts/);
+  const events = [], resetClient = { auth: { exchangeCodeForSession: async code => { events.push(['exchange', code]); return { data: { session: {} }, error: null }; } } };
+  assert.equal(await openPasswordReset(resetClient, 'https://scene.test/reset-password?code=one-use', address => events.push(['replace', address])), true);
+  assert.deepEqual(events, [['replace', '/reset-password'], ['exchange', 'one-use']]);
+  assert.equal(await openPasswordReset(resetClient, 'https://scene.test/reset-password', () => assert.fail()), false);
+  await assert.rejects(openPasswordReset(resetClient, 'https://scene.test/reset-password?error=expired', () => {}), /expired/);
+  await assert.rejects(openPasswordReset({ auth: { exchangeCodeForSession: async () => ({ data: { session: null }, error: {} }) } }, 'https://scene.test/reset-password?code=expired', () => {}), /could not be verified/);
+  const update = { auth: { updateUser: async input => { called = input; return { error: null }; } } };
+  await assert.rejects(saveResetPassword(update, 'short', 'short'), /12/);
+  await assert.rejects(saveResetPassword(update, 'a-long-new-password', 'different'), /match/);
+  assert.equal(called, false);
+  await saveResetPassword(update, 'a-long-new-password', 'a-long-new-password');
+  assert.deepEqual(called, { password: 'a-long-new-password' });
+  await assert.rejects(saveResetPassword({ auth: { updateUser: async () => ({ error: {} }) } }, 'a-long-new-password', 'a-long-new-password'), /could not be updated/);
+  for (const origin of ['https://scene.benlear439.workers.dev', 'https://scene-streaming.airyokapi2.chatgpt.site', 'https://scene-streaming.magiclettuce.chatgpt.site', 'https://evil.invalid', 'https://scene.benlear439.workers.dev.evil.invalid']) {
+    const response = await handleAccountDeletion(new Request('https://function.test', { method: 'POST', headers: { origin, 'Content-Type': 'application/json' }, body: '{}' }), () => assert.fail('Invalid bodies must never reach account operations'));
+    assert.equal(response.status, origin.endsWith('evil.invalid') ? 403 : 400, origin);
+  }
+  console.log('PASS: reset destination, email validation, rate limits, one-time code removal, invalid/expired links, password validation, failed updates and exact migration origins. No emails sent or accounts changed.');
+})().catch(error => { console.error(error); process.exitCode = 1; });
