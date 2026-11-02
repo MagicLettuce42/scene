@@ -32,8 +32,8 @@ export function useTurnstile() {
       .finally(() => clearTimeout(timer));
     return () => { active = false; clearTimeout(timer); controller.abort(); };
   }, [attempt]);
-  function reset() { setToken(""); setAttempt(value => value + 1); }
-  return { token, ready: key === null || Boolean(key && token), reset,
+  function reset() { setToken(""); setKey(undefined); setError(""); setAttempt(value => value + 1); }
+  return { token, ready: !error && (key === null || Boolean(key && token)), reset,
     element: error ? <div role="alert"><p>{error}</p><button type="button" className="text-button" onClick={reset}>Retry security check</button></div>
       : key === undefined ? <p role="status">Loading security check…</p>
       : key ? <Challenge key={`${key}:${attempt}`} siteKey={key} onToken={setToken} /> : null };
