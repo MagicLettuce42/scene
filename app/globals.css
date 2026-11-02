@@ -4791,6 +4791,17 @@ html:not([data-theme="pearl"]):not([data-theme="daylight"]) .scene-brand-mark .s
 .screening-home .catalogue-heading { height: 0; min-height: 0; margin: 0; }
 .screening-home .intro { margin-bottom: 12px; }
 @media(min-width:900px) { .screening-home .intro { max-width: 950px; } .discovery-toolbar .search-region { max-width: 680px; } }
+/* Centre the search field itself; reserve equal space on either side so the
+   adjacent action buttons cannot shift it away from the navigation centre. */
+@media(min-width:1101px) {
+  .screening-home .intro { max-width: 1144px; }
+  .screening-home .discovery-toolbar {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(0, 680px) minmax(220px, 1fr);
+  }
+  .screening-home .discovery-toolbar .search-region { grid-column: 2; grid-row: 1; }
+  .screening-home .discovery-toolbar .catalogue-actions { grid-column: 3; grid-row: 1; justify-self: start; }
+}
 @media(max-width:650px) {
   .discovery-toolbar { flex-wrap: wrap; gap: 8px; }
   .discovery-toolbar .search-region { flex-basis: 100%; }
