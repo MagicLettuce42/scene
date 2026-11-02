@@ -65,8 +65,8 @@ const { finishSceneEmailConfirmation, registerScene, resendSceneConfirmation, va
  try {
   const html = renderToStaticMarkup(React.createElement(Access, null));
   assert.match(html, /href="\/signup"/); assert.match(html, /Create an account/);
-  assert.match(html, /<summary>Resend confirmation email<\/summary>/);
-  assert.match(html, /aria-label="Resend confirmation email"/);
+  assert.match(html, /href="\/reset-password"/);
+  assert.ok(!html.includes('<summary>Resend confirmation email</summary>'));
   assert.ok(!html.includes('Confirm password'));
  } finally { React.useState = useState; }
  const Resend = require(path.join(root, 'app/components/confirmation-resend.js')).default;

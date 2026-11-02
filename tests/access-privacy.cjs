@@ -54,6 +54,7 @@ vm.runInNewContext(source, {
     if (name.startsWith('npm:@supabase/supabase-js@')) return { createClient: (_url, key) => key === env.SUPABASE_ANON_KEY ? caller : admin };
     if (name.endsWith('/access-request.ts')) return { readAccessRequest };
     if (name.endsWith('/access-privacy.ts')) return privacy;
+    if (name.endsWith('/scene-origins.ts')) return require(path.join(root, 'supabase/functions/_shared/scene-origins.js'));
     throw Error('Unexpected import: ' + name);
   },
   fetch: () => { throw Error('Privacy tests must never use the network'); },

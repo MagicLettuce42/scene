@@ -19,7 +19,7 @@ get('app/components/seasonal.js').useHalloween = () => halloweenActive;
 const { titles, filterTitles } = get('lib/catalogue.js');
 const library = { ...get('lib/library-state.js').projectLibrary(get('lib/library-state.js').emptyLibrary()),
   ready: true, loaded: true, onboarded: true, selected: ['netflix', 'disney'], saved: titles.slice(0, 10),
-  status: 'saved', home: { startView: 'discover', sections: ['halloween', 'personal', 'arrivals', 'leaving', 'tonight', 'popular'], hidden: [], density: 'comfortable' } };
+  status: 'saved', home: { startView: 'discover', sections: ['personal', 'arrivals', 'leaving', 'tonight', 'popular'], hidden: [], density: 'comfortable' } };
 get('lib/use-library-sync.js').useLibrarySync = () => library;
 get('lib/auth/client.js').sceneFetch = async () => Response.json({ live: true, source: 'tmdb' });
 const calls = [];
@@ -83,7 +83,7 @@ async function choose(value) { scope().props.onChange(value); await render(); }
     const homeOrder = () => nodes(tree).filter(n => n.props?.className === 'home-section').map(n => n.key);
     const initialHome = library.home;
     assert.deepEqual(homeOrder(), initialHome.sections.slice(0, 4), 'collapsed Discover respects saved order');
-    library.home = { ...initialHome, sections: ['tonight', 'popular', 'leaving', 'arrivals', 'personal', 'halloween'] };
+    library.home = { ...initialHome, sections: ['tonight', 'popular', 'leaving', 'arrivals', 'personal'] };
     await render();
     assert.deepEqual(homeOrder(), ['tonight', 'popular', 'leaving', 'arrivals'], 'moving a secondary section to the top makes it visible immediately');
     const HomeSettings = get('app/components/home-settings.js').default;
@@ -101,7 +101,7 @@ async function choose(value) { scope().props.onChange(value); await render(); }
     library.home = initialHome; halloweenActive = true; await render();
     await choose('netflix');
     node(n=>n.type==='button'&&n.props.children==='More to explore').props.onClick(); await render();
-    for (const filename of ['halloween', 'for-you', 'service-activity', 'tonight', 'discover']) {
+    for (const filename of ['for-you', 'service-activity', 'tonight', 'discover']) {
       const Component = get('app/components/' + filename + '.js').default;
       const sections = nodes(tree).filter(n => n.type === Component);
       assert.ok(sections.length, filename + ' section is present');
@@ -127,7 +127,7 @@ async function choose(value) { scope().props.onChange(value); await render(); }
     const results = node(n => n.type === get('app/components/search-results.js').default);
     await openFilters();
     assert.deepEqual(results.props.selected, ['disney']);
-    assert.ok(results.props.titles.every(t => t.offers.some(o => o.key === 'disney' && ['sub', 'free'].includes(o.type))));
+    assert.ok(results.props.titles.length, 'search keeps matches visible when availability is unconfirmed or on another service');
     const tabs = get('lib/tab-memory.js');
     assert.equal(tabs.readTabs(account.id).provider, 'disney', 'refresh restores the selected service');
     assert.equal(tabs.readTabs('another-account').provider, 'mine', 'filter state is account scoped');

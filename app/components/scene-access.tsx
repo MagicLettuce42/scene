@@ -220,7 +220,6 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
           <SceneWordmark />
         </div>
         <section className="account-card mfa-card">
-          null
           <p className="eyebrow">ACCOUNT SECURITY</p>
           <h1>{mfa.security.enrolled ? "One more step." : "Protect your owner account."}</h1>
           <p className="account-intro">

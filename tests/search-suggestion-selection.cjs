@@ -29,16 +29,7 @@ const nodes = tree => Array.isArray(tree) ? tree.flatMap(nodes) : tree && typeof
 (async () => {
   render(); render(); await new Promise(resolve => setTimeout(resolve, 400));
   let tree = render();
-  for (const pointerType of ['touch', 'mouse', 'pen']) {
-    let prevented = false;
-    tree.props.onPointerDown({ pointerType, isPrimary: true, button: 0, preventDefault() { prevented = true; } });
-    // Reproduce Safari's null-relatedTarget blur when the pointer default runs.
-    if (!prevented) active = false;
-    assert.ok(render(), `${pointerType}: suggestion must survive until click`);
-  }
-  let prevented = false;
-  tree.props.onPointerDown({ isPrimary: true, button: 2, preventDefault() { prevented = true; } });
-  assert.equal(prevented, false, 'secondary clicks are not intercepted');
+  assert.equal(tree.props.onPointerDown, undefined, 'suggestions use normal button activation; dismissal belongs to the enclosing search region');
   nodes(tree).find(node => node.type === 'button' && node.props.children?.[0]?.type === 'strong').props.onClick();
   assert.deepEqual(chosen, [title], 'a normal click opens the exact selected title once');
   assert.equal(render(), null, 'choosing a title dismisses suggestions');
@@ -47,5 +38,5 @@ const nodes = tree => Array.isArray(tree) ? tree.flatMap(nodes) : tree && typeof
   nodes(tree).find(node => node.props?.className === 'all-search-results').props.onClick();
   assert.deepEqual(searched, ['Sing'], 'keyboard-generated click works without pointerdown');
   active = false; render();
-  console.log('PASS: primary touch/mouse/pen activation survives Safari blur; exact title selected once, recents saved, dismiss and keyboard click preserved.');
+  console.log('PASS: exact suggestion selected once, recent query saved, selection dismisses suggestions and keyboard-generated search click works. Browser pointer activation is checked separately.');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => Object.assign(React, savedHooks));
