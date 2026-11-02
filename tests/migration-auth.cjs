@@ -41,6 +41,6 @@ const { handleAccountDeletion } = require('../supabase/functions/_shared/account
   }
   assert.equal(isSceneOrigin('https://scene.leardigital.workers.dev'), true);
   assert.equal(sceneInvitationOrigin('https://scene.leardigital.workers.dev'), 'https://scene.leardigital.workers.dev');
-  assert.equal(sceneInvitationOrigin('https://evil.invalid'), 'https://scene.benlear439.workers.dev');
+  assert.equal(sceneInvitationOrigin('https://evil.invalid'), 'https://scene.leardigital.workers.dev');
   console.log('PASS: reset destination, email validation, rate limits, one-time code removal, invalid/expired links, password validation, failed updates and exact migration origins. No emails sent or accounts changed.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

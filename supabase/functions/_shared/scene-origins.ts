@@ -1,7 +1,7 @@
-const currentOrigin = "https://scene.benlear439.workers.dev";
+const currentOrigin = "https://scene.leardigital.workers.dev";
 const origins = new Set([
   currentOrigin,
-  "https://scene.leardigital.workers.dev",
+  "https://scene.benlear439.workers.dev",
   "https://scene-streaming.airyokapi2.chatgpt.site",
   "https://scene-streaming.magiclettuce.chatgpt.site",
 ]);
