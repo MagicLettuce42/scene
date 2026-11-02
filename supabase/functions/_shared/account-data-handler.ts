@@ -19,7 +19,7 @@ export async function handleAccountDeletion(req:Request,client:Factory):Promise<
   if(check.requiresMfa===true)return json({error:'Verify a fresh authenticator code before deleting your account.',code:'MFA_RECENT_REQUIRED'},403);
   if(check.allowed!==true){const r=json({error:'Too many deletion attempts. Try again later.'},429);r.headers.set('Retry-After',String(check.retryAfter||3600));return r;}
   const verifier=client('verify');
-  const verified=await verifier.auth.signInWithPassword({email:user.email,password:body.password});
+  const verified=await verifier.auth.signInWithPassword({email:user.email,password:body.password,...(body.captchaToken?{options:{captchaToken:body.captchaToken}}:{})});
   if(verified.error||verified.data.user?.id!==user.id){
    if(verified.data.session)await verifier.auth.signOut({scope:'local'});
    return json({error:'Your password could not be verified. Check it and try again.'},400);

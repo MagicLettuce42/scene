@@ -61,7 +61,7 @@ export function secureResponse(request: Request, response: Response): Response {
   // A strict script policy needs nonce/hydration browser QA before enforcement.
   headers.set(
     "Content-Security-Policy-Report-Only",
-    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://cqgauurbkmdbxckjdals.supabase.co; object-src 'none'; base-uri 'none'",
+    "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://cqgauurbkmdbxckjdals.supabase.co https://challenges.cloudflare.com; object-src 'none'; base-uri 'none'",
   );
   if (url.pathname.startsWith("/api/")) headers.set("Cache-Control", "no-store");
   if (url.pathname === "/sw.js" || url.pathname === "/manifest.webmanifest")

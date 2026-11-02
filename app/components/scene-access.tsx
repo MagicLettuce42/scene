@@ -11,6 +11,7 @@ import { HalloweenBadge, useHalloween } from "./seasonal";
 import { effectiveTheme } from "../../lib/seasonal";
 import { defaultTheme } from "../../lib/themes";
 import { finishSceneEmailConfirmation, registerScene } from "../../lib/auth/registration";
+import { useTurnstile } from "./turnstile";
 import ConfirmationResend from "./confirmation-resend";
 import { policyVersion } from "../../lib/privacy-consent";
 export type SceneAccount = {
@@ -47,6 +48,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
     [signupSent, setSignupSent] = useState(false);
   const [accountDeleted, setAccountDeleted] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const captcha = useTurnstile();
   useEffect(() => {
     const url = new URL(location.href);
     if (url.searchParams.get("account") === "deleted") {
@@ -175,13 +177,14 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
   }, []);
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (busy || !captcha.ready) return;
     setBusy(true);
     setError("");
     try {
       if ((signup || invite) && !termsAccepted) throw Error("Agree to the Terms of service before creating your account.");
       const client = await getSceneClient();
       if (signup) {
-        const data = await registerScene(client, { name, email, password, confirmation, origin: location.origin, termsAccepted });
+        const data = await registerScene(client, { name, email, password, confirmation, origin: location.origin, termsAccepted, captchaToken: captcha.token });
         setPassword("");
         setConfirmation("");
         if (data.session) await check();
@@ -197,7 +200,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
           data = (await r.json()) as { error?: string };
         if (!r.ok) throw Error(data.error || "Your invitation could not be accepted.");
       }
-      const { error: signInError } = await client.auth.signInWithPassword({ email: email.trim(), password });
+      const { error: signInError } = await client.auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken: captcha.token || undefined } });
       if (signInError) throw Error("That email and password did not work. Please try again.");
       setInvite("");
       setPassword("");
@@ -205,6 +208,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
     } catch (e) {
       setError((e as Error).message);
     } finally {
+      captcha.reset();
       setBusy(false);
     }
   }
@@ -374,7 +378,8 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
                   <label className="terms-agreement"><input type="checkbox" required checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} /><span>I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of service (opens in a new tab)</a>.</span></label>
                   <p className="fine-print form-privacy-note">Read the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy (opens in a new tab)</a> to see how your account data is used. Optional performance reporting and notifications are separate choices.</p>
                 </>}
-                <button className="button primary" disabled={busy || Boolean(invite && !inviteReady)}>
+                {captcha.element}
+                <button className="button primary" disabled={busy || !captcha.ready || Boolean(invite && !inviteReady)}>
                   {busy ? <LoaderCircle className="spin" size={18} /> : <LogIn size={18} />}{" "}
                   {busy ? "One moment…" : invite || signup ? "Create my Scene account" : "Sign in"}
                   <ArrowRight size={16} />

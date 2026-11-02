@@ -1,0 +1,27 @@
+const assert=require('node:assert/strict'),fs=require('fs'),ts=require('typescript');
+for(const ext of ['.ts','.tsx'])require.extensions[ext]=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,f);
+const {registerScene,resendSceneConfirmation}=require('../lib/auth/registration.ts');
+const {requestPasswordReset}=require('../lib/auth/password-reset.ts');
+const {readAccountDeletion}=require('../supabase/functions/_shared/account-data-request.ts');
+const config=require('../app/api/auth/captcha/route.ts');
+(async()=>{
+ let sent;const client={auth:{signUp:async v=>(sent=v,{data:{},error:null}),resend:async v=>(sent=v,{error:null}),resetPasswordForEmail:async(...v)=>(sent=v,{error:null})}};
+ const values={name:'Fixture',email:'fixture@example.invalid',password:'fixture-password-long',confirmation:'fixture-password-long',origin:'https://scene.test',termsAccepted:true,captchaToken:'one-use-fixture'};
+ await registerScene(client,values);assert.equal(sent.options.captchaToken,values.captchaToken);
+ await resendSceneConfirmation(client,values.email,values.origin,values.captchaToken);assert.equal(sent.options.captchaToken,values.captchaToken);
+ await requestPasswordReset(client,values.email,values.origin,values.captchaToken);assert.equal(sent[1].captchaToken,values.captchaToken);
+ await requestPasswordReset(client,values.email,values.origin);assert.ok(!('captchaToken' in sent[1]),'unconfigured rollout preserves the prior SDK contract');
+ const req=extra=>new Request('https://scene.test',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'delete',password:'fixture-password',confirmation:'DELETE',...extra})});
+ assert.equal((await readAccountDeletion(req({captchaToken:values.captchaToken}))).captchaToken,values.captchaToken);
+ for(const captchaToken of [12,'','x'.repeat(2049)])assert.equal((await readAccountDeletion(req({captchaToken}))).status,400);
+ assert.equal((await readAccountDeletion(req({userId:'another-account'}))).status,400);
+ const {handleAccountDeletion}=require('../supabase/functions/_shared/account-data-handler.ts');
+ let verification;
+ const factory=mode=>mode==='admin'?{auth:{getUser:async()=>({data:{user:{id:'fixture',email:values.email}},error:null})}}:mode==='caller'?{rpc:async()=>({data:{canDelete:true,requiresMfa:false,allowed:true},error:null})}:{auth:{signInWithPassword:async data=>(verification=data,{error:{},data:{user:null,session:null}})}};
+ const deletion=new Request('https://scene.test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer fixture'},body:JSON.stringify({action:'delete',password:'fixture-password',confirmation:'DELETE',captchaToken:values.captchaToken})});
+ assert.equal((await handleAccountDeletion(deletion,factory)).status,400);assert.equal(verification.options.captchaToken,values.captchaToken,'deletion reauthentication forwards the proof without deleting anything');
+ delete process.env.TURNSTILE_SITE_KEY;assert.deepEqual(await config.GET().json(),{siteKey:null});
+ process.env.TURNSTILE_SITE_KEY='public-fixture-sitekey';process.env.TURNSTILE_SECRET_KEY='never-publish-fixture-secret';
+ const response=config.GET(),data=await response.json();assert.deepEqual(data,{siteKey:'public-fixture-sitekey'});assert.equal(response.headers.get('Cache-Control'),'no-store');
+ console.log('PASS: CAPTCHA forwarding for signup/resend/reset, unconfigured rollout, bounded deletion token, target-ID rejection, public-site-key-only configuration and no-store. No emails or account changes.');
+})().catch(e=>{console.error(e);process.exitCode=1});

@@ -11,10 +11,11 @@ export async function passwordResetNeedsMfa(client: SupabaseClient) {
   return data.nextLevel === "aal2" && data.currentLevel !== "aal2";
 }
 
-export async function requestPasswordReset(client: SupabaseClient, email: string, origin: string) {
+export async function requestPasswordReset(client: SupabaseClient, email: string, origin: string, captchaToken?: string) {
   if (!validRegistrationEmail(email)) throw Error("Enter a valid email address.");
   const { error } = await client.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
     redirectTo: new URL("/reset-password", origin).href,
+    ...(captchaToken ? { captchaToken } : {}),
   });
   if (error?.status === 429) throw Error("Too many attempts. Wait before requesting another email.");
   if (error) throw Error("A reset email could not be requested. Please try again later.");

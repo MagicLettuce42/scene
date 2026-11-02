@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict');
-const {secureRequest,secureResponse}=require('/tmp/scene-security-tests/lib/http-security.js');
+const {secureRequest,secureResponse}=require(require('node:path').resolve(process.argv[2] || '/tmp/scene-security-tests','lib/http-security.js'));
 const url='https://scene-streaming.airyokapi2.chatgpt.site/api/library';
 (async()=>{
  assert.equal((await secureRequest(new Request(url,{headers:{Origin:'https://evil.example'}}))).status,403);

@@ -36,6 +36,18 @@ Optional performance measurements require both this browser's unexpired privacy 
 
 `node tests/privacy-consent.cjs` checks default refusal, stale/invalid choices, queue clearing and transport cancellation. Existing signup, access-privacy, account-data, session-isolation and search-selection tests cover the related account and input behaviour. Never test permanent deletion on a real member's account.
 
+## Turnstile activation
+
+The auth forms, confirmation resend and password-confirmed account deletion support Cloudflare Turnstile. With TURNSTILE_SITE_KEY unset, the widget is not loaded and current login behaviour is retained. This is rollout readiness, not active server-side CAPTCHA protection.
+
+1. Create a Managed Turnstile widget in Cloudflare for `scene.leardigital.workers.dev`. Leave pre-clearance off. Add other active Scene hostnames only if their forms also run this integration.
+2. Deploy the matching `scene-account-data` Edge Function and shared request/handler files before activation, so deletion can forward its separate CAPTCHA token during password verification.
+3. Add the public site key as the Scene Worker's runtime variable TURNSTILE_SITE_KEY. No secret key belongs in the repository or frontend.
+4. Confirm widgets appear on signup, sign-in, recovery, resend and deletion confirmation. Then enable CAPTCHA in Supabase Authentication → Bot and Abuse Protection, select Turnstile and enter the widget secret there. Supabase validates the tokens; a visible widget alone does not protect direct Auth API requests.
+5. Test valid, missing, invalid, expired and reused tokens against the configured project, including resend and deletion password verification. Never delete a real member as a test. Old deployments sharing this Supabase project need matching token support or must direct users to the current site.
+
+Tokens are held only in memory and reset after each attempt. Load errors and expiry keep configured forms blocked with a retry control. Existing MFA, owner checks and deletion safeguards remain in place. CSP's stricter script policy remains report-only pending separate nonce/hydration work; Turnstile origins are included in that report policy.
+
 ## Checks
 
 `pnpm exec tsc --noEmit`, `node tests/catalogue-edge-cache.cjs`, `node tests/search-speed.cjs`, `node tests/search-availability.cjs`, `node tests/search-suggestion-selection.cjs`, `pnpm build`.

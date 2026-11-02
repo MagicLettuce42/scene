@@ -27,12 +27,12 @@ export function validRegistrationEmail(email: string) {
   return email.trim().length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
-export async function resendSceneConfirmation(client: SupabaseClient, email: string, origin: string) {
+export async function resendSceneConfirmation(client: SupabaseClient, email: string, origin: string, captchaToken?: string) {
   if (!validRegistrationEmail(email)) throw Error("Enter a valid email address.");
   const result = await client.auth.resend({
     type: "signup",
     email: email.trim().toLowerCase(),
-    options: { emailRedirectTo: origin + "/?confirmed=1" },
+    options: { emailRedirectTo: origin + "/?confirmed=1", ...(captchaToken ? { captchaToken } : {}) },
   }).catch(() => { throw Error("Another confirmation email could not be requested. Please try again later."); });
   if (result.error) {
     if (result.error.status === 429)
@@ -54,7 +54,7 @@ export function validateRegistration(name: string, email: string, password: stri
 }
 
 export async function registerScene(client: SupabaseClient, values: {
-  name: string; email: string; password: string; confirmation: string; origin: string; termsAccepted: boolean;
+  name: string; email: string; password: string; confirmation: string; origin: string; termsAccepted: boolean; captchaToken?: string;
 }) {
   if (values.termsAccepted !== true) throw Error("Agree to the Terms of service before creating your account.");
   const error = validateRegistration(values.name, values.email, values.password, values.confirmation);
@@ -64,6 +64,7 @@ export async function registerScene(client: SupabaseClient, values: {
     options: {
       data: { display_name: values.name.trim(), terms_version: policyVersion, terms_accepted_at: new Date().toISOString() },
       emailRedirectTo: values.origin + "/?confirmed=1",
+      ...(values.captchaToken ? { captchaToken: values.captchaToken } : {}),
     },
   });
   if (result.error) {

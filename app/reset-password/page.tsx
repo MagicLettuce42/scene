@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useTurnstile } from "../components/turnstile";
 import SceneWordmark from "../components/scene-wordmark";
 import { getSceneClient, signOutScene } from "../../lib/auth/client";
 import { openPasswordReset, requestPasswordReset, saveResetPassword, passwordResetNeedsMfa, PasswordResetMfaRequired } from "../../lib/auth/password-reset";
@@ -10,6 +11,7 @@ export default function ResetPasswordPage() {
   const [email, setEmail] = useState(""), [password, setPassword] = useState(""), [confirmation, setConfirmation] = useState("");
   const [busy, setBusy] = useState(false), [error, setError] = useState("");
   const started = useRef(false);
+  const captcha = useTurnstile();
   useEffect(() => {
     if (started.current) return;
     started.current = true;
@@ -21,12 +23,12 @@ export default function ResetPasswordPage() {
   }, []);
   async function submit(event: React.FormEvent) {
     event.preventDefault();
-    if (busy || (phase !== "request" && phase !== "reset")) return;
+    if ((phase === "request" && !captcha.ready) || busy || (phase !== "request" && phase !== "reset")) return;
     setBusy(true); setError("");
     try {
       const client = await getSceneClient();
       if (phase === "request") {
-        await requestPasswordReset(client, email, location.origin);
+        await requestPasswordReset(client, email, location.origin, captcha.token);
         setPhase("sent");
       } else {
         await saveResetPassword(client, password, confirmation);
@@ -38,7 +40,7 @@ export default function ResetPasswordPage() {
       if (e instanceof PasswordResetMfaRequired) { setPhase("verify"); setPassword(""); setConfirmation(""); }
       setError(e instanceof Error ? e.message : "Please try again.");
     }
-    finally { setBusy(false); }
+    finally { if (phase === "request") captcha.reset(); setBusy(false); }
   }
   return <main id="main" tabIndex={-1} className="account-page screening-login">
     <div className="account-brand"><SceneWordmark /></div>
@@ -59,7 +61,8 @@ export default function ResetPasswordPage() {
           <label>Confirm password<input type="password" autoComplete="new-password" value={confirmation} minLength={12} maxLength={128} required onChange={e => setConfirmation(e.target.value)} /></label>
           <p className="fine-print">Use 12–128 characters. Your authenticator settings stay in place.</p>
         </>}
-        <button className="button primary" disabled={busy}>{busy ? "One moment…" : phase === "request" ? "Email me a reset link" : "Save new password"}</button>
+        {phase === "request" && captcha.element}
+        <button className="button primary" disabled={busy || (phase === "request" && !captcha.ready)}>{busy ? "One moment…" : phase === "request" ? "Email me a reset link" : "Save new password"}</button>
       </form>}
       {error && <p className="error-notice" role="alert">{error}</p>}
       <p className="account-help"><a className="text-button" href="/">Back to sign in</a></p>

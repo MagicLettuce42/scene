@@ -1,11 +1,13 @@
 "use client";
 import { useEffect, useState, type FormEvent } from "react";
+import { useTurnstile } from "./turnstile";
 import { Download, LoaderCircle, Trash2 } from "lucide-react";
 import { sceneFetch, getSceneClient } from "../../lib/auth/client";
 import { assertSessionBoundary, sessionBoundary, setSessionAccount } from "../../lib/auth/session-boundary";
 import { VerifyTwoFactor } from "./two-factor";
 type Summary = { canDelete: boolean; requiresMfa: boolean; ownedLists: number; sharedContributions: number };
 export default function AccountDataControls({ accountId, pending }: { accountId: string; pending: number }) {
+ const captcha = useTurnstile();
  const [busy,setBusy]=useState<"export"|"review"|"delete"|null>(null),[summary,setSummary]=useState<Summary|null>(null),
   [password,setPassword]=useState(""),[confirmation,setConfirmation]=useState(""),[error,setError]=useState(""),[notice,setNotice]=useState("");
  useEffect(()=>{setSummary(null);setPassword("");setConfirmation("");setError("");setNotice("");},[accountId]);
@@ -32,11 +34,11 @@ export default function AccountDataControls({ accountId, pending }: { accountId:
  }
  function cancel(){setSummary(null);setPassword("");setConfirmation("");setError("");}
  async function remove(e:FormEvent){
-  e.preventDefault();if(pending||busy||confirmation!=="DELETE"||!password||!summary?.canDelete||summary.requiresMfa)return;
+  e.preventDefault();if(!captcha.ready||pending||busy||confirmation!=="DELETE"||!password||!summary?.canDelete||summary.requiresMfa)return;
   const boundary=sessionBoundary();setBusy("delete");setError("");
   try{
-   const r=await sceneFetch("/api/account/data",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"delete",password,confirmation})},accountId),d=await r.json() as {deleted?:boolean;error?:string;code?:string};assertSessionBoundary(boundary);
-   setPassword("");
+   const r=await sceneFetch("/api/account/data",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"delete",password,confirmation,...(captcha.token?{captchaToken:captcha.token}:{})})},accountId),d=await r.json() as {deleted?:boolean;error?:string;code?:string};assertSessionBoundary(boundary);
+   captcha.reset();setPassword("");
    if(!r.ok||d.deleted!==true){
     if(d.code==="MFA_RECENT_REQUIRED")setSummary(s=>s?{...s,requiresMfa:true}:s);
     throw Error(d.error||"Deletion could not be confirmed. Sign in again to check your account.");
@@ -51,7 +53,7 @@ export default function AccountDataControls({ accountId, pending }: { accountId:
    if(sessionBoundary().userId===accountId)setSessionAccount(null);
    for(const key of ["scene.auth.v1","scene.auth.v1-code-verifier","scene.auth.v1-user"]){try{localStorage.removeItem(key);}catch{}}
    location.replace("/?account=deleted");
-  }catch(e){if(sessionBoundary().epoch===boundary.epoch){setPassword("");setError((e as Error).message);setBusy(null);}}
+  }catch(e){captcha.reset();if(sessionBoundary().epoch===boundary.epoch){setPassword("");setError((e as Error).message);setBusy(null);}}
  }
  return <div className="account-data-controls">
   <p>You control your records. Read the <a href="/privacy">Privacy Policy</a>, <a href="/cookies">Cookie policy</a> or <a href="/delete-account">deletion guide</a>. You can request help without signing in using the contact in the Privacy Policy.</p>
@@ -78,9 +80,10 @@ export default function AccountDataControls({ accountId, pending }: { accountId:
      </>:<form className="account-form" onSubmit={remove} aria-label="Confirm account deletion">
       <label>Your Scene password<input type="password" autoComplete="current-password" required maxLength={128} value={password} disabled={busy==="delete"} onChange={e=>setPassword(e.target.value)}/></label>
       <label>Type DELETE to confirm<input value={confirmation} autoComplete="off" autoCapitalize="characters" spellCheck={false} required maxLength={6} disabled={busy==="delete"} onChange={e=>setConfirmation(e.target.value)}/></label>
+      {captcha.element}
       <div className="account-data-actions">
        <button className="button secondary" type="button" disabled={busy==="delete"} onClick={cancel}>Keep my account</button>
-       <button className="button account-delete-button" disabled={!!busy||pending>0||confirmation!=="DELETE"||!password}>{busy==="delete"?<LoaderCircle size={16} className="spin"/>:<Trash2 size={16}/>} {busy==="delete"?"Deleting account…":"Permanently delete my account"}</button>
+       <button className="button account-delete-button" disabled={!captcha.ready||!!busy||pending>0||confirmation!=="DELETE"||!password}>{busy==="delete"?<LoaderCircle size={16} className="spin"/>:<Trash2 size={16}/>} {busy==="delete"?"Deleting account…":"Permanently delete my account"}</button>
       </div>
      </form>}
     </>}
