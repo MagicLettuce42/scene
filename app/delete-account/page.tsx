@@ -1,4 +1,4 @@
-import LegalPage, { PrivacyContact, operatorName } from "../components/legal-page";
+import LegalPage, { PrivacyContact } from "../components/legal-page";
 export const metadata = { title: "Delete your data · Scene" };
 export default function DeleteAccountPage() {
   return <LegalPage title="Delete your data" intro="Download your records, remove individual entries or close your Scene account.">
@@ -6,6 +6,6 @@ export default function DeleteAccountPage() {
     <p>The review step does not delete anything. Deletion is permanent and requires a final confirmation. The only active owner cannot delete their account until another active owner remains; contact the operator if you want to close the service instead.</p>
     <h2>What is removed</h2><p>Your active account, private library, notes, ratings, profile photo, preferences, episode/game progress, feedback, reminders, notification registrations, sign-in sessions and associated invitations are removed. Shared lists you own are deleted for everyone. Your contributions, votes and movie-night choices in other lists are also removed.</p>
     <p>Copies already downloaded or shared cannot be recalled. Anonymous performance totals cannot be linked to your account and may remain. Provider logs and isolated backups follow their retention cycles; see the <a href="/privacy">Privacy Policy</a>. Clear site data or sign out on other devices to remove their local copies.</p>
-    <h2>If you cannot sign in or need a different request</h2><p>Use the public contact address when it is available above, or <PrivacyContact />. Contact us from your account email where possible. Explain whether you want deletion, correction, a copy, restriction or to object to processing. Do not send your password, authenticator code or unnecessary identity documents. We will only ask for proportionate information needed to verify your request.</p>
+    <h2>If you cannot sign in or need a different request</h2><p>Email <PrivacyContact /> from your account email where possible. Explain whether you want deletion, correction, a copy, restriction or to object to processing. Do not send your password, authenticator code or unnecessary identity documents. We will only ask for proportionate information needed to verify your request.</p>
   </LegalPage>;
 }

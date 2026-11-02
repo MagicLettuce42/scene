@@ -30,7 +30,7 @@ Before renaming, add the new Scene root, `/?confirmed=1` and `/reset-password` r
 
 ## Privacy and accessibility
 
-Public pages at `/privacy`, `/terms`, `/cookies`, `/delete-account` and `/accessibility` are available before sign-in. Set SCENE_OPERATOR_NAME and SCENE_PRIVACY_EMAIL in the Worker runtime only after the operator approves their public display. Until then, the policies clearly mark public contact details as pending and offer account Feedback. Review the operator details and actual provider retention/transfer settings when changing hosting or account arrangements; these pages describe the app and are not a legal or WCAG certification.
+Public pages at `/privacy`, `/terms`, `/cookies`, `/delete-account` and `/accessibility` are available before sign-in. The operator approved public display of Ben Lear and ben.digitalservices@outlook.com. SCENE_OPERATOR_NAME and SCENE_PRIVACY_EMAIL can override these defaults in the Worker runtime. Review the operator details and actual provider retention/transfer settings when changing hosting or account arrangements; these pages describe the app and are not a legal or WCAG certification.
 
 Optional performance measurements require both this browser's unexpired privacy choice and the account sharing preference. Essential-only withdrawal clears the queue and aborts reporting. Signup and invitation acceptance require an unchecked Terms agreement; the notice version and acceptance time are stored in Auth metadata and included in data exports. That user-editable metadata is not used for permissions or role checks. No marketing opt-in is bundled with account creation. DM Sans is self-hosted under its bundled OFL licence.
 

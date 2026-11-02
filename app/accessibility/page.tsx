@@ -1,4 +1,4 @@
-import LegalPage, { PrivacyContact, operatorName } from "../components/legal-page";
+import LegalPage, { PrivacyContact } from "../components/legal-page";
 export const metadata = { title: "Accessibility · Scene" };
 export default function AccessibilityPage() {
   return <LegalPage title="Accessibility" intro="Using Scene with a keyboard, assistive technology or a smaller screen.">
