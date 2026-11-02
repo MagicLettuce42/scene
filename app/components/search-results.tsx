@@ -107,7 +107,7 @@ export default function SearchResults({
           <div className="search-people-grid">
             {people.slice(0, 6).map((p) => (
               <button className="person-result" key={p.id} onClick={() => onPerson(p)}>
-                <PersonPortrait name={p.name} photo={p.photo} />
+                <PersonPortrait name={p.name} photo={p.photo} decorative />
                 <span>
                   <strong>{p.name}</strong>
                   <small>

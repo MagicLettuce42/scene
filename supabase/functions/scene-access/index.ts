@@ -20,18 +20,20 @@ Deno.serve(async(req:Request)=>{
    if(!invite||invite.claimed_at||Date.parse(invite.expires_at)<=Date.now())return json({error:'This invitation is invalid, expired or already used. Sign in if you have completed setup.'},400);
    if(body.action==='inspect')return json(privateAccessResponse('inspect',{expiresAt:invite.expires_at}));
    if(!invitedEmailMatches(body.email,invite.email))return json({error:'Enter the email address used for this invitation.'},400);
+   if(body.termsAccepted!==true||body.termsVersion!=='2026-11-02')return json({error:'Agree to the current Terms of service before creating your account.'},400);
+   const policyAcceptance={terms_version:'2026-11-02',terms_accepted_at:new Date().toISOString()};
    const name=typeof body.name==='string'?body.name.trim():'';
    if(name.length<1||name.length>80||typeof body.password!=='string'||body.password.length<12||body.password.length>128)return json({error:'Enter your name and a password of 12–128 characters.'},400);
    const {data:existing,error:lookupError}=await admin.from('scene_members').select('user_id').eq('email',invite.email).maybeSingle();if(lookupError)throw lookupError;
    let userId=existing?.user_id,created=false;
    if(!userId){
-    const result=await admin.auth.admin.createUser({email:invite.email,password:body.password,email_confirm:true});
+    const result=await admin.auth.admin.createUser({email:invite.email,password:body.password,email_confirm:true,user_metadata:policyAcceptance});
     if(result.error||!result.data.user)return json({error:'This account could not be created. Ask the person who invited you for help.'},400);
     userId=result.data.user.id;created=true;
    }
    const accepted=await admin.rpc('scene_redeem_invite',{p_hash:tokenHash,p_user_id:userId,p_email:invite.email,p_name:name});
    if(accepted.error){if(created)await admin.auth.admin.deleteUser(userId);return json({error:'The invitation could not be accepted. It may already have been used.'},409);}
-   if(!created){const changed=await admin.auth.admin.updateUserById(userId,{password:body.password});if(changed.error)return json({error:'Your password could not be updated. Ask the owner for a fresh invitation.'},503);}
+   if(!created){const changed=await admin.auth.admin.updateUserById(userId,{password:body.password,user_metadata:policyAcceptance});if(changed.error)return json({error:'Your password could not be updated. Ask the owner for a fresh invitation.'},503);}
    return json(privateAccessResponse('join',{accepted:true}));
   }
   const auth=req.headers.get('authorization')||'',jwt=auth.startsWith('Bearer ')?auth.slice(7):'';

@@ -29,7 +29,7 @@ export function FeedbackForm({ title, defaultKind = "suggestion" }: { title?: Ti
         <option value="">Choose a service…</option>{services.map(s => <option key={s.key} value={s.key}>{s.name}</option>)}
       </SelectControl></label>}
       <label>Your feedback<textarea value={message} maxLength={1500} required rows={4} onChange={e => { setMessage(e.target.value); setId(""); }} /></label>
-      <p className="fine-print">No email field. Your account email is not shown in the feedback inbox. Please don’t include personal information in your message.</p>
+      <p className="fine-print">Your account reference is saved with this report; your email is not shown in the owner’s feedback inbox. Include only what is needed to explain the issue. Do not send passwords, security codes or sensitive details. <a href="/privacy">Privacy Policy</a>.</p>
       <button className="button secondary" disabled={busy || !message.trim()}>{busy ? "Sending…" : "Send feedback"}</button>
       {notice && <p role="status">{notice}</p>}{error && <p role="alert">{error}</p>}
     </form>

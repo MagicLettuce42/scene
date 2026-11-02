@@ -527,7 +527,7 @@ export default function SharedWatchlists({
                     onClick={() => onOpen(i.title)}
                     aria-label={`Open ${i.title.name}`}
                   >
-                    <Poster title={i.title} />
+                    <Poster title={i.title} decorative />
                   </button>
                   <div className="shared-item-copy">
                     <button className="shared-title" onClick={() => onOpen(i.title)}>

@@ -1,0 +1,23 @@
+import LegalPage from "../components/legal-page";
+import { CookieSettingsButton } from "../components/privacy-consent";
+export const metadata = { title: "Cookie policy · Scene" };
+export default function CookiesPage() {
+  return <LegalPage title="Cookie policy" intro="Cookies, local storage and the choices saved on your device.">
+    <p>Scene uses browser storage rather than a separate advertising-cookie system. The same privacy choices apply to similar storage technologies. Essential storage supports the service you request; optional performance reporting is off until explicitly allowed. Scene has no advertising or marketing analytics trackers.</p>
+    <h2>Storage inventory</h2><div className="legal-table"><table><thead><tr><th>Storage</th><th>Purpose</th><th>Duration</th></tr></thead><tbody>
+      <tr><td><code>scene.auth.v1</code> and associated Auth keys</td><td>Supabase session, secure sign-in refresh and temporary email-link verifier. Essential to use your account.</td><td>Until sign-out/clearing site data; one-time verifier is temporary.</td></tr>
+      <tr><td><code>scene.library.&lt;account&gt;</code></td><td>Your device copy and pending changes for reliable library sync. Essential to the requested account service.</td><td>Until sign-out, account switching, deletion or clearing site data.</td></tr>
+      <tr><td>Account-scoped <code>scene.tabs.v2</code>, <code>scene.catalogue-cache.v2</code>, <code>scene.recent-searches</code> and <code>scene.browser-account.v1</code></td><td>Tab position, recent searches, temporary results and separating signed-in accounts.</td><td>Browser tab session; account-specific copies are cleared on sign-out/account switching.</td></tr>
+      <tr><td><code>scene.privacy-choice.v1</code></td><td>Your essential/optional choice, policy version and choice time. Essential to remember your privacy preference.</td><td>180 days, then a fresh choice is requested.</td></tr>
+      <tr><td>Service-worker cache and ordinary HTTP caches</td><td>Public assets, icon and offline reconnect page. Signed-in account/API responses are not placed in the offline cache.</td><td>Until updated, evicted by the browser or site data is cleared.</td></tr>
+      <tr><td>Push-subscription credentials</td><td>Only if you request device notifications and grant browser permission.</td><td>Until unsubscribed, revoked, expired or account deletion.</td></tr>
+      <tr><td>Legacy Scene keys, if an older version was used</td><td>One-time migration of earlier saved preferences. Not advertising profiles.</td><td>Cleaned up on account changes; you can clear site data.</td></tr>
+    </tbody></table></div>
+    <h2>Optional performance reporting</h2><p>Two controls apply: this device must allow performance reports, and your Scene account must have Share performance totals enabled. Only then can the app measure and send loading, interaction and search/browse timings or success/error counts. The payload is restricted to metric names and rounded durations. No search text, viewing history, notes, advertising ID or fingerprint is included. Requests still use your authenticated connection; the database stores grouped totals rather than per-user measurements.</p>
+    <p>Allowing reports in the banner does not automatically turn on a previously disabled account setting. You can enable both through Account → Feedback → Share performance totals. Essential only stops reports from this device, including when an account preference was enabled elsewhere.</p>
+    <CookieSettingsButton />
+    <p>You can refuse optional reporting as easily as you allow it. Changing to Essential only clears unsent measurements and stops new reports. Already aggregated, unlinked totals cannot be separated back into an individual’s records.</p>
+    <h2>External services and clearing storage</h2><p>Hosting providers may use necessary security mechanisms. Catalogue images and links contact external services as described in the <a href="/privacy">Privacy Policy</a>. Fonts are served by Scene. We do not load advertising analytics, social media widgets or embedded video players.</p>
+    <p>Your browser’s site-data controls can remove all storage. This signs you out and can discard changes that have not synced; check for Saved status first. It also resets this device’s privacy choice. Removing browser storage does not delete your server-side account; use <a href="/delete-account">account deletion</a> for that.</p>
+  </LegalPage>;
+}

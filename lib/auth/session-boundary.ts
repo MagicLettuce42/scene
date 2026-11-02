@@ -30,6 +30,7 @@ export function setSessionAccount(userId: string | null) {
     remove("localStorage", "scene.library." + previous);
     remove("sessionStorage", "scene.tabs.v2." + previous);
     remove("sessionStorage", "scene.catalogue-cache.v2." + previous);
+    remove("sessionStorage", "scene.recent-searches." + previous);
     for (const key of ["scene.watchlist.v1", "scene.services.v1", "scene.feedback.v1"])
       remove("localStorage", key);
   }

@@ -14,6 +14,7 @@ import FilterPresets from "./components/filter-presets";
 import type { FilterPreset } from "../lib/filter-presets";
 import { FeedbackForm, FeedbackInbox } from "./components/product-feedback";
 import QualityMonitor from "./components/quality-monitor";
+import { PerformanceSharing, usePrivacyConsent } from "./components/privacy-consent";
 import TasteSetup from "./components/taste-setup";
 const TasteProfile = lazy(() => import("./components/taste-profile"));
 const Gaming = lazy(() => import("./components/gaming"));
@@ -151,6 +152,7 @@ export default function Home() {
 }
 function Catalogue() {
   useMobileViewport();
+  const privacyConsent = usePrivacyConsent();
   const account = useAccount(),
     tabsStorageKey = tabMemoryKey(account.id);
   const [activeCollection,setActiveCollection]=useState("");
@@ -1149,10 +1151,7 @@ function Catalogue() {
   return (
     <>
       <SceneMotion />
-      <QualityMonitor userId={account.id} enabled={library.sharePerformance && library.loaded} />
-      <a className="skip-link" href="#main">
-        Skip to content
-      </a>
+      <QualityMonitor userId={account.id} enabled={library.sharePerformance && library.loaded && privacyConsent.performance} />
       <header className={`site-header ${!halloween ? "screening-header" : ""} ${library.gamingEnabled ? "with-gaming" : ""}`}>
         <div className="header-inner">
           <button className="brand" onClick={() => navigate("discover")} aria-label="Scene home">
@@ -1194,7 +1193,7 @@ function Catalogue() {
         <section className="intro">
           <h1 className="sr-only">{heading}</h1>
           <div className={discovering && !halloween ? "discovery-toolbar" : undefined}>
-            <div className="search-region" ref={searchRegion} onFocusCapture={()=>setSearchFocused(true)} onKeyDown={e=>{if(e.key==="Escape")setSearchFocused(false);}}>
+            <div className="search-region" ref={searchRegion} onFocusCapture={()=>setSearchFocused(true)} onKeyDown={e=>{if(e.key==="Escape"){e.preventDefault();document.getElementById("search")?.focus();setSearchFocused(false);}}}>
           <form className="search-form" onSubmit={search} role="search">
             <label htmlFor="search" className="sr-only">
               {library.gamingEnabled
@@ -1637,8 +1636,7 @@ function Catalogue() {
                 tasteProfileSettings={<TasteProfile feedback={feedback} ratings={library.reviews} ready={library.ready} loaded={library.loaded} syncStatus={library.status} onOpen={openTitle} />}
                 feedbackSettings={<>
                   <FeedbackForm />
-                  <label className="check-filter"><input type="checkbox" checked={library.sharePerformance} onChange={e => library.setSharePerformance(e.target.checked)} />Share performance totals</label>
-                  <p className="fine-print">Optional. Sends grouped loading, tap-response and search/browse success measurements to Scene. No names, email addresses, searches or viewing history are included. Turn it off at any time.</p>
+                  <PerformanceSharing enabled={library.sharePerformance} onChange={library.setSharePerformance} />
                   {account.role === "owner" && <FeedbackInbox />}
                 </>}
                 syncStatus={<SyncStatus {...library} />}

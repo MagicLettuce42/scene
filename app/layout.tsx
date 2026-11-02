@@ -6,6 +6,8 @@ import AppUpdateProvider from "./components/app-updates";
 import { appIcons } from "../lib/app-icons";
 import { effectiveTheme } from "../lib/seasonal";
 import { defaultTheme } from "../lib/themes";
+import PrivacyConsent from "./components/privacy-consent";
+import LegalLinks from "./components/legal-links";
 
 export function generateMetadata(): Metadata {
   const icon = appIcons.favicon;
@@ -38,12 +40,16 @@ export default function RootLayout({
   return (
     <html lang="en" data-theme={effectiveTheme(defaultTheme)}>
       <body className="antialiased">
+        <a className="skip-link" href="#main">Skip to content</a>
+        <PrivacyConsent>
         <AppInstallProvider>
           <AppUpdateProvider>
           <BrowserTheme />
           {children}
           </AppUpdateProvider>
         </AppInstallProvider>
+        <LegalLinks />
+        </PrivacyConsent>
       </body>
     </html>
   );

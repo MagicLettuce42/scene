@@ -28,6 +28,14 @@ The account subdomain is `leardigital`, giving Scene the address `https://scene.
 
 Before renaming, add the new Scene root, `/?confirmed=1` and `/reset-password` redirect URLs in Supabase while keeping the existing URLs. Protect `clearbook-finances.leardigital.workers.dev` with the existing Clearbook Cloudflare Access application, retaining its policies, audience and team domain. Renaming the account subdomain changes all account Workers' `workers.dev` addresses. After the rename, verify both sites and set Supabase's Site URL to the new Scene address. Update old bookmarks, Home Screen installations and notification permissions.
 
+## Privacy and accessibility
+
+Public pages at `/privacy`, `/terms`, `/cookies`, `/delete-account` and `/accessibility` are available before sign-in. Set SCENE_OPERATOR_NAME and SCENE_PRIVACY_EMAIL in the Worker runtime only after the operator approves their public display. Until then, the policies clearly mark public contact details as pending and offer account Feedback. Review the operator details and actual provider retention/transfer settings when changing hosting or account arrangements; these pages describe the app and are not a legal or WCAG certification.
+
+Optional performance measurements require both this browser's unexpired privacy choice and the account sharing preference. Essential-only withdrawal clears the queue and aborts reporting. Signup and invitation acceptance require an unchecked Terms agreement; the notice version and acceptance time are stored in Auth metadata and included in data exports. That user-editable metadata is not used for permissions or role checks. No marketing opt-in is bundled with account creation. DM Sans is self-hosted under its bundled OFL licence.
+
+`node tests/privacy-consent.cjs` checks default refusal, stale/invalid choices, queue clearing and transport cancellation. Existing signup, access-privacy, account-data, session-isolation and search-selection tests cover the related account and input behaviour. Never test permanent deletion on a real member's account.
+
 ## Checks
 
 `pnpm exec tsc --noEmit`, `node tests/catalogue-edge-cache.cjs`, `node tests/search-speed.cjs`, `node tests/search-availability.cjs`, `node tests/search-suggestion-selection.cjs`, `pnpm build`.

@@ -7,7 +7,9 @@ export async function GET(req: Request) {
  if(action!=="export"&&action!=="summary")return Response.json({error:"Invalid data request."},{status:400,headers});
  const {data,error}=await auth.client.rpc("scene_account_data",{p_action:action});
  if(error||!data)return Response.json({error:"Your account data could not load. Please try again."},{status:503,headers});
- return Response.json(data,{headers:{...headers,...(action==="export"?{"Content-Disposition":'attachment; filename="scene-account-data.json"'}:{})}});
+ const metadata=auth.user.user_metadata || {};
+ const policyAcceptance=action==="export"?{policyAcceptance:{termsVersion:typeof metadata.terms_version==="string"?metadata.terms_version:null,acceptedAt:typeof metadata.terms_accepted_at==="string"?metadata.terms_accepted_at:null}}:{};
+ return Response.json({...data,...policyAcceptance},{headers:{...headers,...(action==="export"?{"Content-Disposition":'attachment; filename="scene-account-data.json"'}:{})}});
 }
 export async function POST(req: Request) {
  if(req.headers.get("sec-fetch-site")==="cross-site"||req.headers.get("origin")&&req.headers.get("origin")!==new URL(req.url).origin)return Response.json({error:"Invalid origin."},{status:403,headers});

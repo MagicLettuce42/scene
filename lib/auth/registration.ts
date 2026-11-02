@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { policyVersion } from "../privacy-consent";
 
 export async function finishSceneEmailConfirmation(
   client: SupabaseClient,
@@ -45,7 +46,7 @@ export async function resendSceneConfirmation(client: SupabaseClient, email: str
 }
 
 export function validateRegistration(name: string, email: string, password: string, confirmation: string) {
-  if (!name.trim() || name.trim().length > 80) return "Enter your name (up to 80 characters).";
+  if (!name.trim() || name.trim().length > 80) return "Enter a display name (up to 80 characters).";
   if (!validRegistrationEmail(email)) return "Enter a valid email address.";
   if (password.length < 12 || password.length > 128) return "Use a password of 12–128 characters.";
   if (password !== confirmation) return "Your passwords don’t match.";
@@ -53,14 +54,15 @@ export function validateRegistration(name: string, email: string, password: stri
 }
 
 export async function registerScene(client: SupabaseClient, values: {
-  name: string; email: string; password: string; confirmation: string; origin: string;
+  name: string; email: string; password: string; confirmation: string; origin: string; termsAccepted: boolean;
 }) {
+  if (values.termsAccepted !== true) throw Error("Agree to the Terms of service before creating your account.");
   const error = validateRegistration(values.name, values.email, values.password, values.confirmation);
   if (error) throw Error(error);
   const result = await client.auth.signUp({
     email: values.email.trim().toLowerCase(), password: values.password,
     options: {
-      data: { display_name: values.name.trim() },
+      data: { display_name: values.name.trim(), terms_version: policyVersion, terms_accepted_at: new Date().toISOString() },
       emailRedirectTo: values.origin + "/?confirmed=1",
     },
   });

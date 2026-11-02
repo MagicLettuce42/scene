@@ -63,10 +63,11 @@ if (require.main === module) (async()=>{
  try {
   const f=await fixture(browser,false),p=f.page;
   await p.goto(origin+'/signup');
-  await p.getByLabel('Your name',{exact:true}).fill('QA Fixture');
+  await p.getByLabel(/Display name/).fill('QA Fixture');
   await p.getByLabel('Email',{exact:true}).fill(account.email);
   await p.getByLabel('Choose a password',{exact:true}).fill('disposable-fixture-value');
   await p.getByLabel('Confirm password',{exact:true}).fill('different-fixture-value');
+  await p.getByRole('checkbox',{name:/I agree to the Terms/}).check();
   await p.getByRole('button',{name:'Create my Scene account'}).click();
   await p.getByRole('alert').filter({hasText:'passwords don’t match'}).waitFor(); assert.equal(f.signupCalls,0);
   await p.getByLabel('Confirm password',{exact:true}).fill('disposable-fixture-value');

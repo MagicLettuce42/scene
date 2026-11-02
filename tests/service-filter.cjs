@@ -14,6 +14,7 @@ const boundary = get('lib/auth/session-boundary.js'); boundary.setSessionAccount
 const account = { id: 'filter-a', name: 'Fixture', role: 'member' };
 get('app/components/scene-access.js').useAccount = () => account;
 get('lib/use-mobile-viewport.js').useMobileViewport = () => {};
+get('app/components/privacy-consent.js').usePrivacyConsent = () => ({ performance: false, choose() {}, open() {} });
 let halloweenActive = true;
 get('app/components/seasonal.js').useHalloween = () => halloweenActive;
 const { titles, filterTitles } = get('lib/catalogue.js');

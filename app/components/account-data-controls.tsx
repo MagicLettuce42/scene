@@ -54,6 +54,7 @@ export default function AccountDataControls({ accountId, pending }: { accountId:
   }catch(e){if(sessionBoundary().epoch===boundary.epoch){setPassword("");setError((e as Error).message);setBusy(null);}}
  }
  return <div className="account-data-controls">
+  <p>You control your records. Read the <a href="/privacy">Privacy Policy</a>, <a href="/cookies">Cookie policy</a> or <a href="/delete-account">deletion guide</a>. You can request help without signing in using the contact in the Privacy Policy.</p>
   <section>
    <h3>Download your data</h3>
    <p>Get a JSON file with your profile, watchlist, ratings, notes, episode and gaming progress, settings, reminders, feedback and your shared-list contributions.</p>

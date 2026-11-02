@@ -106,7 +106,7 @@ export default function TitleExtrasPanel({
                       key={p.id}
                       onClick={() => onPerson({ ...p, department: "Acting" })}
                     >
-                      <PersonPortrait name={p.name} photo={p.photo} />
+                      <PersonPortrait name={p.name} photo={p.photo} decorative />
                       <strong>{p.name}</strong>
                       <span>{p.character}</span>
                     </button>

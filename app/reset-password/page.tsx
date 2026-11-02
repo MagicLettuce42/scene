@@ -40,7 +40,7 @@ export default function ResetPasswordPage() {
     }
     finally { setBusy(false); }
   }
-  return <main className="account-page screening-login">
+  return <main id="main" tabIndex={-1} className="account-page screening-login">
     <div className="account-brand"><SceneWordmark /></div>
     <section className="account-card">
       <h1>{phase === "done" ? "Password updated." : phase === "sent" ? "Check your email." : phase === "verify" ? "Confirm it’s you." : phase === "reset" ? "Choose a new password." : "Reset your password."}</h1>
@@ -54,7 +54,7 @@ export default function ResetPasswordPage() {
           } catch (e) { setError(e instanceof Error ? e.message : "Your code could not be checked. Try again."); }
         })(); }} />
       </> : phase === "sent" ? <p role="status">If an account exists for that email, you’ll receive a reset link. Check your junk folder and open the link in this browser.</p> : phase === "done" ? <p role="status">You can now sign in with your new password.</p> : <form className="account-form" onSubmit={submit}>
-        {phase === "request" ? <label>Email<input type="email" autoComplete="username" value={email} maxLength={254} required onChange={e => setEmail(e.target.value)} /></label> : <>
+        {phase === "request" ? <><label>Email<input type="email" autoComplete="username" value={email} maxLength={254} required onChange={e => setEmail(e.target.value)} /></label><p className="fine-print">Used to send an account recovery link. <a href="/privacy">Privacy Policy</a>.</p></> : <>
           <label>New password<input type="password" autoComplete="new-password" value={password} minLength={12} maxLength={128} required onChange={e => setPassword(e.target.value)} /></label>
           <label>Confirm password<input type="password" autoComplete="new-password" value={confirmation} minLength={12} maxLength={128} required onChange={e => setConfirmation(e.target.value)} /></label>
           <p className="fine-print">Use 12–128 characters. Your authenticator settings stay in place.</p>

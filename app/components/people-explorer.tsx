@@ -183,7 +183,7 @@ export default function PeopleExplorer({
           <div className="people-list">
             {people.map((p) => (
               <button key={p.id} className="person-result" onClick={() => choose(p)}>
-                <PersonPortrait name={p.name} photo={p.photo} />
+                <PersonPortrait name={p.name} photo={p.photo} decorative />
                 <span>
                   <strong>{p.name}</strong>
                   <small>{p.department}</small>

@@ -28,7 +28,7 @@ export default function TasteSetup({ onSave, likedTitles, syncStatus, syncMessag
     {busy && <p role="status">Finding titles…</p>}{error && <p role="alert">{error}</p>}
     <div className="taste-results">{results.map(t => { const picked = chosen.some(c => sameTitle(c, t)); return <button type="button" className="taste-option" key={t.id} aria-pressed={picked}
       disabled={!picked && chosen.length >= 5} onClick={() => setChosen(old => picked ? old.filter(c => !sameTitle(c, t)) : [...old, t])}>
-      <span className="taste-poster"><Poster title={t} /></span><span>{t.name} {t.year ? `(${t.year})` : ""}{picked ? " · Selected" : ""}</span>
+      <span className="taste-poster"><Poster title={t} decorative /></span><span>{t.name} {t.year ? `(${t.year})` : ""}{picked ? " · Selected" : ""}</span>
     </button>; })}</div>
     <p>{chosen.length}/5 chosen{chosen.length > 0 && " · Not saved yet — choose Use these favourites below."}</p>
     <div className="inline-actions">{chosen.map(t => <button type="button" className="text-button" key={t.id} onClick={() => setChosen(old => old.filter(c => !sameTitle(c, t)))}>Remove {t.name}</button>)}</div>

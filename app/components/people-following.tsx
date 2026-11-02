@@ -45,7 +45,7 @@ export default function PeopleFollowing({accountId,follows,pending,onFollow,onPr
  return <section className={compact?"following-spotlight":"people-following"} aria-label="People you follow">
   <div className="following-heading"><div><p className="eyebrow">YOUR PEOPLE</p><h3>{compact?"From people you follow":"Following"}</h3></div>{compact&&<button className="text-button" onClick={onViewAll}>View all <ArrowRight size={16}/></button>}</div>
   {!compact&&<>
-   <div className="following-people">{follows.map(f=><button key={f.person.id} className="following-person" onClick={()=>onChoose(f.person)}><PersonPortrait name={f.person.name} photo={f.person.photo}/><span>{f.person.name}</span>{f.alerts&&<Bell size={13} aria-label="In-app alerts on"/>}</button>)}</div>
+   <div className="following-people">{follows.map(f=><button key={f.person.id} className="following-person" onClick={()=>onChoose(f.person)}><PersonPortrait name={f.person.name} photo={f.person.photo} decorative/><span>{f.person.name}</span>{f.alerts&&<Bell size={13} aria-label="In-app alerts on"/>}</button>)}</div>
    <div className="following-controls"><div className="segmented-control" aria-label="Release period"><button aria-pressed={view==="upcoming"} onClick={()=>setView("upcoming")}>Coming up</button><button aria-pressed={view==="recent"} onClick={()=>setView("recent")}>Recently released {feed.data?.unread?`· ${feed.data.unread} new`:""}</button></div>
    <label>Person<SelectControl value={person} onChange={e=>setPerson(e.target.value)}><option value="all">Everyone I follow</option>{follows.map(f=><option key={f.person.id} value={f.person.id}>{f.person.name}</option>)}</SelectControl></label></div>
   </>}

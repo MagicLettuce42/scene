@@ -13,7 +13,14 @@ export default function SearchSuggestions({query, accountId, active, onChoose, o
   if(!active||loadedKey!==key)return null;
   const matches=state.accountId===accountId&&state.query===query.trim()?state.titles:[];
   if(query.trim().length<2&&!recent.length)return null;
-  return <div id="search-suggestions" className="search-suggestions" aria-label="Search suggestions">
+  return <div id="search-suggestions" className="search-suggestions" aria-label="Search suggestions" onKeyDown={event => {
+    if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+    const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button:not(:disabled)"));
+    const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+    if (index < 0 || !buttons.length) return;
+    event.preventDefault();
+    buttons[(index + (event.key === "ArrowDown" ? 1 : buttons.length - 1)) % buttons.length].focus();
+  }}>
     {!query.trim()&&recent.length>0?<><div className="suggestion-heading"><strong>Recent searches</strong><button type="button" onClick={()=>{setRecent([]);try{sessionStorage.removeItem(key);}catch{}}}>Clear</button></div>{recent.map(q=><button type="button" key={q} onClick={()=>onSearch(q)}>{q}</button>)}</>:<>
     {matches.map(t=><button type="button" key={t.id} onClick={()=>{remember(query.trim());onChoose(t);}}><strong>{t.name}</strong><small>{t.year||'Year unknown'} · {t.kind==='movie'?'Film':'TV series'}</small></button>)}
     {query.trim().length>=2&&<button type="button" className="all-search-results" onClick={()=>{remember(query.trim());onSearch(query.trim());}}>Search all results for “{query.trim()}”</button>}</>}

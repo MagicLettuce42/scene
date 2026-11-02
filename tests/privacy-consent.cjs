@@ -1,0 +1,28 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript');
+for(const ext of ['.ts','.tsx'])require.extensions[ext]=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,file);
+const {readPrivacyChoice,policyVersion,choiceLifetime}=require('../lib/privacy-consent.ts');
+const now=Date.now(),valid={version:policyVersion,performance:true,savedAt:now};
+for(const raw of [null,'{bad',JSON.stringify({...valid,version:'old'}),JSON.stringify({...valid,savedAt:now-choiceLifetime}),JSON.stringify({...valid,savedAt:now+1}),JSON.stringify({...valid,performance:'true'})])assert.equal(readPrivacyChoice(raw,now),null);
+assert.equal(readPrivacyChoice(JSON.stringify(valid),now).performance,true);
+assert.equal(readPrivacyChoice(JSON.stringify({...valid,performance:false}),now).performance,false);
+const quality=require('../lib/quality.ts');
+quality.setQualityConsent('a',false);quality.recordQuality('load',123);assert.deepEqual(quality.takeQualitySamples('a'),[]);
+quality.setQualityConsent('a',true);quality.recordQuality('load',123.4);assert.deepEqual(quality.takeQualitySamples('b'),[]);assert.deepEqual(quality.takeQualitySamples('a'),[{metric:'load',ms:123}]);
+quality.recordQuality('search_ok',80);quality.setQualityConsent('a',false);assert.deepEqual(quality.takeQualitySamples('a'),[],'withdrawing drops queued samples');
+const React=require('react');const original=React.useEffect;let cleanup,requests=0,observers=0,callback;
+const listeners=new Map();global.window={addEventListener:(k,f)=>listeners.set(k,f),removeEventListener:k=>listeners.delete(k)};
+global.document={visibilityState:'visible'};
+const originalInterval=global.setInterval,originalClear=global.clearInterval;
+global.setInterval=fn=>{callback=fn;return 1};global.clearInterval=()=>{};
+global.PerformanceObserver=class{constructor(){observers++}observe(options){assert.equal(options.buffered,false)}disconnect(){}};
+require('../lib/auth/session-boundary.ts').setSessionAccount('a');
+const clientFile=require.resolve('../lib/auth/client.ts');let requestSignal;
+require.cache[clientFile]={id:clientFile,filename:clientFile,loaded:true,exports:{sceneFetch:async(_url,options)=>{requests++;requestSignal=options.signal;return Response.json({ok:true});}}};
+React.useEffect=fn=>{cleanup=fn()};
+const Monitor=require('../app/components/quality-monitor.tsx').default;
+(async()=>{try{
+ Monitor({userId:'a',enabled:false});assert.equal(observers,0);cleanup();
+ Monitor({userId:'a',enabled:true});quality.recordQuality('load',10);await callback();assert.equal(requests,1);assert.equal(requestSignal.aborted,false);
+ quality.recordQuality('load',20);listeners.get('scene:privacy-choice')({detail:{performance:false}});assert.equal(requestSignal.aborted,true);await callback();assert.equal(requests,1,'withdrawal stops another report');assert.deepEqual(quality.takeQualitySamples('a'),[]);cleanup();
+ console.log('PASS: privacy defaults, invalid/stale/expired choices, explicit refusal, bounded samples, account isolation, no observers before opt-in, no historic capture, withdrawal clears queues and aborts transport.');
+}finally{React.useEffect=original;global.setInterval=originalInterval;global.clearInterval=originalClear;}})().catch(e=>{console.error(e);process.exitCode=1});

@@ -75,7 +75,7 @@ function NextCard({
   return (
     <article className="next-card">
       <button className="next-poster" onClick={() => onOpen(title)} aria-label={`Open ${title.name}`}>
-        <Poster title={title} />
+        <Poster title={title} decorative />
       </button>
       <div>
         <button className="shared-title" onClick={() => onOpen(title)}>

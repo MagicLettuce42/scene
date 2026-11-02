@@ -12,6 +12,7 @@ import { effectiveTheme } from "../../lib/seasonal";
 import { defaultTheme } from "../../lib/themes";
 import { finishSceneEmailConfirmation, registerScene } from "../../lib/auth/registration";
 import ConfirmationResend from "./confirmation-resend";
+import { policyVersion } from "../../lib/privacy-consent";
 export type SceneAccount = {
   id: string;
   email: string;
@@ -45,6 +46,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
   const [confirmation, setConfirmation] = useState(""),
     [signupSent, setSignupSent] = useState(false);
   const [accountDeleted, setAccountDeleted] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   useEffect(() => {
     const url = new URL(location.href);
     if (url.searchParams.get("account") === "deleted") {
@@ -176,9 +178,10 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
     setBusy(true);
     setError("");
     try {
+      if ((signup || invite) && !termsAccepted) throw Error("Agree to the Terms of service before creating your account.");
       const client = await getSceneClient();
       if (signup) {
-        const data = await registerScene(client, { name, email, password, confirmation, origin: location.origin });
+        const data = await registerScene(client, { name, email, password, confirmation, origin: location.origin, termsAccepted });
         setPassword("");
         setConfirmation("");
         if (data.session) await check();
@@ -189,7 +192,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
         const r = await fetch("/api/access", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "join", token: invite, name, email: email.trim().toLowerCase(), password }),
+            body: JSON.stringify({ action: "join", token: invite, name, email: email.trim().toLowerCase(), password, termsVersion: policyVersion, termsAccepted }),
           }),
           data = (await r.json()) as { error?: string };
         if (!r.ok) throw Error(data.error || "Your invitation could not be accepted.");
@@ -206,7 +209,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
     }
   }
   if (account && !invite && initialMode === "signup")
-    return <main className="account-page"><p role="status">Opening Scene… <a href="/">Open your library</a></p></main>;
+    return <main id="main" tabIndex={-1} className="account-page"><p role="status">Opening Scene… <a href="/">Open your library</a></p></main>;
   if (account && !invite)
     return (
       <AccountContext.Provider key={account.id} value={account}>
@@ -215,7 +218,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
     );
   if (mfa && !invite)
     return (
-      <main className="account-page">
+      <main id="main" tabIndex={-1} className="account-page">
         <div className="account-brand">
           <SceneWordmark />
         </div>
@@ -257,7 +260,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
       </main>
     );
   return (
-    <main className={`account-page ${halloween ? "seasonal-login" : "screening-login"}`}>
+    <main id="main" tabIndex={-1} className={`account-page ${halloween ? "seasonal-login" : "screening-login"}`}>
       {!halloween && <SceneMotion entrance />}
       <div className="account-brand">
         <SceneWordmark />
@@ -308,14 +311,15 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
               <form onSubmit={submit} className="account-form">
                 {(invite || signup) && (
                   <label>
-                    Your name
+                    Display name
                     <input
-                      autoComplete="name"
+                      autoComplete="nickname"
                       value={name}
                       maxLength={80}
                       required
                       onChange={(e) => setName(e.target.value)}
                     />
+                    <small>A nickname is fine. Do not use sensitive information.</small>
                   </label>
                 )}
                 <label>
@@ -366,6 +370,10 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
                     Use at least 12 characters. {invite ? "This invitation can only be used once." : "We’ll send you an email to confirm your address."}
                   </p>
                 )}
+                {(invite || signup) && <>
+                  <label className="terms-agreement"><input type="checkbox" required checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} /><span>I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of service (opens in a new tab)</a>.</span></label>
+                  <p className="fine-print form-privacy-note">Read the <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy (opens in a new tab)</a> to see how your account data is used. Optional performance reporting and notifications are separate choices.</p>
+                </>}
                 <button className="button primary" disabled={busy || Boolean(invite && !inviteReady)}>
                   {busy ? <LoaderCircle className="spin" size={18} /> : <LogIn size={18} />}{" "}
                   {busy ? "One moment…" : invite || signup ? "Create my Scene account" : "Sign in"}

@@ -17,7 +17,8 @@ const abort=error=>error.name==='AbortError';
  // A tab reopened after another account signed in must remove its stale device copy.
  sessionStorage.setItem('scene.browser-account.v1','previous');localStorage.setItem('scene.library.previous','private fixture');
  sessionStorage.setItem('scene.tabs.v1','unscoped search');sessionStorage.setItem('scene.catalogue-cache.v1','unscoped interests');
- boundary.setSessionAccount('a');assert.equal(localStorage.getItem('scene.library.previous'),null);assert.equal(sessionStorage.getItem('scene.tabs.v1'),null);
+ sessionStorage.setItem('scene.recent-searches.previous','private recent search');
+ boundary.setSessionAccount('a');assert.equal(localStorage.getItem('scene.library.previous'),null);assert.equal(sessionStorage.getItem('scene.tabs.v1'),null);assert.equal(sessionStorage.getItem('scene.recent-searches.previous'),null);
  let calls=0;
  const transport=async(_url,options)=>{calls++;assert.equal(options.headers.get('Authorization'),'Bearer disposable-token-a');return Response.json({ok:true});};
  assert.equal((await fetchForSession(async()=>session('a'),'/api/library',{},'a',transport)).status,200);assert.equal(calls,1);

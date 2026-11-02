@@ -5,14 +5,14 @@ import { useEffect, useState } from "react";
 import { Clapperboard, Check, Bookmark, ArrowUpRight, Heart, Eye, EyeOff, Star } from "lucide-react";
 import { services, type Title, type Offer } from "../../lib/catalogue";
 import { findFeedback, type Feedback, type FeedbackAction } from "../../lib/preferences";
-export function Poster({ title, priority = false }: { title: Title; priority?: boolean }) {
+export function Poster({ title, priority = false, decorative = false }: { title: Title; priority?: boolean; decorative?: boolean }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [title.poster]);
   const tmdb = title.poster?.match(/^(https:\/\/image\.tmdb\.org\/t\/p\/)(?:w\d+|original)(\/[^?]+)$/);
   const srcSet = tmdb ? [185, 342, 500].map(w => `${tmdb[1]}w${w}${tmdb[2]} ${w}w`).join(", ") : undefined;
   return title.poster && !failed ? (
     <img src={title.poster} srcSet={srcSet} sizes={priority ? "128px" : "(max-width: 650px) 45vw, (max-width: 1100px) 25vw, 220px"}
-      width={300} height={450} alt="" loading={priority ? "eager" : "lazy"} decoding="async"
+      width={300} height={450} alt={decorative ? "" : `Poster for ${title.name}`} referrerPolicy="no-referrer" loading={priority ? "eager" : "lazy"} decoding="async"
       fetchPriority={priority ? "high" : "auto"} onError={() => setFailed(true)} />
   ) : (
     <div className="poster-fallback">
@@ -98,7 +98,7 @@ export function TitleCard({ title: t, ...props }: CardActions & { title: Title }
           onClick={() => props.onOpen(t)}
           aria-label={`View ${t.name}, ${t.year || ""}`}
         >
-          <Poster title={t} />
+          <Poster title={t} decorative />
           <span className="poster-hover">
             View details <ArrowUpRight size={18} />
           </span>

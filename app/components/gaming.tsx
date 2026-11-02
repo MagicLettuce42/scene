@@ -35,7 +35,7 @@ function GameCard({ game, collection, onStatus }: GameActions & { game: Game }) 
           rel="noopener noreferrer"
           aria-label={`Official page for ${game.name}`}
         >
-          <GameArtwork game={game} />
+          <GameArtwork game={game} decorative />
           <span className="poster-hover">
             Official page <ArrowUpRight size={18} />
           </span>

@@ -74,7 +74,9 @@ const request = (body, authenticated = true) => new Request('https://scene.test/
   assert.deepEqual(await inspected.json(), { emailRequired: true, expiresAt: expires });
   const invalid = await handler(request({ action: 'join', token: 'b'.repeat(64), email: 'wrong@example.invalid', name: 'Fixture', password: 'fixture-password-long' }, false));
   assert.equal(invalid.status, 400); assert.equal(protectedCalls, 0, 'email binding is checked before account changes');
-  const joined = await handler(request({ action: 'join', token: 'b'.repeat(64), email: email.toUpperCase(), name: 'Fixture', password: 'fixture-password-long' }, false));
+  const missingTerms = await handler(request({ action: 'join', token: 'b'.repeat(64), email, name: 'Fixture', password: 'fixture-password-long' }, false));
+  assert.equal(missingTerms.status,400);assert.equal(protectedCalls,0,'joining without Terms acceptance must not change accounts');
+  const joined = await handler(request({ action: 'join', token: 'b'.repeat(64), email: email.toUpperCase(), name: 'Fixture', password: 'fixture-password-long', termsAccepted:true,termsVersion:'2026-11-02' }, false));
   assert.equal(joined.status, 200); assert.deepEqual(await joined.json(), { accepted: true });
   assert.equal(protectedCalls, 2, 'matching recipient still redeems the invite and completes setup');
   const invited = await handler(request({ action: 'invite', email }));

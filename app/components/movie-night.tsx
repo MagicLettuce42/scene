@@ -40,7 +40,7 @@ export default function MovieNight({ listId, accountId, onAdd, onOpen }: {
       {state.message && <p role="status">{state.message}</p>}
       {state.titles && !state.titles.length && <p>No films matched this batch. Try another shortlist.</p>}
       <div className="movie-night-grid">{state.titles?.slice(0, 12).map(t => <article key={t.id}>
-        <button className="movie-night-poster" onClick={() => onOpen(t)}><Poster title={t} /><span>{t.name}</span></button>
+        <button className="movie-night-poster" onClick={() => onOpen(t)}><Poster title={t} decorative /><span>{t.name}</span></button>
         <button className="button secondary" disabled={busy} onClick={async () => { setBusy(true); setError(""); try { await onAdd(t); setNotice(`Added ${t.name}. Vote for it in the list below.`); } catch (e) { setError((e as Error).message); } finally { setBusy(false); } }}>Add to our vote</button>
       </article>)}</div>
     </>}

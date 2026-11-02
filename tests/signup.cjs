@@ -23,7 +23,7 @@ const { finishSceneEmailConfirmation, registerScene, resendSceneConfirmation, va
   assert.match(error, /sign in below with your email and password/);
   assert.ok(!error.includes('fixture'));
  }
- const values = { name: '  New member  ', email: ' USER@example.com ', password: 'a-long-fixture-password', confirmation: 'a-long-fixture-password', origin: 'https://scene.test' };
+ const values = { name: '  New member  ', email: ' USER@example.com ', password: 'a-long-fixture-password', confirmation: 'a-long-fixture-password', origin: 'https://scene.test', termsAccepted: true };
  assert.equal(validateRegistration(values.name, values.email, values.password, values.confirmation), null);
  for (const change of [{ name: '' }, { name: 'x'.repeat(81) }, { email: 'invalid' }, { password: 'short' }, { confirmation: 'different' }]) {
   let called = false;
@@ -34,7 +34,11 @@ const { finishSceneEmailConfirmation, registerScene, resendSceneConfirmation, va
  const data = await registerScene({ auth: { signUp: async input => { submitted = input; return { data: { user: { id: 'fixture' }, session: null }, error: null }; } } }, values);
  assert.equal(data.session, null, 'email confirmation does not imply a signed-in session');
  assert.equal(submitted.email, 'user@example.com');
- assert.deepEqual(submitted.options.data, { display_name: 'New member' }, 'no role or active status comes from the form');
+ assert.equal(submitted.options.data.display_name,'New member');
+ assert.equal(submitted.options.data.terms_version,'2026-11-02');
+ assert.ok(Number.isFinite(Date.parse(submitted.options.data.terms_accepted_at)));
+ assert.deepEqual(Object.keys(submitted.options.data).sort(), ['display_name','terms_accepted_at','terms_version'], 'no role, active status or optional measurement consent comes from signup');
+ await assert.rejects(registerScene({auth:{signUp:async()=>assert.fail('Terms refusal must not create an account')}},{...values,termsAccepted:false}),/Agree to the Terms/);
  assert.equal(submitted.options.emailRedirectTo, 'https://scene.test/?confirmed=1');
  await assert.rejects(registerScene({ auth: { signUp: async () => ({ data: {}, error: { status: 429 } }) } }, values), /Too many attempts/);
  await assert.rejects(registerScene({ auth: { signUp: async () => ({ data: {}, error: { code: 'email_address_not_authorized' } }) } }, values), /confirmation is not ready/);
@@ -58,7 +62,9 @@ const { finishSceneEmailConfirmation, registerScene, resendSceneConfirmation, va
  React.useState = initial => useState(slot++ === 1 ? false : initial);
  try {
   const html = renderToStaticMarkup(React.createElement(Access, { initialMode: 'signup' }, null));
-  for (const text of ['Create your Scene account', 'Your name', 'Confirm password', 'minLength="12"', 'autoComplete="new-password"', 'Create my Scene account', 'No invitation needed', 'href="/"']) assert.ok(html.includes(text), text);
+  for (const text of ['Create your Scene account', 'Display name', 'Confirm password', 'minLength="12"', 'autoComplete="new-password"', 'Create my Scene account', 'No invitation needed', 'href="/"','href="/privacy"','href="/terms"','class="terms-agreement"']) assert.ok(html.includes(text), text);
+  assert.match(html, /type="checkbox" required=""/);
+  assert.ok(!/<input type="checkbox" required="" checked/.test(html),'Terms start unchecked');
   assert.ok(!html.includes('Scene is invite-only'));
  } finally { React.useState = useState; }
  slot = 0; React.useState = initial => useState(slot++ === 1 ? false : initial);
