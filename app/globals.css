@@ -4784,7 +4784,7 @@ html:not([data-theme="pearl"]):not([data-theme="daylight"]) .scene-brand-mark .s
 .discovery-toolbar .search-region { position: relative; flex: 1; min-width: 0; }
 .screening-home .discovery-toolbar .search-form { margin: 0; min-height: 48px; height: 48px; border-radius: 12px; }
 .discovery-toolbar .catalogue-actions { display: flex; flex: none; align-items: center; gap: 8px; }
-.discovery-toolbar .catalogue-actions > button { min-height: 48px; padding: 10px 16px; border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface); color: var(--text); font-size: 13px; font-weight: 500; }
+.discovery-toolbar .catalogue-actions > button { min-height: 48px; padding: 10px 16px; border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--text); font-size: 13px; font-weight: 500; }
 .discovery-toolbar .catalogue-actions > button:hover { background: var(--surface-hover); }
 .discovery-toolbar .catalogue-actions > .filter-button { order: -1; }
 .discovery-toolbar .catalogue-actions > .filter-button.active { border-color: var(--accent); background: var(--accent-soft); }
@@ -4809,8 +4809,9 @@ html:not([data-theme="pearl"]):not([data-theme="daylight"]) .scene-brand-mark .s
   .discovery-toolbar .catalogue-actions > button { min-height: 44px; padding: 8px 14px; }
 }
 
-/* Preview: one mobile search row; service choices stay inside Filters. */
-.discover-services-inside { display: none; }
+/* Discover service choices stay inside Filters on every screen size. */
+.discover-services-inside { display: block; }
+.discover-services-inside .service-scope { margin-top: 0; }
 .screening-home .intro { margin-inline: auto; width: 100%; }
 @media(max-width:650px) {
   .screening-home .discovery-toolbar { flex-wrap: nowrap; gap: 8px; }

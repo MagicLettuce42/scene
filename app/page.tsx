@@ -1086,11 +1086,11 @@ function Catalogue() {
               )}
             </div>);
   const serviceControls = <ServiceScope selected={selected} provider={activeProvider} disabled={!ready}
-    compact={discovering} history={watchlistScreen} onManage={() => setDialog("services")}
+    compact={discovering && halloween} history={watchlistScreen} onManage={() => setDialog("services")}
     onChange={value => { restoreScroll.current = null; setProvider(value); }}/>;
   const catalogueActions = (
             <div className="catalogue-actions">
-              {discovering&&<button className="text-button discovery-following" onClick={()=>openPerson(null,"","following")}>Following{library.followedPeople.length?` · ${library.followedPeople.length}`:""}</button>}
+              
               {submitted && (
                 <button className="text-button" aria-label="Clear search" onClick={clearSearch}>
                   <X size={15} /><span className="discovery-action-label">Clear search</span>
@@ -1249,7 +1249,7 @@ function Catalogue() {
             settings={<><p className="fine-print">Your saved history includes unavailable titles. Service filters show subscription and free offers only.</p><WatchlistTools automatic={library.autoAvailability} onAutomatic={library.setAutoAvailability} titles={saved} value={availability} onChange={setAvailability} onRefresh={library.refreshTitles}/></>}
             canShuffle={!specialLibrary && filtered.length>0} onShuffle={()=>openTitle(filtered[Math.floor(Math.random()*filtered.length)])}
           />}
-          {!watchlistScreen && !catalogueScreen && serviceFilterEnabled && !upcoming && <div className={discovering && !halloween ? "discover-services-outside" : undefined}>{serviceControls}</div>}
+          {!watchlistScreen && !catalogueScreen && (!discovering || halloween) && serviceFilterEnabled && !upcoming && <div className={discovering && !halloween ? "discover-services-outside" : undefined}>{serviceControls}</div>}
           {!watchlistScreen && serviceFilterEnabled && !upcoming && (
             <MotionDrawer open={showFilters}>{catalogueScreen && serviceControls}{discovering && !halloween && <div className="discover-services-inside">{serviceControls}</div>}{filterControls}</MotionDrawer>
           )}

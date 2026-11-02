@@ -23,10 +23,12 @@ function NextCard({
   spoilerFree = false,
   initialCatalogue,
   onCatalogue,
+  compact = false,
 }: Pick<EpisodeActions, "onEpisodes"> & {
   item: Tracked;
   onOpen: (t: Title) => void;
   spoilerFree?: boolean;
+  compact?: boolean;
   initialCatalogue?: EpisodeCatalogue;
   onCatalogue: OnCatalogue;
 }) {
@@ -117,8 +119,8 @@ function NextCard({
               : "No episodes listed yet"}
           </p>
         )}
-        <div className="next-card-actions">
-          {!error && episode && (
+        {(!compact || (!error && episode && episodeReleased(episode))) && <div className="next-card-actions">
+          {!error && episode && (!compact || episodeReleased(episode)) && (
             <button
               className="button secondary"
               disabled={!episodeReleased(episode)}
@@ -127,10 +129,10 @@ function NextCard({
               <Check size={15} /> Mark watched
             </button>
           )}
-          <button className="text-button" onClick={() => onOpen(title)}>
+          {!compact && <button className="text-button" onClick={() => onOpen(title)}>
             View episodes & watch options <ArrowRight size={14} />
-          </button>
-        </div>
+          </button>}
+        </div>}
       </div>
     </article>
   );
@@ -184,6 +186,7 @@ export default function NextUp({
                 key={item.title.id}
                 item={item}
                 spoilerFree={spoilerFree}
+                compact={compact}
                 onOpen={onOpen}
                 onEpisodes={onEpisodes}
                 initialCatalogue={catalogues[item.title.id]}
