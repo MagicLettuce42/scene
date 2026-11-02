@@ -1,14 +1,14 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.117.3';
 import {readAccessRequest} from '../_shared/access-request.ts';
 import {invitedEmailMatches,privateAccessResponse} from '../_shared/access-privacy.ts';
-const origin='https://scene.benlear439.workers.dev';
-const allowedOrigins=new Set(['https://scene.benlear439.workers.dev','https://scene-streaming.airyokapi2.chatgpt.site','https://scene-streaming.magiclettuce.chatgpt.site']);
+import {isSceneOrigin,sceneInvitationOrigin} from '../_shared/scene-origins.ts';
 const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 const hash=async(value:string)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value))),b=>b.toString(16).padStart(2,'0')).join('');
 const token=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');
 Deno.serve(async(req:Request)=>{
  if(req.method!=='POST')return json({error:'Method not allowed.'},405);
- if(req.headers.get('sec-fetch-site')==='cross-site'||req.headers.get('origin')&&!allowedOrigins.has(req.headers.get('origin')!))return json({error:'Invalid origin.'},403);
+ if(req.headers.get('sec-fetch-site')==='cross-site'||req.headers.get('origin')&&!isSceneOrigin(req.headers.get('origin')))return json({error:'Invalid origin.'},403);
+ const origin=sceneInvitationOrigin(req.headers.get('origin'));
  const body=await readAccessRequest(req);if(body instanceof Response)return body;
  const secretKeys=JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}');
  const admin=createClient(Deno.env.get('SUPABASE_URL')!,secretKeys.default||Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});

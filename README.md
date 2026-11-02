@@ -22,6 +22,12 @@ On an HTTPS custom domain, the Worker uses Cloudflare's Cache API for allowliste
 
 The shared cache is bypassed on `workers.dev` and local previews. Existing in-memory caching continues there. No new bucket, database, namespace or secret is needed. Cache failures fall back to the upstream catalogue. Cache API entries are local to each Cloudflare data centre; confirm a cache hit on the connected production custom domain before claiming a live performance gain.
 
+## Account subdomain rename
+
+The planned account subdomain is `leardigital`, giving Scene the address `https://scene.leardigital.workers.dev`. The origin allowlist supports both this address and the current `benlear439` address during the transition. Invitation links use the trusted origin forwarded by the Worker.
+
+Before renaming, add the new Scene root, `/?confirmed=1` and `/reset-password` redirect URLs in Supabase while keeping the existing URLs. Protect `clearbook-finances.leardigital.workers.dev` with the existing Clearbook Cloudflare Access application, retaining its policies, audience and team domain. Renaming the account subdomain changes all account Workers' `workers.dev` addresses. After the rename, verify both sites and set Supabase's Site URL to the new Scene address. Update old bookmarks, Home Screen installations and notification permissions.
+
 ## Checks
 
 `pnpm exec tsc --noEmit`, `node tests/catalogue-edge-cache.cjs`, `node tests/search-speed.cjs`, `node tests/search-availability.cjs`, `node tests/search-suggestion-selection.cjs`, `pnpm build`.

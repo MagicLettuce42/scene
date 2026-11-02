@@ -1,11 +1,11 @@
 import type { SupabaseClient } from 'npm:@supabase/supabase-js@2.117.3';
 import {readAccountDeletion} from './account-data-request.ts';
 type Factory=(mode:'admin'|'caller'|'verify',jwt?:string)=>SupabaseClient;
-const allowedOrigins=new Set(['https://scene.benlear439.workers.dev','https://scene-streaming.airyokapi2.chatgpt.site','https://scene-streaming.magiclettuce.chatgpt.site']);
+import {isSceneOrigin} from './scene-origins.ts';
 const json=(body:unknown,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store'}});
 export async function handleAccountDeletion(req:Request,client:Factory):Promise<Response>{
  if(req.method!=='POST')return json({error:'Method not allowed.'},405);
- if(req.headers.get('sec-fetch-site')==='cross-site'||req.headers.get('origin')&&!allowedOrigins.has(req.headers.get('origin')!))return json({error:'Invalid origin.'},403);
+ if(req.headers.get('sec-fetch-site')==='cross-site'||req.headers.get('origin')&&!isSceneOrigin(req.headers.get('origin')))return json({error:'Invalid origin.'},403);
  const body=await readAccountDeletion(req);if(body instanceof Response)return body;
  const auth=req.headers.get('authorization')||'',jwt=auth.startsWith('Bearer ')?auth.slice(7):'';
  if(!jwt||jwt.length>12000)return json({error:'Sign in again to continue.'},401);

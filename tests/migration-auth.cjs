@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict'), fs = require('node:fs'), ts = require('typescript');
 require.extensions['.ts'] = (mod, file) => mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText, file);
 const { requestPasswordReset, openPasswordReset, saveResetPassword, passwordResetNeedsMfa, PasswordResetMfaRequired } = require('../lib/auth/password-reset.ts');
+const { isSceneOrigin, sceneInvitationOrigin } = require('../supabase/functions/_shared/scene-origins.ts');
 const { handleAccountDeletion } = require('../supabase/functions/_shared/account-data-handler.ts');
 (async () => {
   let submitted, called = false;
@@ -34,9 +35,12 @@ const { handleAccountDeletion } = require('../supabase/functions/_shared/account
   assert.equal(updated, true, 'verified MFA permits password update');
   await assert.rejects(saveResetPassword({ auth: { mfa: { getAuthenticatorAssuranceLevel: async () => ({ data: null, error: {} }) }, updateUser: async () => assert.fail() } }, 'a-long-new-password', 'a-long-new-password'), /security could not be checked/);
   await assert.rejects(saveResetPassword({ auth: { mfa, updateUser: async () => ({ error: { code: 'insufficient_aal' } }) } }, 'a-long-new-password', 'a-long-new-password'), PasswordResetMfaRequired);
-  for (const origin of ['https://scene.benlear439.workers.dev', 'https://scene-streaming.airyokapi2.chatgpt.site', 'https://scene-streaming.magiclettuce.chatgpt.site', 'https://evil.invalid', 'https://scene.benlear439.workers.dev.evil.invalid']) {
+  for (const origin of ['https://scene.leardigital.workers.dev', 'https://scene.benlear439.workers.dev', 'https://scene-streaming.airyokapi2.chatgpt.site', 'https://scene-streaming.magiclettuce.chatgpt.site', 'https://evil.invalid', 'https://scene.benlear439.workers.dev.evil.invalid', 'https://scene.leardigital.workers.dev.evil.invalid']) {
     const response = await handleAccountDeletion(new Request('https://function.test', { method: 'POST', headers: { origin, 'Content-Type': 'application/json' }, body: '{}' }), () => assert.fail('Invalid bodies must never reach account operations'));
     assert.equal(response.status, origin.endsWith('evil.invalid') ? 403 : 400, origin);
   }
+  assert.equal(isSceneOrigin('https://scene.leardigital.workers.dev'), true);
+  assert.equal(sceneInvitationOrigin('https://scene.leardigital.workers.dev'), 'https://scene.leardigital.workers.dev');
+  assert.equal(sceneInvitationOrigin('https://evil.invalid'), 'https://scene.benlear439.workers.dev');
   console.log('PASS: reset destination, email validation, rate limits, one-time code removal, invalid/expired links, password validation, failed updates and exact migration origins. No emails sent or accounts changed.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

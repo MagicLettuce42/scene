@@ -1,6 +1,7 @@
 import { authConfigured } from "../../../lib/auth/server";
 import { readAccessRequest } from "../../../supabase/functions/_shared/access-request";
 import { privateAccessResponse } from "../../../supabase/functions/_shared/access-privacy";
+import { isSceneOrigin } from "../../../supabase/functions/_shared/scene-origins";
 export async function POST(req: Request) {
   if (!authConfigured()) return Response.json({ error: "Scene accounts are being set up." }, { status: 503 });
   const data = await readAccessRequest(req);
@@ -10,6 +11,8 @@ export async function POST(req: Request) {
       "Content-Type": "application/json",
       apikey: process.env.SUPABASE_PUBLISHABLE_KEY!,
     };
+    const origin = new URL(req.url).origin;
+    if (isSceneOrigin(origin)) headers.Origin = origin;
     const auth = req.headers.get("authorization");
     if (auth) headers.Authorization = auth;
     const response = await fetch(process.env.SUPABASE_URL + "/functions/v1/scene-access", {
