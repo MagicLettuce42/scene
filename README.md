@@ -16,9 +16,15 @@ Configure TMDB_API_KEY, SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY as Worker runt
 
 No Cloudflare account, production credentials, database records, private QA screenshots or original Git history are included. Database migration scripts describe schema, not user data. Existing deployments must not re-run bootstrap SQL blindly. Replace owner@example.invalid with the intended owner only when provisioning a separate database.
 
+## Public catalogue caching
+
+On an HTTPS custom domain, the Worker uses Cloudflare's Cache API for allowlisted public TMDB title details, seasons, related titles, people, genres and provider lists. Entries last up to 15 minutes; the memory cache preserves the same freshness deadline. Cache keys contain no API credentials or incoming authentication headers. Search, personalised discovery, account and library responses are excluded; authenticated API responses remain `no-store`.
+
+The shared cache is bypassed on `workers.dev` and local previews. Existing in-memory caching continues there. No new bucket, database, namespace or secret is needed. Cache failures fall back to the upstream catalogue. Cache API entries are local to each Cloudflare data centre; confirm a cache hit on the connected production custom domain before claiming a live performance gain.
+
 ## Checks
 
-`pnpm exec tsc --noEmit`, `node tests/search-speed.cjs`, `node tests/search-availability.cjs`, `node tests/search-suggestion-selection.cjs`, `pnpm build`.
+`pnpm exec tsc --noEmit`, `node tests/catalogue-edge-cache.cjs`, `node tests/search-speed.cjs`, `node tests/search-availability.cjs`, `node tests/search-suggestion-selection.cjs`, `pnpm build`.
 
 ## Attribution
 

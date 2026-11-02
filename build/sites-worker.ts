@@ -2,6 +2,7 @@ import handler from "vinext/server/fetch-handler";
 import { runWithConnectorBinding } from "../lib/connector-context";
 import type { ConnectorBinding } from "../lib/connector-contract.mjs";
 import {secureRequest,secureResponse} from '../lib/http-security';
+import { runWithCatalogueEdgeCache } from "../lib/catalogue-edge-cache";
 
 export default {
   async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
@@ -27,6 +28,8 @@ export default {
         },
       };
     }
-    return secureResponse(request,await runWithConnectorBinding(binding, () => handler.fetch(request, env, ctx)));
+    return runWithCatalogueEdgeCache(request, ctx, async () =>
+      secureResponse(request, await runWithConnectorBinding(binding, () => handler.fetch(request, env, ctx))),
+    );
   },
 };

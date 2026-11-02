@@ -7,6 +7,7 @@ import { matchesExtra, noExtraFilters, type ExtraFilters } from "./catalogue-fil
 import type { LibraryEntry } from "./library-state";
 import { calendarSeasons, type CalendarData } from "./episode-calendar";
 import { serviceKey, safeUrl, filterTitles, type Title, type Offer, type TitleExtras } from "./catalogue";
+import { withPublicCatalogueCache } from "./catalogue-edge-cache";
 
 const cache = new Map<string, { at: number; value: any }>();
 const pending = new Map<string, Promise<any>>();
@@ -21,7 +22,8 @@ async function tmdb(path: string, params: Record<string, string> = {}) {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < 900000) return hit.value;
   if (pending.has(key)) return pending.get(key);
-  const job = (async () => {
+  let cachedAt = 0;
+  const job = withPublicCatalogueCache(path, params, async () => {
     const start = Math.max(Date.now(), nextRequestAt);
     nextRequestAt = start + 120;
     if (start > Date.now()) await pause(start - Date.now());
@@ -43,18 +45,21 @@ async function tmdb(path: string, params: Record<string, string> = {}) {
         }
         if (!r.ok) throw new Error("Catalogue source unavailable");
         const value = await r.json();
-        if (cache.size >= 128) cache.delete(cache.keys().next().value!);
-        cache.set(key, { at: Date.now(), value });
+        cachedAt = Date.now();
         return value;
       }
     } catch {
       throw new Error("Catalogue source unavailable");
     }
     throw new Error("Catalogue source unavailable");
-  })();
+  }, at => { cachedAt = at; });
   pending.set(key, job);
   try {
-    return await job;
+    const value = await job;
+    // Warm memory without extending an edge entry's original freshness window.
+    if (cache.size >= 128) cache.delete(cache.keys().next().value!);
+    cache.set(key, { at: cachedAt || Date.now(), value });
+    return value;
   } finally {
     pending.delete(key);
   }
