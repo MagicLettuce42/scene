@@ -15,13 +15,14 @@ React.useEffect = (effect, deps) => { const i = cursor++, old = slots[i];
 };
 const entries = new Map();
 global.sessionStorage = { getItem: key => entries.get(key) || null, setItem: (key, value) => entries.set(key, value) };
-const title = { id: 'tmdb-movie-335797', name: 'Sing', kind: 'movie', year: 2016, offers: [], genres: [] };
+const title = { id: 'tmdb-movie-335797', name: 'Sing', kind: 'movie', year: 2016, offers: [{key:'bbc',name:'BBC iPlayer',type:'free',url:'https://example.invalid'}], genres: [] };
+const elsewhere = { ...title, id: 'elsewhere', name: 'Hidden other-service match', offers: [{...title.offers[0],key:'netflix'}] };
 const cacheFile = require.resolve('../lib/client-cache.ts');
 require.cache[cacheFile] = { id: cacheFile, filename: cacheFile, loaded: true,
-  exports: { cachedJSON: async () => ({ titles: [title] }) } };
+  exports: { cachedJSON: async () => ({ titles: [elsewhere, {...title,id:'unknown',offers:[]}, title] }) } };
 const Suggestions = require('../app/components/search-suggestions.tsx').default;
-let active = true, chosen = [], searched = [], query = 'Sing';
-const render = () => { cursor = 0; effects = []; const tree = Suggestions({ query, accountId: 'fictional', active,
+let active = true, chosen = [], searched = [], query = 'Sing', selected = ['bbc'];
+const render = () => { cursor = 0; effects = []; const tree = Suggestions({ query, accountId: 'fictional', selected, active,
   onChoose: value => { chosen.push(value); active = false; }, onSearch: value => searched.push(value) });
   effects.forEach(effect => effect()); return tree; };
 const nodes = tree => Array.isArray(tree) ? tree.flatMap(nodes) : tree && typeof tree === 'object'
@@ -29,6 +30,8 @@ const nodes = tree => Array.isArray(tree) ? tree.flatMap(nodes) : tree && typeof
 (async () => {
   render(); render(); await new Promise(resolve => setTimeout(resolve, 400));
   let tree = render();
+  assert.equal(nodes(tree).filter(node => node.type === 'button' && node.props.children?.[0]?.type === 'strong').length,1,'unknown and other-service suggestions are hidden');
+  selected = []; assert.equal(nodes(render()).filter(node=>node.type==='button' && node.props.children?.[0]?.type==='strong').length,0,'service changes immediately remove stale suggestions'); selected = ['bbc'];
   assert.equal(tree.props.onPointerDown, undefined, 'suggestions use normal button activation; dismissal belongs to the enclosing search region');
   nodes(tree).find(node => node.type === 'button' && node.props.children?.[0]?.type === 'strong').props.onClick();
   assert.deepEqual(chosen, [title], 'a normal click opens the exact selected title once');

@@ -719,7 +719,7 @@ function Catalogue() {
         peopleHasMore?: boolean;
         peopleMessage?: string;
         message?: string;
-      }>(`/api/search?q=${encodeURIComponent(q)}&scope=all&page=1`, controller.signal);
+      }>(`/api/search?q=${encodeURIComponent(q)}&scope=services&page=1`, controller.signal);
       if (controller.signal.aborted) return;
       setResults(data.titles);
       setSearchPage(data.page || 1); setSearchHasMore(data.hasMore === true);
@@ -747,7 +747,7 @@ function Catalogue() {
     setSearchMoreBusy(true); setSearchMoreError("");
     try {
       const data = await cachedJSON<{ titles: Title[]; page: number; hasMore: boolean; message?: string }>(
-        `/api/search?q=${encodeURIComponent(submitted)}&page=${searchPage + 1}`, controller.signal, Boolean(searchMoreError));
+        `/api/search?q=${encodeURIComponent(submitted)}&scope=services&page=${searchPage + 1}`, controller.signal, Boolean(searchMoreError));
       if (controller.signal.aborted) return;
       setResults(old => mergeBrowseTitles(old, data.titles)); setSearchPage(data.page); setSearchHasMore(data.hasMore === true);
       if (data.message) setSearchError(data.message);
@@ -870,7 +870,7 @@ function Catalogue() {
                 availability === "all" ||
                 watchlistAvailability(t, activeServices) === availability),
           )
-        : filterTitles(base, { kind, genre, offer: submitted ? "all" : offer, provider: "all", mine: !submitted, selected: activeServices });
+        : filterTitles(base, { kind, genre, offer, provider: "all", mine: true, selected: activeServices });
     const a = (
       view === "watchlist" && !submitted ? scoped : visibleSuggestions(scoped, feedback, hideWatched)
     ).filter((t) => matchesExtra(t, extra));
@@ -1227,7 +1227,7 @@ function Catalogue() {
               {searching ? <LoaderCircle className="spin" size={20} /> : <ArrowRight size={20} />}
             </button>
           </form>
-          <SearchSuggestions query={query} accountId={account.id} active={searchFocused} onChoose={t=>{setSearchFocused(false);openTitle(t);}} onSearch={q=>{setQuery(q);void search(undefined,q);}}/>
+          <SearchSuggestions query={query} accountId={account.id} selected={activeServices} active={searchFocused} onChoose={t=>{setSearchFocused(false);openTitle(t);}} onSearch={q=>{setQuery(q);void search(undefined,q);}}/>
             </div>
             {discovering && !halloween && catalogueActions}
           </div>

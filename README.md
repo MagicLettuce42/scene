@@ -58,6 +58,8 @@ TMDB metadata and images; JustWatch availability via TMDB; optional Watchmode li
 
 ## Availability discrepancies
 
+Film and TV search and suggestions use the same selected-service scope as browsing: only subscription/free offers on the selected services are displayed. Search hydrates at most 20 small UK provider responses per page, reusing public metadata/provider caches and in-flight requests. Unconfirmed, rental-only and other-service matches are hidden. Saved watchlist history is retained with its existing availability labels. Cached pre-change searches use a different query scope and are not reused.
+
 The title dialog automatically refreshes UK TMDB availability whenever a title is opened (`refresh=1`), including saved titles and cached search results. This bypasses the browser cache and older server/edge entries; upstream results under one minute old are reused. Successful checks update the displayed title, saved library and matching cards. A failed check keeps the previous listing with a warning and a retry button. The displayed retrieval date is preserved when a server cache is reused and is not a provider verification date. A refresh cannot repair an incorrect upstream feed.
 
 `lib/availability-corrections.ts` holds narrowly scoped, source-linked UK corrections, with exact TMDB identity, review date and expiry. They also apply to stale saved records in cards, service filters and watch options. Resident Evil: Retribution (71679) has a Disney+ correction reviewed 3 November 2026, expiring 10 November; re-check the UK source before extending it. Do not add replacement offers without evidence. Users can report discrepancies directly below the viewing options.

@@ -210,16 +210,25 @@ export async function searchTMDB(q: string, page = 1) {
   const rows = (data.results || [])
     .filter((x: any) => ["movie", "tv"].includes(x.media_type) && !x.adult && Number.isSafeInteger(x.id) && x.id > 0)
     .slice(0, 20);
-  const out: Title[] = rows.map((row: any) => {
+  let unchecked = 0;
+  const out: Title[] = await Promise.all(rows.map(async (row: any) => {
     const append = row.media_type === "movie" ? "watch/providers,external_ids,release_dates" : "watch/providers,external_ids";
     const key = `${row.media_type}/${row.id}?` + new URLSearchParams({ language: "en-GB", append_to_response: append });
     const hit = cache.get(key);
     if (hit && Date.now() - hit.at < (catalogueRefreshRequested() ? 60000 : 900000)) return normalizeTMDB(hit.value, row.media_type);
-    // Availability has not been checked by a search response. Opening the title
-    // already loads full details and offers through the existing title endpoint.
-    return { ...normalizeTMDB({ ...row, genres: (row.genre_ids || [])
-      .filter((id: number) => searchGenreNames[id]).map((id: number) => ({ name: searchGenreNames[id] })) }, row.media_type), checked: undefined };
-  });
+    const summary = { ...row, genres: (row.genre_ids || [])
+      .filter((id: number) => searchGenreNames[id]).map((id: number) => ({ name: searchGenreNames[id] })) };
+    // Search summaries have no provider data. Fetch only the small public
+    // availability response before allowing service-scoped cards to appear.
+    try {
+      const providers = await tmdb(`${row.media_type}/${row.id}/watch/providers`);
+      return { ...normalizeTMDB({ ...summary, "watch/providers": providers }, row.media_type),
+        checked: new Date(retrievedAt.get(providers) || Date.now()).toISOString() };
+    } catch {
+      unchecked++;
+      return { ...normalizeTMDB(summary, row.media_type), checked: undefined };
+    }
+  }));
   const people = page === 1 ? (data.results || []).filter((row: any) => row.media_type === "person").map(personSummary).filter(Boolean) : [];
   return {
     titles: out,
@@ -227,7 +236,7 @@ export async function searchTMDB(q: string, page = 1) {
     hasMore: page < Math.min(Number(data.total_pages) || 0, 500),
     mode: "live",
     source: "tmdb",
-    message: null,
+    message: unchecked ? "Some availability checks could not complete. Only listings on your selected services are shown. Try again shortly." : null,
     people,
     peopleHasMore: people.length > 0 && Number(data.total_pages) > 1,
     peopleMessage: null,

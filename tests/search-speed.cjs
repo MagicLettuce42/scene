@@ -8,6 +8,7 @@ for (const ext of ['.ts', '.tsx']) require.extensions[ext] = (mod, file) => mod.
   }}).outputText, file);
 process.env.TMDB_API_KEY = 'fictional-test-key';
 const calls = [];
+let failProvider = false;
 global.fetch = async input => {
   const url = new URL(input); calls.push(url.pathname);
   if (url.pathname.endsWith('/search/multi')) return Response.json({ total_pages: 2, results: [
@@ -23,30 +24,37 @@ global.fetch = async input => {
   if (url.pathname.endsWith('/tv/1')) return Response.json({ id: 1, name: 'Blue Planet III',
     first_air_date: '2026-11-01', genres: [{ name: 'Documentary' }], episode_run_time: [60],
     'watch/providers': { results: { GB: { free: [{ provider_name: 'BBC iPlayer', provider_id: 38 }] } } } });
+  if (failProvider && url.pathname.endsWith('/movie/20/watch/providers')) return Response.json({}, {status:503});
+  if (/\/(movie|tv)\/\d+\/watch\/providers$/.test(url.pathname)) return Response.json({ results: {
+    GB: { free: [{ provider_name: 'BBC iPlayer', provider_id: 38 }] },
+    US: { flatrate: [{ provider_name: 'Netflix', provider_id: 8 }] },
+  } });
   throw Error('Unexpected upstream request: ' + url.pathname);
 };
 (async () => {
   const { searchTMDB, tmdbDetails } = require('../lib/tmdb.ts');
   const first = await searchTMDB('Blue Planet');
-  assert.equal(calls.length, 1, 'twenty title matches and people require only one upstream request');
+  assert.equal(calls.length, 21, 'twenty bounded provider-only lookups accompany one metadata/people request');
+  assert.equal(calls.filter(p=>p.endsWith('/watch/providers')).length,20,'search never fetches full title details per result');
   assert.equal(first.titles.length, 20);
   assert.equal(first.people.length, 1);
   assert.equal(first.people[0].name, 'Fictional actor');
   assert.deepEqual(first.titles[0].genres, ['Documentary']);
-  assert.equal(first.titles[0].checked, undefined, 'search must not claim offers were checked');
-  assert.deepEqual(first.titles[0].offers, []);
+  assert.ok(first.titles[0].checked, 'availability is fetched before displaying service-scoped search');
+  assert.deepEqual(first.titles[0].offers.map(o=>o.key), ['bbc'], 'only UK offers are used');
   assert.equal(first.titles[0].year, 2026);
   assert.equal(first.hasMore, true);
   const detail = await tmdbDetails('tv', 1);
   assert.equal(detail.offers[0].key, 'bbc', 'opening the title still fetches confirmed offers');
   assert.equal(detail.runtime, 60);
   const next = await searchTMDB('Blue Planet again', 2);
-  assert.equal(calls.length, 3, 'pagination adds one request, without repeating detail checks');
+  assert.equal(calls.length, 23, 'pagination adds one request, without repeating availability checks');
   assert.equal(next.titles[0].offers[0].key, 'bbc', 'fresh cached details remain usable');
   assert.deepEqual(next.people, []);
   const repeat = await searchTMDB('Blue Planet');
-  assert.equal(calls.length, 3, 'repeating a search reuses the upstream cache');
+  assert.equal(calls.length, 23, 'repeating a search reuses metadata and provider caches');
   assert.equal(repeat.titles[0].offers[0].key, 'bbc');
+  assert.equal(repeat.titles[1].checked, first.titles[1].checked,'cached availability retains its retrieval time');
   const authFile = require.resolve('../lib/auth/server.ts');
   let member = true;
   require.cache[authFile] = { id: authFile, filename: authFile, loaded: true,
@@ -65,5 +73,13 @@ global.fetch = async input => {
   assert.equal(body.people.length, 1);
   assert.equal(calls.length - before, 1, 'the API route does not add a blocking people request');
   assert.ok(response.headers.get('Server-Timing'));
-  console.log('PASS: one upstream request for 20 search titles plus people; genre/year/rating metadata retained, no invented availability, pagination/cache reuse, and full offers on opening.');
+  const clock = Date.now, future = clock()+900001;
+  Date.now = () => future; failProvider = true;
+  try {
+    const partial = await searchTMDB('provider outage');
+    assert.equal(partial.titles.at(-1).checked,undefined,'failed availability is never presented as confirmed');
+    assert.deepEqual(partial.titles.at(-1).offers,[]);
+    assert.match(partial.message,/availability checks could not complete/);
+  } finally { Date.now = clock; }
+  console.log('PASS: bounded lightweight UK availability hydration, metadata and people retained, pagination/provider cache reuse, and full details on opening.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

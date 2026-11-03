@@ -16,7 +16,7 @@ export default function WatchOptions({ title, offers, selected }: { title: Title
     <h4>Listed on your selected services</h4>
     {included.length ? <><p className="fine-print">Reported subscription and free options. Listings can lag behind provider changes; confirm access with the provider.</p>{rows(included)}</> :
       <div className="unknown-box"><Info size={20}/><p>No subscription or free options are confirmed for your current service filter.</p></div>}
-    {!included.length && <ProviderSearch query={title.name} />}
+    {!included.length && selected.includes("bbc") && <ProviderSearch query={title.name} />}
 
   </div>;
 }

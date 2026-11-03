@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 import GameSearchCard from "./game-search-card";
 import type { Game, GameCollection, GameStatus } from "../../lib/gaming";
 import type { Person } from "../../lib/people";
-import type { Title } from "../../lib/catalogue";
+import { filterTitles, type Title } from "../../lib/catalogue";
 import { TitleCard, Skeletons, type CardActions } from "./catalogue-cards";
 import ProviderSearch from "./provider-search";
 export default function SearchResults({
@@ -40,16 +40,17 @@ export default function SearchResults({
   if (busy) return <Skeletons count={6} />;
   const showGames = gameResults !== undefined && Boolean(onGameStatus),
     matchingGames = showGames ? gameResults || [] : [];
-  const hasMatches = titles.length > 0 || matchingGames.length > 0;
+  const availableTitles = filterTitles(titles, { kind: "all", genre: "all", offer: actions.offer, provider: "all", mine: true, selected: actions.selected });
+  const hasMatches = availableTitles.length > 0 || matchingGames.length > 0;
   return (
     <div className="unified-search-results">
       <section aria-labelledby="title-results-heading">
         <h3 id="title-results-heading">{showGames ? "Films, TV series & games" : "Films & TV series"}</h3>
-        <p className="fine-print">Open a title to check current availability and full details. You can save unconfirmed matches. Genre, year and other title filters still apply.</p>
+        <p className="fine-print">Films and TV series are limited to subscription or free listings on your selected services. Availability is checked again when you open a title.</p>
         {hasMatches ? (
           <div className="poster-grid">
-            {titles.map((t) => (
-              <TitleCard key={`title-${t.kind}-${t.id}`} title={t} {...actions} search offer="all" />
+            {availableTitles.map((t) => (
+              <TitleCard key={`title-${t.kind}-${t.id}`} title={t} {...actions} search />
             ))}
             {matchingGames.map((game) => (
               <GameSearchCard
@@ -64,16 +65,14 @@ export default function SearchResults({
           <div className="quiet-empty">
             <p>
               {showGames
-                  ? "No matching films, series or games. Try another name or adjust your filters."
+                  ? "No matching films or series on your selected services, or games in Scene’s catalogue. Try another name or adjust your filters."
                   : people.length
                     ? "No matching film or series titles. Select a person below to explore their work."
-                    : "No films or series match this search and your title filters. Try another name or adjust your filters."}
+                    : "No films or series are listed on your selected services for this search and filters. Try another name or edit your services."}
             </p>
-            {!actions.selected.length && (
-              <button className="button secondary" onClick={onServices}>
-                Choose my services
-              </button>
-            )}
+            <button className="button secondary" onClick={onServices}>
+              {actions.selected.length ? "Edit my services" : "Choose my services"}
+            </button>
           </div>
         )}
         {matchingGames.length > 0 && (
@@ -83,16 +82,16 @@ export default function SearchResults({
         )}
         {matchingGames.length > 0 && !actions.selected.length && (
           <button className="text-button" onClick={onServices}>
-            Choose services to highlight availability
+            Choose services to see films and TV series
           </button>
         )}
         {moreError && <p role="alert" className="error-notice">{moreError}</p>}
         {(hasMore || moreError) && onLoadMore && <div className="load-more">
           <button className="button secondary" disabled={moreBusy} onClick={onLoadMore}>
             {moreBusy ? "Loading more titles…" : moreError ? "Retry loading more titles" : "Load more films & TV series"}
-          </button><p className="fine-print">Title filters apply to every page. Unconfirmed availability does not hide matches.</p>
+          </button><p className="fine-print">Your services and title filters apply to every page. Other services and unconfirmed listings are hidden.</p>
         </div>}
-        <ProviderSearch query={query} />
+        {actions.selected.includes("bbc") && <ProviderSearch query={query} />}
       </section>
       {people.length > 0 && (
         <section aria-labelledby="people-results-heading">

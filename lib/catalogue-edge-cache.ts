@@ -31,9 +31,10 @@ export async function publicCatalogueCacheKey(origin: string, path: string, para
   const detail = /^(movie|tv|person)\/[1-9]\d{0,12}$/.test(path);
   const season = /^tv\/[1-9]\d{0,12}\/season\/(0|[1-9]\d{0,3})$/.test(path);
   const related = /^(movie|tv)\/[1-9]\d{0,12}\/(similar|recommendations)$/.test(path);
+  const availability = /^(movie|tv)\/[1-9]\d{0,12}\/watch\/providers$/.test(path);
   const genres = /^genre\/(movie|tv)\/list$/.test(path);
   const providers = /^watch\/providers\/(movie|tv)$/.test(path);
-  if (!detail && !season && !related && !genres && !providers) return null;
+  if (!detail && !season && !related && !availability && !genres && !providers) return null;
   const query = new URLSearchParams({ language: "en-GB", ...params });
   for (const [name, value] of query) {
     if (name === "language" && /^[a-z]{2}-[A-Z]{2}$/.test(value)) continue;

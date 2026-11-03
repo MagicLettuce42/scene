@@ -25,14 +25,16 @@ const title = { id: 'tmdb-tv-999999', name: 'Blue Planet III', kind: 'series', y
   genres: ['Documentary'], summary: '', poster: null, offers: [], live: true };
 const confirmed = { ...title, id: 'confirmed', offers: [{ key: 'bbc', name: 'BBC iPlayer', type: 'free', url: 'https://www.bbc.co.uk/iplayer' }] };
 const elsewhere = { ...title, id: 'elsewhere', offers: [{ key: 'netflix', name: 'Netflix', type: 'sub', url: 'https://www.netflix.com' }] };
-const context = { filterTitles, visibleSuggestions, matchesExtra, base: [title, confirmed, elsewhere],
+const paid = { ...confirmed, id: 'paid', offers: [{ ...confirmed.offers[0], type: 'rent' }] };
+const context = { filterTitles, visibleSuggestions, matchesExtra, base: [title, confirmed, elsewhere, paid],
   view: 'discover', submitted: 'Blue Planet', kind: 'all', genre: 'all', offer: 'all',
   activeServices: ['bbc'], activeProvider: 'mine', feedback: [], hideWatched: true,
   extra: noExtraFilters(), browsing: false, sort: 'relevance', availability: 'all', watchlistTab: 'saved' };
 const filter = (changes = {}) => vm.runInNewContext(`(${callback})()`, { ...context, ...changes });
-assert.deepEqual(Array.from(filter(), t => t.id), [title.id, 'confirmed', 'elsewhere']);
-assert.equal(filter({ activeServices: [] }).length, 3);
-assert.equal(filter({ offer: 'sub' }).length, 3);
+assert.deepEqual(Array.from(filter(), t => t.id), ['confirmed']);
+assert.equal(filter({ activeServices: [] }).length, 0);
+assert.equal(filter({ offer: 'sub' }).length, 0);
+assert.deepEqual(Array.from(filter({ activeServices: ['netflix'] }), t => t.id), ['elsewhere']);
 assert.equal(filter({ genre: 'Comedy' }).length, 0);
 assert.equal(filter({ extra: { ...noExtraFilters(), yearTo: 2025 } }).length, 0);
 assert.equal(filter({ feedback: [{ title, hidden: true }] }).some(t => t.id === title.id), false);
@@ -47,14 +49,17 @@ const actions = { selected: ['bbc'], offer: 'all', feedback: [], isSaved: () => 
 const render = (titles, query = 'Blue Planet III') => renderToStaticMarkup(React.createElement(SearchResults,
   { ...actions, titles, query, people: [], peopleHasMore: false, peopleMessage: '', busy: false }));
 const html = render([title]);
-assert.match(html, /Availability not confirmed/);
-assert.match(html, /Save Blue Planet III to watchlist/);
+assert.doesNotMatch(html, /class="title-card"/);
+assert.doesNotMatch(render([elsewhere, paid]), /class="title-card"/);
 assert.match(html, /iplayer\/search\?q=Blue%20Planet%20III/);
 assert.doesNotMatch(html, /Unavailable on your services/);
+assert.match(render([confirmed]), /class="title-card"/);
 assert.doesNotMatch(render([confirmed]), /class="unknown-availability"/);
 assert.match(render([], 'Blue & Ocean?'), /iplayer\/search\?q=Blue%20%26%20Ocean%3F/);
-assert.match(render([]), /No films or series match this search/);
+assert.match(render([]), /No films or series are listed on your selected services/);
 const details = renderToStaticMarkup(React.createElement(WatchOptions, { title, offers: [], selected: ['bbc'] }));
 assert.match(details, /No subscription or free options are confirmed/);
 assert.match(details, /Search BBC iPlayer/);
-console.log('PASS: unconfirmed and other-service search matches stay visible/saveable; browsing and title filters remain scoped; BBC search works with empty results and details.');
+const netflixDetails = renderToStaticMarkup(React.createElement(WatchOptions, { title, offers: [], selected: ['netflix'] }));
+assert.doesNotMatch(netflixDetails, /Search BBC iPlayer/);
+console.log('PASS: results and browsing show selected subscriptions/free offers only; unknown, other-service and rental listings stay hidden; empty and provider-search states respect selected services.');

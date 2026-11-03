@@ -24,6 +24,8 @@ const inRequest = (load, host) => run(request(host), context, load);
   assert.ok(!first.url.includes('credits') && !first.url.includes('api_key'));
   assert.notEqual(first.url, (await keyFor(origin, 'movie/1', { language: 'fr-FR', append_to_response: 'credits' })).url);
   assert.notEqual((await keyFor(origin,'watch/providers/movie',{watch_region:'GB'})).url,(await keyFor(origin,'watch/providers/movie',{watch_region:'US'})).url);
+  assert.ok(await keyFor(origin,'movie/1/watch/providers',{}),'public title availability can be cached');
+  assert.equal(await keyFor(origin,'movie/1/watch/providers',{api_key:'private'}),null);
   let loads = 0;
   const load = async () => { loads++; return { id: 1, title: 'Public film' }; };
   await cached('movie/1', {}, load); assert.equal(writes.length, 0, 'no request context means no shared cache');
