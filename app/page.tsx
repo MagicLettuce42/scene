@@ -778,10 +778,12 @@ function Catalogue() {
     const seq = ++detailRequest.current;
     try {
       const endpoint = titleEndpoint(t);
-      const v = await cachedJSON<{ title: Title }>(refresh ? `${endpoint}&refresh=1` : endpoint, undefined, refresh);
+      // Always revalidate when opened, including saved titles and cached search
+      // results. The server deduplicates requests and reuses data under a minute old.
+      const v = await cachedJSON<{ title: Title }>(`${endpoint}&refresh=1`, undefined, true);
       if (seq === detailRequest.current) {
         v.title = { ...v.title, id: t.id };
-        if (refresh) writeCache(endpoint, v);
+        writeCache(endpoint, v);
         setDetail(v.title);
         library.refreshTitles([v.title]);
         setResults((items) => items.map((x) => (x.id === t.id ? v.title : x)));
@@ -1945,7 +1947,7 @@ function Catalogue() {
                 </div>
                 {detailBusy && (
                   <p className="refresh-status" role="status">
-                    <LoaderCircle size={15} className="spin" /> Refreshing title details…
+                    <LoaderCircle size={15} className="spin" /> Checking latest availability…
                   </p>
                 )}
                 {detailError && (
@@ -1954,8 +1956,8 @@ function Catalogue() {
                   </p>
                 )}
                 {correction && <p className="error-notice" role="status">{correction.message}{" "}<a href={correction.source} target="_blank" rel="noopener noreferrer">View UK source</a></p>}
-                {(detail.dataSource === "tmdb" || detail.tmdbId) && <button className="button secondary" disabled={detailBusy || directBusy} title="Fetch the latest UK listing; results less than a minute old may be reused" onClick={() => openTitle(detail, true)}>
-                  {detailBusy ? <LoaderCircle size={16} className="spin" /> : <RefreshCw size={16} />} {detailBusy ? "Refreshing…" : "Refresh availability"}
+                {detailError && !detailBusy && <button className="button secondary" disabled={directBusy} onClick={() => openTitle(detail, true)}>
+                  <RefreshCw size={16} /> Retry availability
                 </button>}
                 <WatchOptions title={detail} offers={detailOffers} selected={activeServices}/>
                 <p className="fine-print availability-credit">
