@@ -66,6 +66,21 @@ const inRequest = (load, host) => run(request(host), context, load);
   try { await inRequest(()=>require(modulePath).tmdbDetails('movie',987654)); await flush(); }
   finally { Date.now=clock; }
   assert.equal(upstream,2,'layering memory and edge caches must not extend the freshness window');
+  const { runWithFreshCatalogueData: fresh } = require('../lib/catalogue-edge-cache.ts');
+  Date.now=()=>future+61000;
+  try {
+    const module=require(modulePath);
+    const refreshed=await inRequest(()=>fresh(true,()=>module.tmdbDetails('movie',987654)));
+    assert.equal(upstream,3,'manual refresh bypasses both older memory and shared edge entries');
+    assert.equal(Date.parse(refreshed.checked),future+61000);
+    await inRequest(()=>fresh(true,()=>module.tmdbDetails('movie',987654)));
+    assert.equal(upstream,3,'repeat refreshes within a minute reuse recent upstream data');
+    Date.now=()=>future+62000;
+    const reused=await inRequest(()=>module.tmdbDetails('movie',987654));
+    assert.equal(Date.parse(reused.checked),future+61000,'cache hits preserve the original retrieval time');
+    assert.equal(upstream,3);
+    assert.equal(require('../lib/catalogue-edge-cache.ts').catalogueRefreshRequested(),false,'refresh context must not leak to another request');
+  } finally { Date.now=clock; }
   for(const key of [...reads,...writes]) {assert.equal(key.headers.get('Authorization'),null);assert.equal(key.headers.get('Cookie'),null);assert.ok(!key.url.includes('server-only-fixture-key'));}
   const { secureResponse }=require('../lib/http-security.ts');
   assert.equal(secureResponse(request(),Response.json({private:'account response'})).headers.get('Cache-Control'),'no-store');

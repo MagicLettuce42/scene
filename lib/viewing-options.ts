@@ -16,7 +16,7 @@ export function mergeViewingOffers(standard: Offer[], direct: Offer[] = []) {
   return [...merged.values()];
 }
 export function offerDescription(o: Offer) {
-  return o.type === "sub" ? "Included with a subscription" : o.type === "free"
+  return o.type === "sub" ? "Listed with a subscription" : o.type === "free"
     ? o.key === "bbc" ? "TV Licence required" : "Free · may include ads"
     : "";
 }

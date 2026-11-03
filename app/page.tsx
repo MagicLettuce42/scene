@@ -75,6 +75,7 @@ import ServiceScope from "./components/service-scope";
 import { mergeViewingOffers } from "../lib/viewing-options";
 import TitleExtrasPanel from "./components/title-extras";
 import { Poster, ServiceMark, myOffers, TitleCard, FeedbackButtons } from "./components/catalogue-cards";
+import { availabilityCorrection, correctedOffers } from "../lib/availability-corrections";
 import { cachedJSON, readCache, writeCache } from "../lib/client-cache";
 import { findFeedback, visibleSuggestions, type Feedback, type FeedbackAction } from "../lib/preferences";
 import { availableView, readTabs, tabMemoryKey, type View, type TabSnapshot } from "../lib/tab-memory";
@@ -98,6 +99,7 @@ import {
   RotateCcw,
   Shuffle,
   LoaderCircle,
+  RefreshCw,
   CalendarDays,
 } from "lucide-react";
 import {
@@ -764,20 +766,22 @@ function Catalogue() {
     setSearching(false);
     setSearchError("");
   }
-  async function openTitle(t: Title) {
+  async function openTitle(t: Title, refresh = false) {
     setDirectOffers(null);
     setDirectBusy(false);
     setDirectMessage("");
     setDetail(t);
     setDetailError("");
     setDialog("title");
-    if (modal.current) modal.current.scrollTop = 0;
+    if (!refresh && modal.current) modal.current.scrollTop = 0;
     setDetailBusy(true);
     const seq = ++detailRequest.current;
     try {
-      const v = await cachedJSON<{ title: Title }>(titleEndpoint(t));
+      const endpoint = titleEndpoint(t);
+      const v = await cachedJSON<{ title: Title }>(refresh ? `${endpoint}&refresh=1` : endpoint, undefined, refresh);
       if (seq === detailRequest.current) {
         v.title = { ...v.title, id: t.id };
+        if (refresh) writeCache(endpoint, v);
         setDetail(v.title);
         library.refreshTitles([v.title]);
         setResults((items) => items.map((x) => (x.id === t.id ? v.title : x)));
@@ -788,7 +792,7 @@ function Catalogue() {
       }
     } catch {
       if (seq === detailRequest.current)
-        setDetailError("Could not refresh this title. The saved details are shown below.");
+        setDetailError("Availability could not be refreshed. The previous listing is shown; please check the provider before relying on it.");
     } finally {
       if (seq === detailRequest.current) setDetailBusy(false);
     }
@@ -818,7 +822,8 @@ function Catalogue() {
       if (seq === detailRequest.current) setDirectBusy(false);
     }
   }
-  const detailOffers = mergeViewingOffers(detail?.offers || [], directOffers || []);
+  const correction = detail ? availabilityCorrection(detail) : undefined;
+  const detailOffers = detail ? correctedOffers(detail, mergeViewingOffers(detail.offers, directOffers || [])) : [];
   const checkedDate = detail?.checked
       ? new Date(detail.checked).toLocaleDateString("en-GB", {
           day: "numeric",
@@ -1948,11 +1953,15 @@ function Catalogue() {
                     {detailError}
                   </p>
                 )}
+                {correction && <p className="error-notice" role="status">{correction.message}{" "}<a href={correction.source} target="_blank" rel="noopener noreferrer">View UK source</a></p>}
+                {(detail.dataSource === "tmdb" || detail.tmdbId) && <button className="button secondary" disabled={detailBusy || directBusy} title="Fetch the latest UK listing; results less than a minute old may be reused" onClick={() => openTitle(detail, true)}>
+                  {detailBusy ? <LoaderCircle size={16} className="spin" /> : <RefreshCw size={16} />} {detailBusy ? "Refreshing…" : "Refresh availability"}
+                </button>}
                 <WatchOptions title={detail} offers={detailOffers} selected={activeServices}/>
                 <p className="fine-print availability-credit">
                   {detail.dataSource === "tmdb" ? <>Availability by <a href="https://www.justwatch.com/uk" target="_blank" rel="noopener noreferrer">JustWatch</a> via TMDB. </> : "UK availability listings. "}
                   {checkedDate ? `Retrieved ${checkedDate}. ` : "Last check date unavailable. "}
-                  {directOffers ? "Direct provider links refreshed. " : ""}Availability, seasons and tiers can change. Check that the title is included in your plan.
+                  {directOffers ? "Direct provider links refreshed. " : ""}Retrieval time is not a provider verification. Listings can be outdated; confirm the title, season and plan with the provider.
                 </p>
                 {canLoadDirect && detail.dataSource === "tmdb" && !directOffers && (
                   <div className="direct-links-option">
@@ -1983,6 +1992,7 @@ function Catalogue() {
                   {detail.dataSource === "tmdb" ? "View UK watch options" : "Check on JustWatch UK"}{" "}
                   <ArrowUpRight size={17} />
                 </a>
+                <FeedbackForm key={"report-" + detail.id} title={detail} defaultKind="availability" />
                 <SeriesGuide key={"guide-" + detail.id} title={detail} progress={library.progressEntries.find(e => sameTitle(e.title, detail))?.progress} />
                 <ShareTitle
                   key={"share-" + (detail.tmdbId || detail.id)}
@@ -2015,7 +2025,6 @@ function Catalogue() {
                     Undo last change
                   </button>
                 )}
-                <FeedbackForm key={"report-" + detail.id} title={detail} defaultKind="availability" />
               </TitleExtrasPanel>
               {safeUrl(detail.sourceUrl) && (
                 <p className="source-credit">

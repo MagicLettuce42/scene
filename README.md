@@ -55,3 +55,12 @@ Tokens are held only in memory and reset after each attempt. Load errors and exp
 ## Attribution
 
 TMDB metadata and images; JustWatch availability via TMDB; optional Watchmode links; TVmaze seed metadata; game artwork belongs to its respective owners. See in-app credits. This product uses the TMDB API but is not endorsed or certified by TMDB. Public source visibility does not grant a new license to third-party assets. No open-source license has been selected for this repository.
+
+## Availability discrepancies
+
+The title dialog can refresh UK TMDB availability (`refresh=1`). This bypasses the browser cache and older server/edge entries; upstream results under one minute old are reused. The displayed retrieval date is preserved when a server cache is reused and is not a provider verification date. A refresh cannot repair an incorrect upstream feed.
+
+`lib/availability-corrections.ts` holds narrowly scoped, source-linked UK corrections, with exact TMDB identity, review date and expiry. They also apply to stale saved records in cards, service filters and watch options. Resident Evil: Retribution (71679) has a Disney+ correction reviewed 3 November 2026, expiring 10 November; re-check the UK source before extending it. Do not add replacement offers without evidence. Users can report discrepancies directly below the viewing options.
+
+Run `node tests/availability-corrections.cjs` and `node tests/catalogue-edge-cache.cjs` for correction and refresh regression checks.
+

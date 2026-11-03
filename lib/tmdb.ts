@@ -1,3 +1,4 @@
+import { correctedOffers } from "./availability-corrections";
 import { personSummary, creditCandidates, type PersonRole, type Filmography } from "./people";
 import { datedCredits, isUnreadRelease, type FollowedPerson, type PeopleUpdate } from "./people-following";
 import { londonDate } from "./episode-calendar";
@@ -7,9 +8,10 @@ import { matchesExtra, noExtraFilters, type ExtraFilters } from "./catalogue-fil
 import type { LibraryEntry } from "./library-state";
 import { calendarSeasons, type CalendarData } from "./episode-calendar";
 import { serviceKey, safeUrl, filterTitles, type Title, type Offer, type TitleExtras } from "./catalogue";
-import { withPublicCatalogueCache } from "./catalogue-edge-cache";
+import { catalogueRefreshRequested, withPublicCatalogueCache } from "./catalogue-edge-cache";
 
 const cache = new Map<string, { at: number; value: any }>();
+const retrievedAt = new WeakMap<object, number>();
 const pending = new Map<string, Promise<any>>();
 let nextRequestAt = 0;
 export const hasTMDB = () => Boolean(process.env.TMDB_API_KEY);
@@ -20,7 +22,7 @@ async function tmdb(path: string, params: Record<string, string> = {}) {
   const query = new URLSearchParams({ language: "en-GB", ...params });
   const key = path + "?" + query;
   const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < 900000) return hit.value;
+  if (hit && Date.now() - hit.at < (catalogueRefreshRequested() ? 60000 : 900000)) return hit.value;
   if (pending.has(key)) return pending.get(key);
   let cachedAt = 0;
   const job = withPublicCatalogueCache(path, params, async () => {
@@ -58,7 +60,9 @@ async function tmdb(path: string, params: Record<string, string> = {}) {
     const value = await job;
     // Warm memory without extending an edge entry's original freshness window.
     if (cache.size >= 128) cache.delete(cache.keys().next().value!);
-    cache.set(key, { at: cachedAt || Date.now(), value });
+    const at = cachedAt || Date.now();
+    if (value && typeof value === "object") retrievedAt.set(value, at);
+    cache.set(key, { at, value });
     return value;
   } finally {
     pending.delete(key);
@@ -115,10 +119,10 @@ export function normalizeTMDB(s: any, kind: "movie" | "tv"): Title {
     voteCount: Number(s.vote_count) || 0,
     sourceUrl: `https://www.themoviedb.org/${kind}/${s.id}`,
     availabilitySource: guide,
-    offers,
+    offers: correctedOffers({ id: `tmdb-${kind}-${s.id}`, tmdbId: s.id, kind: kind === "movie" ? "movie" : "series" }, offers),
     live: true,
     dataSource: "tmdb",
-    checked: new Date().toISOString(),
+    checked: new Date(retrievedAt.get(s) || Date.now()).toISOString(),
   };
 }
 export async function tmdbDetails(
@@ -210,7 +214,7 @@ export async function searchTMDB(q: string, page = 1) {
     const append = row.media_type === "movie" ? "watch/providers,external_ids,release_dates" : "watch/providers,external_ids";
     const key = `${row.media_type}/${row.id}?` + new URLSearchParams({ language: "en-GB", append_to_response: append });
     const hit = cache.get(key);
-    if (hit && Date.now() - hit.at < 900000) return normalizeTMDB(hit.value, row.media_type);
+    if (hit && Date.now() - hit.at < (catalogueRefreshRequested() ? 60000 : 900000)) return normalizeTMDB(hit.value, row.media_type);
     // Availability has not been checked by a search response. Opening the title
     // already loads full details and offers through the existing title endpoint.
     return { ...normalizeTMDB({ ...row, genres: (row.genre_ids || [])

@@ -1,0 +1,30 @@
+const assert = require('node:assert/strict'), fs = require('node:fs'), ts = require('typescript');
+for (const ext of ['.ts','.tsx']) require.extensions[ext] = (mod, file) => mod._compile(ts.transpileModule(fs.readFileSync(file, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true } }).outputText, file);
+const { correctedOffers, availabilityCorrection } = require('../lib/availability-corrections.ts');
+const { normalizeTMDB } = require('../lib/tmdb.ts');
+const { filterTitles } = require('../lib/catalogue.ts');
+const React = require('react'), {renderToStaticMarkup} = require('react-dom/server');
+const WatchOptions = require('../app/components/watch-options.tsx').default;
+const {TitleCard} = require('../app/components/catalogue-cards.tsx');
+const clock = Date.now;
+Date.now = () => Date.parse('2026-11-03T22:00:00Z');
+try {
+  const disney = {key:'disney',name:'Disney Plus',type:'sub',url:'https://example.com',linkKind:'guide'};
+  const rent = {key:'store',name:'Amazon Video',type:'rent',url:'https://example.com'};
+  const stale = {id:'tmdb-movie-71679',tmdbId:71679,kind:'movie',name:'Resident Evil: Retribution',year:2012,genres:[],poster:null,summary:'',offers:[disney,rent]};
+  assert.deepEqual(correctedOffers(stale, stale.offers),[rent]);
+  assert.equal(stale.offers.length,2,'stored records must not be mutated');
+  assert.equal(correctedOffers({...stale,id:'legacy-id'},stale.offers).length,1);
+  for(const title of [{...stale,id:'tmdb-movie-71680',tmdbId:71680},{...stale,kind:'series'}]) assert.deepEqual(correctedOffers(title,title.offers),title.offers);
+  assert.equal(availabilityCorrection(stale,Date.parse('2026-11-10T00:00:00Z')),undefined,'expired corrections must not suppress future genuine availability');
+  const raw = {id:71679,title:stale.name,release_date:'2012-09-12',genres:[], 'watch/providers':{results:{GB:{flatrate:[{provider_id:337,provider_name:'Disney Plus'}],rent:[{provider_id:10,provider_name:'Amazon Video'}]},US:{flatrate:[{provider_id:8,provider_name:'Netflix'}]}}}};
+  assert.deepEqual(normalizeTMDB(raw,'movie').offers.map(x=>x.key),['store']);
+  const filtered = filterTitles([stale],{kind:'all',genre:'all',offer:'all',provider:'disney',mine:false,selected:['disney']});
+  assert.equal(filtered.length,0,'a stale saved offer must not match a Disney filter');
+  const html = renderToStaticMarkup(React.createElement(WatchOptions,{title:stale,offers:stale.offers,selected:['disney']}));
+  assert.doesNotMatch(html,/<strong>Disney Plus/);
+  assert.match(html,/No subscription or free options/);
+  const card = renderToStaticMarkup(React.createElement(TitleCard,{title:stale,selected:['disney'],offer:'all',feedback:[],isSaved:()=>false,onSave(){},onOpen(){},onFeedback(){}}));
+  assert.doesNotMatch(card,/Disney Plus/);
+} finally { Date.now = clock; }
+console.log('PASS: exact UK correction, stored records, filters, card/watch-option rendering, region isolation and expiry.');

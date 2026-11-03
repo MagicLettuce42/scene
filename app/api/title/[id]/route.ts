@@ -1,3 +1,4 @@
+import { runWithFreshCatalogueData } from "../../../../lib/catalogue-edge-cache";
 import { serviceDepartureTitle } from "../../../../lib/service-activity";
 import { serviceArrivalTitle } from "../../../../lib/service-arrivals";
 import { requireSceneMember } from "../../../../lib/auth/server";
@@ -38,13 +39,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return Response.json(await getDirectOffers(id, hint), {
         headers: { "Cache-Control": "private, max-age=300" },
       });
-    const title = id.startsWith("departure-")
+    const title = await runWithFreshCatalogueData(p.get("refresh") === "1", async () => id.startsWith("departure-")
       ? await serviceDepartureTitle(id, access.client)
       : id.startsWith("arrival-")
         ? await serviceArrivalTitle(id, access.client)
         : releaseFormat && /^tmdb-movie-/.test(id)
           ? await tmdbDetails("movie", Number(id.split("-")[2]), releaseFormat as "cinema" | "digital")
-          : await getTitle(id, hint);
+          : await getTitle(id, hint));
     return title
       ? Response.json({ title }, { headers: { "Cache-Control": "private, max-age=300" } })
       : Response.json({ error: "Title not found." }, { status: 404 });

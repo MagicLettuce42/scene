@@ -5,6 +5,12 @@ type EdgeCache = {
   match: (key: Request) => Promise<Response | undefined>;
   put: (key: Request, value: Response) => Promise<unknown>;
 };
+const refreshes = new AsyncLocalStorage<boolean>();
+export const catalogueRefreshRequested = () => refreshes.getStore() === true;
+export function runWithFreshCatalogueData<T>(refresh: boolean, run: () => T): T {
+  return refreshes.run(refresh, run);
+}
+
 const contexts = new AsyncLocalStorage<Context>();
 const ttlSeconds = 900;
 const appendFields = new Set(["watch/providers", "external_ids", "release_dates", "videos", "credits", "recommendations", "combined_credits"]);
@@ -50,7 +56,7 @@ export async function withPublicCatalogueCache<T>(path: string, params: Record<s
   try {
     key = await publicCatalogueCacheKey(context.origin, path, params);
     if (key && typeof caches !== "undefined") cache = (caches as CacheStorage & { default?: EdgeCache }).default;
-    if (key && cache) {
+    if (key && cache && !catalogueRefreshRequested()) {
       const hit = await cache.match(key);
       if (hit?.ok && hit.headers.get("Content-Type")?.includes("application/json")) {
         const stored = await hit.json() as { expiresAt?: number; value?: T };

@@ -13,6 +13,6 @@ const merged=mergeViewingOffers([sub,paid],[direct]);
 assert.equal(merged.length,2);assert.equal(merged[0].linkKind,'direct');assert.equal(merged[1].type,'rent');
 assert.equal(offerDescription(free),'TV Licence required');
 assert.equal(offerDescription(paid),'');
-assert.equal(offerDescription({...sub,price:9.99}),'Included with a subscription');
+assert.equal(offerDescription({...sub,price:9.99}),'Listed with a subscription');
 assert.equal(offerDescription({...free,price:0}),'TV Licence required');
 console.log('PASS: selected subscriptions and free options only; no prices displayed.');

@@ -1,3 +1,4 @@
+import { correctedOffers } from "./availability-corrections";
 import seed from "./seed.json";
 import type { UpcomingRelease } from "./upcoming";
 
@@ -105,7 +106,7 @@ export function filterTitles(
       (f.genre === "all" || t.genres.includes(f.genre)) &&
       (!f.query || t.name.toLowerCase().includes(f.query.toLowerCase())) &&
       ((f.offer === "all" && f.provider === "all" && !f.mine) ||
-        t.offers.some(
+        correctedOffers(t, t.offers).some(
           (o) =>
             (f.offer === "all" || o.type === f.offer) &&
             (f.provider === "all" || o.key === f.provider) &&

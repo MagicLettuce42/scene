@@ -1,4 +1,5 @@
 "use client";
+import { correctedOffers } from "../../lib/availability-corrections";
 import { watchlistAvailability, availabilityLabels } from "../../lib/watchlist-availability";
 import ReleaseBadge from "./release-badge";
 import { useEffect, useState } from "react";
@@ -88,7 +89,7 @@ export type CardActions = {
   onFeedback: (t: Title, action: FeedbackAction) => void;
 };
 export function TitleCard({ title: t, ...props }: CardActions & { title: Title }) {
-  const offers = myOffers(t.offers, props.selected, props.offer),
+  const offers = myOffers(correctedOffers(t, t.offers), props.selected, props.offer),
     f = findFeedback(props.feedback, t);
   return (
     <article className="title-card">
