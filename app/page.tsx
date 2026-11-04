@@ -909,15 +909,40 @@ function Catalogue() {
   const upcoming = view === "upcoming" && !submitted,
     gaming = view === "gaming" && !submitted;
   const [gameResults, setGameResults] = useState<Game[]>([]);
+  const [gameBusy, setGameBusy] = useState(false), [gameMode, setGameMode] = useState<"igdb" | "selected">("selected"),
+    [gameMessage, setGameMessage] = useState(""), [gamePage, setGamePage] = useState(1), [gameHasMore, setGameHasMore] = useState(false);
+  const gameAbort = useRef<AbortController | null>(null);
+  async function loadGameSearch(q: string, page: number, append: boolean, force: boolean, controller: AbortController) {
+    setGameBusy(true); setGameMessage("");
+    const deadline = setTimeout(() => {
+      if (!controller.signal.aborted) { controller.abort(); setGameBusy(false); setGameMessage("Games search is taking too long. Matches already loaded are kept; retry shortly."); }
+    }, 20000);
+    try {
+      const data = await cachedJSON<import("../lib/gaming-state").GameSearchPage>(`/api/games?q=${encodeURIComponent(q)}&page=${page}`, controller.signal, force, value => value.mode === "igdb");
+      if (controller.signal.aborted) return;
+      setGameResults(previous => append ? [...new Map([...previous, ...data.games].map(game => [game.id, game])).values()] : data.games);
+      setGamePage(data.page); setGameHasMore(data.hasMore); setGameMode(data.mode); setGameMessage(data.message || "");
+    } catch (error) { if (!controller.signal.aborted && (error as Error).name !== "AbortError") setGameMessage("Games search could not connect. The matches already loaded are kept; try again shortly."); }
+    finally { clearTimeout(deadline); if (!controller.signal.aborted) setGameBusy(false); }
+  }
+  function moreGames(retry = false) {
+    if (gameBusy || !submitted || !library.gamingEnabled) return;
+    gameAbort.current?.abort(); const controller = new AbortController(); gameAbort.current = controller;
+    void loadGameSearch(submitted, retry ? 1 : gamePage + 1, !retry, retry, controller);
+  }
   useEffect(() => {
-    let active = true;
-    setGameResults([]);
-    if (library.gamingEnabled && submitted.length >= 2)
-      void import("../lib/gaming").then(({ searchGames }) => { if (active) setGameResults(searchGames(submitted, true)); }).catch(() => { if (active) setGameResults([]); });
-    return () => { active = false; };
+    const controller = new AbortController(); gameAbort.current?.abort(); gameAbort.current = controller;
+    setGameResults([]); setGamePage(1); setGameHasMore(false); setGameMessage(""); setGameMode("selected"); setGameBusy(false);
+    if (library.gamingEnabled && submitted.length >= 2) {
+      setGameBusy(true);
+      void import("../lib/gaming").then(({ searchGames }) => {
+        if (!controller.signal.aborted) { setGameResults(searchGames(submitted, true)); void loadGameSearch(submitted, 1, false, false, controller); }
+      }).catch(() => { if (!controller.signal.aborted) void loadGameSearch(submitted, 1, false, false, controller); });
+    }
+    return () => controller.abort();
   }, [submitted, library.gamingEnabled]);
   function setGameStatus(id: string, status: GameStatus | null) {
-    library.setGameStatus(id, status);
+    library.setGameStatus(id, status, gameResults.find(game => game.id === id) || library.gameDetails[id]);
     setToast(
       status === "later"
         ? "Added to Play later"
@@ -1303,6 +1328,7 @@ function Catalogue() {
               platforms={library.gamingPlatforms}
               onPlatform={library.setGamePlatform}
               collection={library.games}
+              details={library.gameDetails}
               onStatus={setGameStatus}
             />
           ) : upcoming && ready ? (
@@ -1314,6 +1340,7 @@ function Catalogue() {
                       platforms: library.gamingPlatforms,
                       onPlatform: library.setGamePlatform,
                       collection: library.games,
+                      details: library.gameDetails,
                       onStatus: setGameStatus,
                     }
                   : undefined
@@ -1329,6 +1356,8 @@ function Catalogue() {
               query={submitted}
               hasMore={searchHasMore} moreBusy={searchMoreBusy} moreError={searchMoreError} onLoadMore={loadMoreSearch}
               gameResults={library.gamingEnabled ? gameResults : undefined}
+              gameBusy={gameBusy} gameMode={gameMode} gameMessage={gameMessage} gameHasMore={gameHasMore}
+              onMoreGames={() => moreGames()} onRetryGames={() => moreGames(true)}
               gameCollection={library.games}
               onGameStatus={setGameStatus}
               titles={filtered}

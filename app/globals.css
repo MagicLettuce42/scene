@@ -4864,6 +4864,8 @@ html:not([data-theme="pearl"]):not([data-theme="daylight"]) .scene-brand-mark .s
 .load-more > .fine-print { margin: 0; max-width: 65ch; }
 .load-more > .button { align-self: flex-start; }
 .load-more + .provider-search { margin-top: 24px; }
+.game-search-message { display: grid; justify-items: start; gap: 8px; margin-block: 16px; }
+.search-game-note a, .gaming-source-note a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 :is(.inline-actions, .hero-buttons, .tonight-buttons, .welcome-actions,
   .modal-footer, .profile-photo-actions, .account-data-actions, .privacy-choice-actions,
   .filter-actions, .game-card-actions) {

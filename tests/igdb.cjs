@@ -1,0 +1,62 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript');
+for(const ext of ['.ts','.tsx'])require.extensions[ext]=(mod,file)=>mod._compile(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,file);
+const clock=Date.now;let now=clock();Date.now=()=>now;
+process.env.IGDB_CLIENT_ID='fixture-client';process.env.IGDB_CLIENT_SECRET='fixture-secret';
+const calls=[];let tokens=0,unauthorised=false,limited=false;
+const row=id=>({id,name:'Unlisted adventure '+id,slug:'unlisted-adventure-'+id,summary:'Public fixture description',game_type:{type:'Main Game'},game_status:{status:'Released'},first_release_date:1577836800,genres:[{name:'Adventure'}],platforms:[{name:'PlayStation 5'},{name:'PC (Microsoft Windows)'},{name:'PlayStation 4'},{name:'Nintendo Switch 2'}],cover:{image_id:'cofixture'+id},websites:[]});
+global.fetch=async(url,options)=>{
+ now+=500;calls.push({url,options});
+ if(url==='https://id.twitch.tv/oauth2/token'){
+  assert.equal(options.method,'POST');assert.ok(options.body instanceof URLSearchParams);assert.equal(options.body.get('client_secret'),'fixture-secret');assert.ok(!url.includes('fixture-secret'));
+  return Response.json({access_token:'fixture-token-'+(++tokens),expires_in:3600});
+ }
+ assert.equal(url,'https://api.igdb.com/v4/games');assert.equal(options.headers['Client-ID'],'fixture-client');assert.match(options.headers.Authorization,/^Bearer fixture-token-/);
+ if(unauthorised){unauthorised=false;return Response.json({error:'fixture-secret'}, {status:401});}
+ if(limited)return Response.json({error:'fixture-secret'}, {status:429});
+ const ids=options.body.match(/where id = \(([^)]+)\)/);
+ if(ids)return Response.json(ids[1].split(',').map(Number).map(row));
+ const offset=Number(options.body.match(/offset (\d+)/)?.[1]||0);
+ return Response.json(Array.from({length:21},(_,i)=>row(700001+offset+i)));
+};
+(async()=>{
+ const provider=require('../lib/igdb.ts'),core=require('../lib/gaming-state.ts');
+ const a=await Promise.all([provider.searchIGDB('Unlisted adventure',1),provider.searchIGDB('Unlisted adventure',1)]);
+ assert.equal(tokens,1);assert.equal(calls.filter(c=>c.url.includes('/v4/')).length,1,'concurrent identical searches coalesce');
+ assert.equal(a[0].games.length,20);assert.equal(a[0].hasMore,true);
+ assert.deepEqual(a[0].games[0].platforms,['ps5','pc','switch2']);assert.ok(a[0].games[0].platformNames.includes('PlayStation 4'),'older/other platforms are retained for display');
+ const before=calls.length;await provider.searchIGDB('Unlisted adventure',1);assert.equal(calls.length,before,'repeat queries use the cache');
+ const page2=await provider.searchIGDB('Unlisted adventure',2);assert.equal(page2.games[0].id,'igdb-700021');
+ const cachedBefore=calls.length;await provider.igdbGameDetails(['igdb-700001']);assert.equal(calls.length,cachedBefore,'a searched title is already canonical for saving');
+ const fetched=await provider.igdbGameDetails(['igdb-800001']);assert.equal(fetched.get('igdb-800001').name,'Unlisted adventure 800001');
+ assert.equal(provider.normalizeIGDB({...row(1),name:'ASTRO BOT',slug:'astro-bot'}).id,'astro-bot','existing save identity is retained for an unambiguous title');
+ assert.equal(provider.normalizeIGDB({...row(2),name:'Resident Evil 4',slug:'re4',websites:[{url:'https://store.steampowered.com/app/254700/'}]}).id,'resident-evil-4-2005');
+ assert.equal(provider.normalizeIGDB({...row(3),name:'Resident Evil 4',slug:'re4-new',websites:[{url:'https://store.steampowered.com/app/2050650/'}]}).id,'resident-evil-4');
+ assert.equal(provider.normalizeIGDB({...row(4),name:'Resident Evil 4',slug:'re4-unmapped'}).id,'igdb-4','a name alone cannot conflate a remake with the original');
+ assert.equal(provider.normalizeIGDB({...row(5),themes:[42]}),null);
+ assert.equal(provider.normalizeIGDB({...row(6),slug:'../../unsafe'}),null);
+ assert.equal(provider.normalizeIGDB({...row(7),cover:{image_id:'../../unsafe'}}).image,'');
+ const announced=provider.normalizeIGDB({...row(8),game_status:{status:'Announced'}});
+ assert.equal(announced.released,false);assert.match(core.gameReleaseLabel(announced,'2026-11-04'),/Release listed/);
+ assert.equal(core.cleanGameSnapshot({...a[0].games[0],image:'https://evil.invalid/track'}),null);
+ assert.equal(core.cleanGameSnapshot({...a[0].games[0],sourceUrl:'javascript:alert(1)'}),null);
+ const q='game"; fields *;';await provider.searchIGDB(q,1);assert.ok(calls.at(-1).options.body.startsWith('search '+JSON.stringify(q)+'; fields '),'query text remains quoted data');
+ unauthorised=true;await provider.searchIGDB('Renew token',1);assert.equal(tokens,2,'401 renews the token once');
+ limited=true;await assert.rejects(provider.searchIGDB('Rate limited',1),e=>!e.message.includes('fixture-secret')&&/temporarily unavailable/.test(e.message));
+ let member=true;const auth=require.resolve('../lib/auth/server.ts');require.cache[auth]={id:auth,filename:auth,loaded:true,exports:{requireSceneMember:async()=>member?{error:null}:{error:Response.json({}, {status:401})}}};
+ const route=require('../app/api/games/route.ts'),req=q=>new Request('https://scene.invalid/api/games?'+q);
+ member=false;assert.equal((await route.GET(req('q=Game'))).status,401);member=true;
+ for(const q of ['q=a','q=ok&page=0','q=ok&page=51','q=ok&page=https://evil.invalid','q=bad%00name'])assert.equal((await route.GET(req(q))).status,400);
+ const outage=await (await route.GET(req('q=Resident%20Evil'))).json();assert.equal(outage.mode,'selected');assert.equal(outage.games.length,13);assert.match(outage.message,/could not connect/);
+ delete process.env.IGDB_CLIENT_SECRET;
+ const missing=await (await route.GET(req('q=Resident%20Evil'))).json();assert.equal(missing.mode,'selected');assert.match(missing.message,/not connected yet/);
+ process.env.IGDB_CLIENT_SECRET='fixture-secret';limited=false;
+ const live=await route.GET(req('q=Unlisted%20adventure&page=2')),body=await live.json();assert.equal(body.mode,'igdb');assert.equal(body.games.length,20);assert.equal(live.headers.get('Cache-Control'),'no-store');assert.ok(!JSON.stringify(body).includes('fixture-secret'));assert.ok(!JSON.stringify(body).includes('fixture-token'));
+ const alias=await (await route.GET(req('q=RE9'))).json();assert.equal(alias.mode,'igdb');assert.ok(alias.games.some(g=>g.id==='resident-evil-requiem'),'selected aliases remain available alongside database results');
+ const transport=global.fetch,held=[];let inFlight=0,maxInFlight=0;
+ global.fetch=async(url,options)=>{if(!url.includes('/v4/'))return transport(url,options);now+=500;inFlight++;maxInFlight=Math.max(maxInFlight,inFlight);await new Promise(resolve=>held.push(resolve));inFlight--;return Response.json([]);};
+ now+=10000;
+ const burst=Promise.allSettled(Array.from({length:12},(_,i)=>provider.searchIGDB('Burst '+i,1)));
+ await new Promise(resolve=>setTimeout(resolve,1100));assert.equal(maxInFlight,8);held.forEach(resolve=>resolve());
+ const settled=await burst;assert.equal(settled.filter(r=>r.status==='fulfilled').length,8);assert.equal(settled.filter(r=>r.status==='rejected').length,4);global.fetch=transport;
+ console.log('PASS: IGDB app auth/renewal, one-query pagination, caches, query escaping, edition identities, platform metadata, age-theme exclusion, safe URLs, member gating and explicit offline/setup fallback.');
+})().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>{Date.now=clock;delete process.env.IGDB_CLIENT_ID;delete process.env.IGDB_CLIENT_SECRET;});

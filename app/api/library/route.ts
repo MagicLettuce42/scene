@@ -1,6 +1,7 @@
 import { applyAvailabilitySnapshots } from "../../../lib/watchlist-snapshots";
 import { readReleaseFeed } from "../../../lib/release-feed";
 import { requireSceneMember } from "../../../lib/auth/server";
+import { verifyGameOperations } from "../../../lib/game-library";
 import {
   applyMutation,
   canUndoMutation,
@@ -71,6 +72,8 @@ export async function POST(req: Request) {
         409,
       );
     let document: LibraryDocument;
+    try { input.mutation.operations = await verifyGameOperations(current.document, input.mutation.operations); }
+    catch { return reply({ error: "Game details could not be verified. Your changes are kept on this device; retry shortly." }, 503); }
     try {
       document = applyMutation(current.document, input.mutation);
     } catch {

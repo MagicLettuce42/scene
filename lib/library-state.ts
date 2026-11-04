@@ -5,6 +5,8 @@ import type { Person } from "./people";
 import { validProfilePhoto } from "./profile-photo";
 import {
   cleanGameCollection,
+  cleanGameSnapshot,
+  cleanGameSnapshots,
   gamePlatforms,
   isGameId,
   isGamePlatform,
@@ -12,6 +14,7 @@ import {
   type GameCollection,
   type GamePlatform,
   type GameStatus,
+  type Game,
 } from "./gaming-state";
 import { cleanUpcomingRelease } from "./upcoming";
 import { resolveHome, validHomePatch, type HomePreferences } from "./home-preferences";
@@ -35,6 +38,7 @@ export type LibraryDocument = {
   services: Record<string, boolean>;
   receipts: string[];
   games?: GameCollection;
+  gameDetails?: Record<string, Game>;
   preferences?: {
     collections?: Record<string, PersonalCollection | null>;
     followedPeople?: Record<string, FollowedPerson | null>;
@@ -65,7 +69,7 @@ export type LibraryOperation =
   | { type: "avatar"; value: string | null }
   | { type: "gaming"; value: boolean }
   | { type: "game-platform"; key: GamePlatform; value: boolean }
-  | { type: "game-status"; id: string; value: GameStatus | null }
+  | { type: "game-status"; id: string; value: GameStatus | null; game?: Game }
   | { type: "auto-availability"; value: boolean }
   | { type: "seasonal"; value: boolean }
   | { type: "refresh"; title: Title }
@@ -101,6 +105,7 @@ export function titleKey(t: Title) {
 export function applyOperations(source: LibraryDocument, operations: LibraryOperation[]): LibraryDocument {
   const doc = {
     games: cleanGameCollection(source.games),
+    gameDetails: cleanGameSnapshots(source.gameDetails),
     entries: Object.assign(Object.create(null), source.entries) as Record<string, LibraryEntry>,
     services: { ...source.services },
     receipts: [...source.receipts],
@@ -165,8 +170,12 @@ export function applyOperations(source: LibraryDocument, operations: LibraryOper
       continue;
     }
     if (op.type === "game-status") {
-      if (op.value) doc.games[op.id] = op.value;
-      else delete doc.games[op.id];
+      if (op.value) {
+        if (!doc.games[op.id] && Object.keys(doc.games).length >= 500) throw Error("You can save up to 500 games.");
+        doc.games[op.id] = op.value;
+        const game = cleanGameSnapshot(op.game);
+        if (game?.id === op.id) doc.gameDetails[op.id] = game;
+      } else { delete doc.games[op.id]; delete doc.gameDetails[op.id]; }
       continue;
     }
     if (op.type === "auto-availability") {
@@ -253,6 +262,7 @@ export function projectLibrary(doc: LibraryDocument) {
       .filter((p) => doc.preferences?.gamePlatforms?.[p.id] === true)
       .map((p) => p.id),
     games: cleanGameCollection(doc.games),
+    gameDetails: cleanGameSnapshots(doc.gameDetails),
     autoAvailability: doc.preferences?.autoAvailability !== false,
     seasonal: doc.preferences?.seasonal !== false,
     home: resolveHome(doc.preferences?.home),
@@ -435,7 +445,9 @@ export function validateMutation(body: any): { revision: number; mutation: Mutat
     }
     if (op?.type === "game-status") {
       if (!isGameId(op.id) || (op.value !== null && !isGameStatus(op.value))) return null;
-      operations.push({ type: "game-status", id: op.id, value: op.value });
+      const game = op.game === undefined ? undefined : cleanGameSnapshot(op.game);
+      if (op.game !== undefined && (!game || game.id !== op.id)) return null;
+      operations.push({ type: "game-status", id: op.id, value: op.value, ...(game ? { game } : {}) });
       continue;
     }
     if (op?.type === "auto-availability") {

@@ -11,6 +11,7 @@ export default function SearchResults({
   query,
   hasMore, moreBusy, moreError, onLoadMore,
   gameResults,
+  gameBusy = false, gameMode = "selected", gameMessage = "", gameHasMore = false, onMoreGames, onRetryGames,
   gameCollection,
   onGameStatus,
   titles,
@@ -27,6 +28,8 @@ export default function SearchResults({
   query: string;
   hasMore?: boolean; moreBusy?: boolean; moreError?: string; onLoadMore?: () => void;
   gameResults?: Game[];
+  gameBusy?: boolean; gameMode?: "igdb" | "selected"; gameMessage?: string; gameHasMore?: boolean;
+  onMoreGames?: () => void; onRetryGames?: () => void;
   gameCollection?: GameCollection;
   onGameStatus?: (id: string, status: GameStatus | null) => void;
   titles: Title[];
@@ -50,6 +53,7 @@ export default function SearchResults({
         <h3 id="title-results-heading">{showGames ? "Films, TV series & games" : "Films & TV series"}</h3>
         <p className="fine-print">Films and TV series are limited to subscription or free listings on your selected services. Availability is checked again when you open a title.</p>
         {(checking || busy) && <p className="refresh-status" role="status"><LoaderCircle size={16} className="spin" /> Checking streaming availability… Matches appear as they are checked.</p>}
+        {showGames && gameBusy && <p className="refresh-status" role="status"><LoaderCircle size={16} className="spin" /> Searching the games catalogue…</p>}
         {hasMatches ? (
           <div className="poster-grid">
             {availableTitles.map((t) => (
@@ -67,22 +71,24 @@ export default function SearchResults({
         ) : (
           <div className="quiet-empty">
             <p>
-              {checking ? "Checking your selected services…" : showGames
+              {checking || gameBusy ? "Checking for matching titles…" : showGames
                   ? "No matching films or series on your selected services, or games in Scene’s catalogue. Try another name or adjust your filters."
                   : people.length
                     ? "No matching film or series titles. Select a person below to explore their work."
                     : "No films or series are listed on your selected services for this search and filters. Try another name or edit your services."}
             </p>
-            {!checking && <button className="button secondary" onClick={onServices}>
+            {!checking && !gameBusy && <button className="button secondary" onClick={onServices}>
               {actions.selected.length ? "Edit my services" : "Choose my services"}
             </button>}
           </div>
         )}
         {showGames && (
           <p className="search-game-note">
-            Games search covers Scene’s selected catalogue, not every release. Game matches include all platforms and are separate from streaming services.
+            {gameMode === "igdb" ? <>Game data by <a href="https://www.igdb.com/" target="_blank" rel="noopener noreferrer">IGDB</a>. </> : <>Games search covers Scene’s selected catalogue, not every release. </>}Game matches include all platforms and are separate from streaming services.
           </p>
         )}
+        {showGames && gameMessage && <div className="game-search-message" role="status"><p className="fine-print">{gameMessage}</p>{onRetryGames && <button className="text-button" disabled={gameBusy} onClick={onRetryGames}>Retry games search</button>}</div>}
+        {showGames && gameHasMore && onMoreGames && <div className="load-more"><button className="button secondary" disabled={gameBusy} onClick={onMoreGames}>{gameBusy ? "Loading more games…" : "Load more games"}</button></div>}
         {matchingGames.length > 0 && !actions.selected.length && (
           <button className="text-button" onClick={onServices}>
             Choose services to see films and TV series

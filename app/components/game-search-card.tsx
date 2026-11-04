@@ -1,7 +1,7 @@
 "use client";
 import GameArtwork from "./game-artwork";
 import { ArrowUpRight, Bookmark } from "lucide-react";
-import { gamePlatforms, gameReleaseLabel, gameStatuses, type Game } from "../../lib/gaming-state";
+import { gamePlatformLabels, gameReleaseLabel, gameStatuses, type Game } from "../../lib/gaming-state";
 import { londonDate } from "../../lib/episode-calendar";
 import type { GameActions } from "./gaming";
 
@@ -15,11 +15,11 @@ export default function GameSearchCard({ game, collection, onStatus }: GameActio
           href={game.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={`Official page for ${game.name}`}
+          aria-label={`${game.source === "igdb" ? "Game details" : "Official page"} for ${game.name}`}
         >
           <GameArtwork game={game} decorative />
           <span className="poster-hover">
-            Official page <ArrowUpRight size={18} />
+            {game.source === "igdb" ? "Game details" : "Official page"} <ArrowUpRight size={18} />
           </span>
         </a>
         <button
@@ -37,7 +37,7 @@ export default function GameSearchCard({ game, collection, onStatus }: GameActio
       </a>
       {game.edition && <p className="game-edition">{game.edition}</p>}
       <p className="title-meta game-search-platforms">
-        {game.platforms.map((id) => gamePlatforms.find((p) => p.id === id)?.short).join(" · ")}
+        {gamePlatformLabels(game).join(" · ") || "Platforms not listed"}
       </p>
       <p className="game-release">
         {gameReleaseLabel(game, londonDate())}

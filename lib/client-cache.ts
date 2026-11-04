@@ -49,7 +49,7 @@ export function writeCache(key: string, data: unknown, expected: SessionBoundary
     /* In-memory caching still works when browser storage is full. */
   }
 }
-export async function cachedJSON<T>(url: string, signal?: AbortSignal, force = false): Promise<T> {
+export async function cachedJSON<T>(url: string, signal?: AbortSignal, force = false, cacheIf?: (data: T) => boolean): Promise<T> {
   const expected = sessionBoundary(),
     hit = force ? null : readCache<T>(url);
   if (hit) return hit;
@@ -65,7 +65,7 @@ export async function cachedJSON<T>(url: string, signal?: AbortSignal, force = f
     assertSessionBoundary(expected);
     if (!r.ok) throw Error(data.error || "This could not load. Please try again.");
     if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
-    writeCache(url, data, expected);
+    if (!cacheIf || cacheIf(data)) writeCache(url, data, expected);
     if (metric) recordQuality(`${metric}_ok`, performance.now() - started);
     return data;
   } catch (error) {

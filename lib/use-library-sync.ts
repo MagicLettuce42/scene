@@ -3,7 +3,7 @@ import {newCollectionId} from "./collections";
 import type { FilterPreset, RecommendationMode } from "./filter-presets";
 import type { Person } from "./people";
 import type { PersonPreferences } from "./people-following";
-import type { GamePlatform, GameStatus } from "./gaming";
+import { isRemoteGameId, type GamePlatform, type GameStatus, type Game } from "./gaming-state";
 import { useEffect, useRef, useState } from "react";
 import { services, sameTitle, type Title } from "./catalogue";
 import { readFeedback, type FeedbackAction } from "./preferences";
@@ -279,7 +279,7 @@ export function useLibrarySync(account: Account) {
     setAvatar: (value: string | null) => enqueue([{ type: "avatar", value }]),
     setGaming: (value: boolean) => enqueue([{ type: "gaming", value }]),
     setGamePlatform: (key: GamePlatform, value: boolean) => enqueue([{ type: "game-platform", key, value }]),
-    setGameStatus: (id: string, value: GameStatus | null) => enqueue([{ type: "game-status", id, value }]),
+    setGameStatus: (id: string, value: GameStatus | null, game?: Game) => enqueue([{ type: "game-status", id, value, ...(isRemoteGameId(id) && game ? { game } : {}) }]),
     ready,
     loaded,
     status,

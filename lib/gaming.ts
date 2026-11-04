@@ -29,8 +29,10 @@ export function filterGames(
   filters: GameFilters,
   platforms: GamePlatform[],
   collection: GameCollection,
+  additional: Game[] = [],
 ): Game[] {
-  const list = games.filter((g) => {
+  const catalogue = [...new Map([...games, ...additional].map(game => [game.id, game])).values()];
+  const list = catalogue.filter((g) => {
     const matchesPlatform =
       filters.platform === "all" ||
       (filters.platform === "mine"

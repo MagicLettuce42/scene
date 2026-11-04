@@ -7,6 +7,7 @@ import { ArrowUpRight, Gamepad2, Plus, SlidersHorizontal } from "lucide-react";
 import {
   games,
   gamePlatforms,
+  gamePlatformLabels,
   gameStatuses,
   filterGames,
   gameReleaseLabel,
@@ -33,11 +34,11 @@ function GameCard({ game, collection, onStatus }: GameActions & { game: Game }) 
           href={game.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label={`Official page for ${game.name}`}
+          aria-label={`${game.source === "igdb" ? "Game details" : "Official page"} for ${game.name}`}
         >
           <GameArtwork game={game} decorative />
           <span className="poster-hover">
-            Official page <ArrowUpRight size={18} />
+            {game.source === "igdb" ? "Game details" : "Official page"} <ArrowUpRight size={18} />
           </span>
         </a>
       </div>
@@ -46,8 +47,8 @@ function GameCard({ game, collection, onStatus }: GameActions & { game: Game }) 
         <h3>{game.name}</h3>
         {game.edition && <p className="game-edition">{game.edition}</p>}
         <div className="game-platforms" aria-label="Platforms">
-          {game.platforms.map((id) => (
-            <span key={id}>{gamePlatforms.find((p) => p.id === id)?.short}</span>
+          {gamePlatformLabels(game).map((label) => (
+            <span key={label}>{label}</span>
           ))}
         </div>
         <p className={`game-release ${game.released ? "" : "announced"}`}>
@@ -138,6 +139,7 @@ export function ActiveGamePlatforms({
 }
 export type GamingProps = GameActions & {
   platforms: GamePlatform[];
+  details?: Record<string, Game>;
   onPlatform: (id: GamePlatform, enabled: boolean) => void;
 };
 export function UpcomingGames(props: GamingProps & { calendar?: boolean }) {
@@ -148,6 +150,7 @@ export default function Gaming({
   onPlatform,
   upcoming = false,
   calendar = false,
+  details = {},
   ...actions
 }: GamingProps & { upcoming?: boolean; calendar?: boolean }) {
   const [browseTab, setTab] = useState<"explore" | "collection">("explore"),
@@ -161,6 +164,7 @@ export default function Gaming({
       { tab, platform, genre, status: tab === "collection" ? status : "all" },
       platforms,
       actions.collection,
+      Object.values(details),
     ),
     count = Object.keys(actions.collection).length;
   const pageKey = JSON.stringify([tab, platform, genre, platforms]),
@@ -240,7 +244,7 @@ export default function Gaming({
 
         </summary>
         <div className="game-options-body">
-          <p className="fine-print">{games.length} selected games. This catalogue does not cover every release.</p>
+          <p className="fine-print">Explore includes {games.length} selected highlights. Use the main search for the wider games catalogue.</p>
           <div className="game-filter-fields">
             <label>
               Show games for
@@ -261,7 +265,7 @@ export default function Gaming({
               Genre
               <SelectControl value={genre} onChange={(e) => setGenre(e.target.value)}>
                 <option value="all">All genres</option>
-                {[...new Set(games.map((g) => g.genre))].sort().map((g) => (
+                {[...new Set([...games, ...Object.values(details)].map((g) => g.genre))].sort().map((g) => (
                   <option key={g}>{g}</option>
                 ))}
               </SelectControl>
@@ -371,6 +375,7 @@ export default function Gaming({
         </div>
       )}
       <p className="gaming-source-note">
+        {Object.values(details).some(game => game.source === "igdb") && <>Saved game data by <a href="https://www.igdb.com/" target="_blank" rel="noopener noreferrer">IGDB</a>. </>}
         A selected catalogue, with official links for game details, age ratings and purchase options. A missing result does not mean a game does not exist. Dates
         may change; an announced date does not confirm a release. Platform listings cover the editions shown.
         Subscription inclusion is not tracked. Your game progress is saved manually and is private to your
