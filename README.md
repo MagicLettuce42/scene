@@ -54,6 +54,10 @@ Tokens are held only in memory and reset after each attempt. Load errors and exp
 
 ## Attribution
 
+Games use a selected local catalogue rather than a live whole-market search. Resident Evil coverage includes 13 entries checked on 4 November 2026; remakes and the original Resident Evil 4 have separate identities. Search aliases include RE0–RE9 and Resident Evil 8/9. New IDs are included in the same client/server save validation as existing games. Cover artwork is served locally: Steam library artwork for the corresponding app IDs and Capcom’s published Requiem artwork. Original and cloud-only Switch editions are not conflated with native Switch 2 releases.
+
+Resident Evil metadata sources: [Steam franchise listing](https://store.steampowered.com/search/?franchise=Resident+Evil), [Capcom’s PS5/Series update announcement](https://game.capcom.com/residentevil/de/news-2035.html), [Capcom’s RE4 release announcement](https://news.capcomusa.com/2023/03/24/resident-evil-4-is-out-now/), [Nintendo’s platform catalogue](https://www.nintendo.com/us/whatsnew/heres-every-resident-evil-game-available-for-nintendo-switch-2-or-nintendo-switch/), and [Capcom’s Requiem product details](https://www.capcom.co.jp/ir/english/news/html/e260316.html). Asset IDs and verified store links are retained in `lib/game-catalogue.json`. Regression checks: `node tests/game-search-coverage.cjs` and `node tests/gaming.cjs <temporary-compiled-root>`.
+
 TMDB metadata and images; JustWatch availability via TMDB; optional Watchmode links; TVmaze seed metadata; game artwork belongs to its respective owners. See in-app credits. This product uses the TMDB API but is not endorsed or certified by TMDB. Public source visibility does not grant a new license to third-party assets. No open-source license has been selected for this repository.
 
 ## Availability discrepancies

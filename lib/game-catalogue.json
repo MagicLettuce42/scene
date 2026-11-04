@@ -654,5 +654,256 @@
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-download-software/Frostpunk-3215042.html",
     "image": "/games/frostpunk-switch.webp",
     "checked": "2026-10-18"
+  },
+  {
+    "id": "resident-evil-0",
+    "name": "Resident Evil 0",
+    "aliases": [
+      "RE0",
+      "Resident Evil Zero"
+    ],
+    "summary": "Investigate the events before the mansion incident in this remastered prequel.",
+    "genre": "Survival horror",
+    "platforms": [
+      "pc",
+      "switch"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/339340/",
+    "image": "/games/resident-evil-0.jpg",
+    "checked": "2026-11-04",
+    "edition": "HD Remaster"
+  },
+  {
+    "id": "resident-evil-hd",
+    "name": "Resident Evil",
+    "aliases": [
+      "RE1",
+      "Resident Evil 1",
+      "Resident Evil HD Remaster"
+    ],
+    "summary": "Explore a mysterious mansion, solve puzzles and survive its biological horrors.",
+    "genre": "Survival horror",
+    "platforms": [
+      "pc",
+      "switch"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/304240/",
+    "image": "/games/resident-evil-hd.jpg",
+    "checked": "2026-11-04",
+    "edition": "HD Remaster"
+  },
+  {
+    "id": "resident-evil-2",
+    "name": "Resident Evil 2",
+    "aliases": [
+      "RE2",
+      "Resident Evil 2 Remake"
+    ],
+    "summary": "Survive the Raccoon City outbreak as Leon Kennedy and Claire Redfield.",
+    "genre": "Survival horror",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch2"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/883710/",
+    "image": "/games/resident-evil-2.jpg",
+    "checked": "2026-11-04",
+    "edition": "2019 remake"
+  },
+  {
+    "id": "resident-evil-3",
+    "name": "Resident Evil 3",
+    "aliases": [
+      "RE3",
+      "Resident Evil 3 Remake"
+    ],
+    "summary": "Escape Raccoon City as Jill Valentine while Nemesis pursues her.",
+    "genre": "Survival horror",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch2"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/952060/",
+    "image": "/games/resident-evil-3.jpg",
+    "checked": "2026-11-04",
+    "edition": "2020 remake"
+  },
+  {
+    "id": "resident-evil-4",
+    "name": "Resident Evil 4",
+    "aliases": [
+      "RE4",
+      "Resident Evil 4 Remake"
+    ],
+    "summary": "Join Leon Kennedy on a rescue mission in a hostile European village.",
+    "genre": "Survival horror",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch2"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/2050650/",
+    "image": "/games/resident-evil-4.jpg",
+    "checked": "2026-11-04",
+    "edition": "2023 remake"
+  },
+  {
+    "id": "resident-evil-4-2005",
+    "name": "Resident Evil 4 (2005)",
+    "aliases": [
+      "RE4 classic",
+      "Resident Evil 4 original"
+    ],
+    "summary": "Experience Leon Kennedy’s original action-horror rescue mission.",
+    "genre": "Survival horror",
+    "platforms": [
+      "pc",
+      "switch"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/254700/",
+    "image": "/games/resident-evil-4-2005.jpg",
+    "checked": "2026-11-04",
+    "edition": "Original game · HD edition"
+  },
+  {
+    "id": "resident-evil-5",
+    "name": "Resident Evil 5",
+    "aliases": [
+      "RE5"
+    ],
+    "summary": "Investigate an outbreak with Chris Redfield and Sheva Alomar in a co-op action-horror adventure.",
+    "genre": "Survival horror",
+    "platforms": [
+      "pc",
+      "switch"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/21690/",
+    "image": "/games/resident-evil-5.jpg",
+    "checked": "2026-11-04"
+  },
+  {
+    "id": "resident-evil-6",
+    "name": "Resident Evil 6",
+    "aliases": [
+      "RE6"
+    ],
+    "summary": "Play interconnected action-horror campaigns featuring returning Resident Evil characters.",
+    "genre": "Survival horror",
+    "platforms": [
+      "pc",
+      "switch"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/221040/",
+    "image": "/games/resident-evil-6.jpg",
+    "checked": "2026-11-04"
+  },
+  {
+    "id": "resident-evil-7",
+    "name": "Resident Evil 7 biohazard",
+    "aliases": [
+      "RE7",
+      "Resident Evil VII"
+    ],
+    "summary": "Enter first-person survival horror at the Baker family estate.",
+    "genre": "Survival horror",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch2"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/418370/",
+    "image": "/games/resident-evil-7.jpg",
+    "checked": "2026-11-04"
+  },
+  {
+    "id": "resident-evil-village",
+    "name": "Resident Evil Village",
+    "aliases": [
+      "RE8",
+      "Resident Evil 8"
+    ],
+    "summary": "Continue Ethan Winters’ story through a remote village and its surrounding horrors.",
+    "genre": "Survival horror",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch2"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/1196590/",
+    "image": "/games/resident-evil-village.jpg",
+    "checked": "2026-11-04"
+  },
+  {
+    "id": "resident-evil-requiem",
+    "name": "Resident Evil Requiem",
+    "aliases": [
+      "RE9",
+      "Resident Evil 9"
+    ],
+    "summary": "The ninth main entry in Capcom’s survival-horror series.",
+    "genre": "Survival horror",
+    "platforms": [
+      "ps5",
+      "xbox",
+      "pc",
+      "switch2"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/3764200/",
+    "image": "/games/resident-evil-requiem.png",
+    "checked": "2026-11-04",
+    "date": "2026-02-27",
+    "imageFit": "contain"
+  },
+  {
+    "id": "resident-evil-revelations",
+    "name": "Resident Evil Revelations",
+    "aliases": [
+      "Resident Evil Revelations 1"
+    ],
+    "summary": "Investigate a threat at sea in a survival-horror adventure starring Jill Valentine.",
+    "genre": "Survival horror",
+    "platforms": [
+      "pc",
+      "switch"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/222480/",
+    "image": "/games/resident-evil-revelations.jpg",
+    "checked": "2026-11-04"
+  },
+  {
+    "id": "resident-evil-revelations-2",
+    "name": "Resident Evil Revelations 2",
+    "aliases": [
+      "RE Revelations 2"
+    ],
+    "summary": "Follow intertwined survival-horror stories with cooperative play.",
+    "genre": "Survival horror",
+    "platforms": [
+      "pc",
+      "switch"
+    ],
+    "released": true,
+    "sourceUrl": "https://store.steampowered.com/app/287290/",
+    "image": "/games/resident-evil-revelations-2.jpg",
+    "checked": "2026-11-04"
   }
 ]

@@ -35,6 +35,7 @@ export default function GameSearchCard({ game, collection, onStatus }: GameActio
       <a className="title-name" href={game.sourceUrl} target="_blank" rel="noopener noreferrer">
         {game.name}
       </a>
+      {game.edition && <p className="game-edition">{game.edition}</p>}
       <p className="title-meta game-search-platforms">
         {game.platforms.map((id) => gamePlatforms.find((p) => p.id === id)?.short).join(" · ")}
       </p>

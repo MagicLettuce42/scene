@@ -17,6 +17,7 @@ export const gameStatuses = [
 export type Game = {
   id: string;
   name: string;
+  aliases?: string[];
   summary: string;
   genre: string;
   platforms: GamePlatform[];

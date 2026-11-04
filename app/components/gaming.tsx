@@ -240,7 +240,7 @@ export default function Gaming({
 
         </summary>
         <div className="game-options-body">
-          <p className="fine-print">Selected catalogue · checked 18 Oct 2026</p>
+          <p className="fine-print">{games.length} selected games. This catalogue does not cover every release.</p>
           <div className="game-filter-fields">
             <label>
               Show games for
@@ -371,7 +371,7 @@ export default function Gaming({
         </div>
       )}
       <p className="gaming-source-note">
-        A selected catalogue, with official links for game details, age ratings and purchase options. Dates
+        A selected catalogue, with official links for game details, age ratings and purchase options. A missing result does not mean a game does not exist. Dates
         may change; an announced date does not confirm a release. Platform listings cover the editions shown.
         Subscription inclusion is not tracked. Your game progress is saved manually and is private to your
         Scene account.

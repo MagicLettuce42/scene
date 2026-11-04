@@ -7,7 +7,7 @@ export default function GameArtwork({ game, decorative = false }: { game: Game; 
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [game.image]);
   return game.image && !failed ? (
-    <img src={game.image} alt={decorative ? "" : `Artwork for ${game.name}`} referrerPolicy="no-referrer" loading="lazy" onError={() => setFailed(true)} />
+    <img src={game.image} alt={decorative ? "" : `Artwork for ${game.name}`} style={game.imageFit ? { objectFit: game.imageFit } : undefined} referrerPolicy="no-referrer" loading="lazy" onError={() => setFailed(true)} />
   ) : (
     <div className="poster-fallback">
       <Gamepad2 />

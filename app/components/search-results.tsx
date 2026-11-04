@@ -39,17 +39,17 @@ export default function SearchResults({
   onMorePeople: () => void;
   onServices: () => void;
 }) {
-  if (busy) return <Skeletons count={6} />;
   const showGames = gameResults !== undefined && Boolean(onGameStatus),
     matchingGames = showGames ? gameResults || [] : [];
-  const availableTitles = filterTitles(titles, { kind: "all", genre: "all", offer: actions.offer, provider: "all", mine: true, selected: actions.selected });
+  if (busy && !matchingGames.length) return <Skeletons count={6} />;
+  const availableTitles = busy ? [] : filterTitles(titles, { kind: "all", genre: "all", offer: actions.offer, provider: "all", mine: true, selected: actions.selected });
   const hasMatches = availableTitles.length > 0 || matchingGames.length > 0;
   return (
     <div className="unified-search-results">
       <section aria-labelledby="title-results-heading">
         <h3 id="title-results-heading">{showGames ? "Films, TV series & games" : "Films & TV series"}</h3>
         <p className="fine-print">Films and TV series are limited to subscription or free listings on your selected services. Availability is checked again when you open a title.</p>
-        {checking && <p className="refresh-status" role="status"><LoaderCircle size={16} className="spin" /> Checking streaming availability… Matches appear as they are checked.</p>}
+        {(checking || busy) && <p className="refresh-status" role="status"><LoaderCircle size={16} className="spin" /> Checking streaming availability… Matches appear as they are checked.</p>}
         {hasMatches ? (
           <div className="poster-grid">
             {availableTitles.map((t) => (
@@ -78,9 +78,9 @@ export default function SearchResults({
             </button>}
           </div>
         )}
-        {matchingGames.length > 0 && (
+        {showGames && (
           <p className="search-game-note">
-            Game matches are from Scene’s selected catalogue · all platforms.
+            Games search covers Scene’s selected catalogue, not every release. Game matches include all platforms and are separate from streaming services.
           </p>
         )}
         {matchingGames.length > 0 && !actions.selected.length && (

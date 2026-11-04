@@ -13,7 +13,10 @@ export function searchGames(query: string, enabled: boolean): Game[] {
       .trim();
   const q = normalise(query);
   return enabled && q.length >= 2
-    ? games.filter((g) => q.split(" ").every((word) => normalise(g.name).includes(word)))
+    ? games.filter((g) => {
+        const names = normalise([g.name, ...(g.aliases || [])].join(" "));
+        return q.split(" ").every((word) => names.includes(word));
+      })
     : [];
 }
 export type GameFilters = {
