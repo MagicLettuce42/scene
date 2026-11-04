@@ -1,6 +1,6 @@
 import { serviceArrivalTitle } from "./service-arrivals";
 import { titles, serviceKey, safeUrl, type Title, type Offer } from "./catalogue";
-import { hasTMDB, searchTMDB, tmdbDetails, resolveTMDB, type TitleHint } from "./tmdb";
+import { hasTMDB, searchTMDB, tmdbDetails, resolveTMDB, type TitleHint, type SearchOptions } from "./tmdb";
 const cache = new Map<string, { at: number; value: any }>();
 async function json(url: string, headers: Record<string, string> = {}) {
   const hit = cache.get(url);
@@ -86,12 +86,14 @@ export function normalizeWM(s: any): Title {
     dataSource: "watchmode",
   };
 }
-export async function searchCatalogue(q: string, page = 1) {
+export async function searchCatalogue(q: string, page = 1, options: SearchOptions = {}) {
   const local = titles.filter((t) => t.name.toLowerCase().includes(q.toLowerCase()));
+  if (options.preview && !hasTMDB()) return { titles: local, page, hasMore: false, mode: "limited", message: null };
   if (hasTMDB()) {
     try {
-      return await searchTMDB(q, page);
+      return await searchTMDB(q, page, options);
     } catch {
+      if (options.signal?.aborted) throw new DOMException("Search cancelled", "AbortError");
       if (page > 1) throw Error("More search results could not load.");
       return {
         titles: local,

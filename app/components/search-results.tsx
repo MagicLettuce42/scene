@@ -1,6 +1,6 @@
 "use client";
 import PersonPortrait from "./person-portrait";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LoaderCircle } from "lucide-react";
 import GameSearchCard from "./game-search-card";
 import type { Game, GameCollection, GameStatus } from "../../lib/gaming";
 import type { Person } from "../../lib/people";
@@ -18,6 +18,7 @@ export default function SearchResults({
   peopleHasMore,
   peopleMessage,
   busy,
+  checking = false,
   onPerson,
   onMorePeople,
   onServices,
@@ -33,6 +34,7 @@ export default function SearchResults({
   peopleHasMore: boolean;
   peopleMessage: string;
   busy: boolean;
+  checking?: boolean;
   onPerson: (person: Person) => void;
   onMorePeople: () => void;
   onServices: () => void;
@@ -47,6 +49,7 @@ export default function SearchResults({
       <section aria-labelledby="title-results-heading">
         <h3 id="title-results-heading">{showGames ? "Films, TV series & games" : "Films & TV series"}</h3>
         <p className="fine-print">Films and TV series are limited to subscription or free listings on your selected services. Availability is checked again when you open a title.</p>
+        {checking && <p className="refresh-status" role="status"><LoaderCircle size={16} className="spin" /> Checking streaming availability… Matches appear as they are checked.</p>}
         {hasMatches ? (
           <div className="poster-grid">
             {availableTitles.map((t) => (
@@ -64,15 +67,15 @@ export default function SearchResults({
         ) : (
           <div className="quiet-empty">
             <p>
-              {showGames
+              {checking ? "Checking your selected services…" : showGames
                   ? "No matching films or series on your selected services, or games in Scene’s catalogue. Try another name or adjust your filters."
                   : people.length
                     ? "No matching film or series titles. Select a person below to explore their work."
                     : "No films or series are listed on your selected services for this search and filters. Try another name or edit your services."}
             </p>
-            <button className="button secondary" onClick={onServices}>
+            {!checking && <button className="button secondary" onClick={onServices}>
               {actions.selected.length ? "Edit my services" : "Choose my services"}
-            </button>
+            </button>}
           </div>
         )}
         {matchingGames.length > 0 && (
@@ -87,7 +90,7 @@ export default function SearchResults({
         )}
         {moreError && <p role="alert" className="error-notice">{moreError}</p>}
         {(hasMore || moreError) && onLoadMore && <div className="load-more">
-          <button className="button secondary" disabled={moreBusy} onClick={onLoadMore}>
+          <button className="button secondary" disabled={moreBusy || checking} onClick={onLoadMore}>
             {moreBusy ? "Loading more titles…" : moreError ? "Retry loading more titles" : "Load more films & TV series"}
           </button><p className="fine-print">Your services and title filters apply to every page. Other services and unconfirmed listings are hidden.</p>
         </div>}

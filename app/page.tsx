@@ -77,6 +77,7 @@ import TitleExtrasPanel from "./components/title-extras";
 import { Poster, ServiceMark, myOffers, TitleCard, FeedbackButtons } from "./components/catalogue-cards";
 import { availabilityCorrection, correctedOffers } from "../lib/availability-corrections";
 import { cachedJSON, readCache, writeCache } from "../lib/client-cache";
+import { streamSearch } from "../lib/search-client";
 import { findFeedback, visibleSuggestions, type Feedback, type FeedbackAction } from "../lib/preferences";
 import { availableView, readTabs, tabMemoryKey, type View, type TabSnapshot } from "../lib/tab-memory";
 import {
@@ -190,6 +191,7 @@ function Catalogue() {
     [searchPeopleMessage, setSearchPeopleMessage] = useState("");
   const [results, setResults] = useState<Title[]>(titles),
     [searching, setSearching] = useState(false),
+    [searchChecking, setSearchChecking] = useState(false),
     [searchError, setSearchError] = useState("");
   const library = useLibrarySync(account);
   const halloween = useHalloween();
@@ -528,7 +530,7 @@ function Catalogue() {
   function snapshot(): TabSnapshot {
     return {
       searchPage, searchHasMore,
-      people: searching ? [] : searchPeople,
+      people: searching || searchChecking ? [] : searchPeople,
       peopleHasMore: searchPeopleHasMore,
       peopleMessage: searchPeopleMessage,
       availability,
@@ -538,7 +540,7 @@ function Catalogue() {
       offer,
       sort,
       query,
-      submitted: searching ? "" : submitted,
+      submitted: searching || searchChecking ? "" : submitted,
       results,
       searchError,
       showFilters,
@@ -566,7 +568,7 @@ function Catalogue() {
     startApplied.current = true;
     rememberTab();
     searchAbort.current?.abort();
-    setSearching(false); setSearchMoreBusy(false); setSearchMoreError("");
+    setSearching(false); setSearchChecking(false); setSearchMoreBusy(false); setSearchMoreError("");
     setView(next);
     viewRef.current = next;
     const previous = tabMemory.current[next];
@@ -704,6 +706,8 @@ function Catalogue() {
     const controller = new AbortController();
     searchAbort.current = controller;
     setSearching(true);
+    setSearchChecking(true);
+    setResults([]);
     setSearchPage(1); setSearchHasMore(false); setSearchMoreBusy(false); setSearchMoreError("");
     setSearchError("");
     setSearchPeople([]);
@@ -713,48 +717,46 @@ function Catalogue() {
     setSubmitted(q);
     restoreScroll.current = null;
     try {
-      const data = await cachedJSON<{
-        titles: Title[]; page?: number; hasMore?: boolean;
-        people?: Person[];
-        peopleHasMore?: boolean;
-        peopleMessage?: string;
-        message?: string;
-      }>(`/api/search?q=${encodeURIComponent(q)}&scope=services&page=1`, controller.signal);
-      if (controller.signal.aborted) return;
-      setResults(data.titles);
-      setSearchPage(data.page || 1); setSearchHasMore(data.hasMore === true);
-      setSearchPeople(data.people || []);
-      setSearchPeopleHasMore(data.peopleHasMore === true);
-      setSearchPeopleMessage(data.peopleMessage || "");
-      setSearchError(data.message || "");
+      await streamSearch(`/api/search?q=${encodeURIComponent(q)}&scope=services&stream=1&page=1`, controller.signal, (data, complete) => {
+        if (controller.signal.aborted) return;
+        setSearching(false); setSearchChecking(!complete);
+        setResults(data.titles);
+        setSearchPage(data.page || 1); setSearchHasMore(data.hasMore === true);
+        setSearchPeople(data.people || []);
+        setSearchPeopleHasMore(data.peopleHasMore === true);
+        setSearchPeopleMessage(data.peopleMessage || "");
+        setSearchError(data.message || "");
+      });
     } catch (e) {
       if ((e as Error).name !== "AbortError") {
         setSearchError(
-          "Search could not connect. Showing matching saved picks. Try again or check JustWatch UK.",
+          (e as Error).message || "Search could not finish. Please try again.",
         );
-        setResults(titles.filter((t) => t.name.toLowerCase().includes(q.toLowerCase())));
       }
     } finally {
       if (!controller.signal.aborted) {
         setSearching(false);
+        setSearchChecking(false);
         resultHeading.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
   }
   async function loadMoreSearch() {
-    if (searchMoreBusy || searching || !submitted || !searchHasMore) return;
+    if (searchMoreBusy || searching || searchChecking || !submitted || !searchHasMore) return;
     searchAbort.current?.abort(); const controller = new AbortController(); searchAbort.current = controller;
     setSearchMoreBusy(true); setSearchMoreError("");
     try {
-      const data = await cachedJSON<{ titles: Title[]; page: number; hasMore: boolean; message?: string }>(
-        `/api/search?q=${encodeURIComponent(submitted)}&scope=services&page=${searchPage + 1}`, controller.signal, Boolean(searchMoreError));
-      if (controller.signal.aborted) return;
-      setResults(old => mergeBrowseTitles(old, data.titles)); setSearchPage(data.page); setSearchHasMore(data.hasMore === true);
-      if (data.message) setSearchError(data.message);
+      await streamSearch(`/api/search?q=${encodeURIComponent(submitted)}&scope=services&stream=1&page=${searchPage + 1}`, controller.signal, (data, complete) => {
+        if (controller.signal.aborted) return;
+        setResults(old => mergeBrowseTitles(old, data.titles));
+        if (complete) { setSearchPage(data.page || searchPage + 1); setSearchHasMore(data.hasMore === true); }
+        if (data.message) setSearchError(data.message);
+      }, Boolean(searchMoreError));
     } catch (e) { if (!controller.signal.aborted) setSearchMoreError((e as Error).message || "More titles could not load. Try again."); }
     finally { if (!controller.signal.aborted) setSearchMoreBusy(false); }
   }
   function clearSearch() {
+    setSearchChecking(false);
     setSearchPage(1); setSearchHasMore(false); setSearchMoreBusy(false); setSearchMoreError("");
     setSearchPeople([]);
     setSearchPeopleHasMore(false);
@@ -1334,6 +1336,7 @@ function Catalogue() {
               peopleHasMore={searchPeopleHasMore}
               peopleMessage={searchPeopleMessage}
               busy={catalogueLoading}
+              checking={searchChecking}
               onPerson={(p) => openPerson(p, submitted)}
               onMorePeople={() => openPerson(null, submitted)}
               onServices={() => setDialog("services")}

@@ -9,7 +9,7 @@ export default function SearchSuggestions({query, accountId, selected, active, o
   const [recent,setRecent]=useState<string[]>([]);
   const key='scene.recent-searches.'+accountId;
   useEffect(()=>{try { const data=JSON.parse(sessionStorage.getItem(key)||'[]');setRecent(Array.isArray(data)?data.filter(x=>typeof x==='string').slice(0,6):[]); } catch {setRecent([]);} setLoadedKey(key);setState({query:'',accountId,titles:[]});},[key,active]);
-  useEffect(()=>{const q=query.trim();if(!active||q.length<2)return;const controller=new AbortController();const timer=setTimeout(()=>{cachedJSON<{titles:Title[]}>(`/api/search?q=${encodeURIComponent(q)}&scope=services&page=1`,controller.signal).then(data=>{if(!controller.signal.aborted)setState({query:q,accountId,titles:data.titles});}).catch(()=>{});},350);return()=>{clearTimeout(timer);controller.abort();};},[query,active,accountId]);
+  useEffect(()=>{const q=query.trim();if(!active||q.length<2)return;const controller=new AbortController();const timer=setTimeout(()=>{cachedJSON<{titles:Title[]}>(`/api/search?q=${encodeURIComponent(q)}&scope=services&suggest=1&page=1`,controller.signal).then(data=>{if(!controller.signal.aborted)setState({query:q,accountId,titles:data.titles});}).catch(()=>{});},350);return()=>{clearTimeout(timer);controller.abort();};},[query,active,accountId]);
   function remember(value:string){const next=[value,...recent.filter(x=>x.toLowerCase()!==value.toLowerCase())].slice(0,6);setRecent(next);try{sessionStorage.setItem(key,JSON.stringify(next));}catch{}}
   if(!active||loadedKey!==key)return null;
   const matches=state.accountId===accountId&&state.query===query.trim()?filterTitles(state.titles,{kind:'all',genre:'all',offer:'all',provider:'all',mine:true,selected}).slice(0,6):[];

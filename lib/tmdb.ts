@@ -34,7 +34,7 @@ async function tmdb(path: string, params: Record<string, string> = {}) {
       for (let attempt = 0; attempt < 2; attempt++) {
         const r = await fetch(`https://api.themoviedb.org/3/${path}?${query}`, {
           headers: { Accept: "application/json" },
-          signal: AbortSignal.timeout(15000),
+          signal: AbortSignal.timeout(path.endsWith("/watch/providers") ? 4000 : 15000),
         });
         if (r.status === 429 && attempt === 0) {
           const raw = r.headers.get("Retry-After");
@@ -205,30 +205,47 @@ const searchGenreNames: Record<number, string> = {
   10759: "Action & Adventure", 10762: "Kids", 10763: "News", 10764: "Reality",
   10765: "Sci-Fi & Fantasy", 10766: "Soap", 10767: "Talk", 10768: "War & Politics",
 };
-export async function searchTMDB(q: string, page = 1) {
+export type SearchOptions = { preview?: boolean; signal?: AbortSignal; onTitle?: (title: Title, index: number) => void };
+export async function searchTMDB(q: string, page = 1, options: SearchOptions = {}) {
   const data = await tmdb("search/multi", { query: q, include_adult: "false", page: String(page) });
   const rows = (data.results || [])
     .filter((x: any) => ["movie", "tv"].includes(x.media_type) && !x.adult && Number.isSafeInteger(x.id) && x.id > 0)
     .slice(0, 20);
   let unchecked = 0;
-  const out: Title[] = await Promise.all(rows.map(async (row: any) => {
+  const hydrate = async (row: any): Promise<Title> => {
     const append = row.media_type === "movie" ? "watch/providers,external_ids,release_dates" : "watch/providers,external_ids";
     const key = `${row.media_type}/${row.id}?` + new URLSearchParams({ language: "en-GB", append_to_response: append });
     const hit = cache.get(key);
     if (hit && Date.now() - hit.at < (catalogueRefreshRequested() ? 60000 : 900000)) return normalizeTMDB(hit.value, row.media_type);
     const summary = { ...row, genres: (row.genre_ids || [])
       .filter((id: number) => searchGenreNames[id]).map((id: number) => ({ name: searchGenreNames[id] })) };
+    const providerPath = `${row.media_type}/${row.id}/watch/providers`;
+    const providerHit = cache.get(providerPath + "?language=en-GB");
+    if (options.preview && (!providerHit || Date.now() - providerHit.at >= 900000))
+      return { ...normalizeTMDB(summary, row.media_type), checked: undefined };
     // Search summaries have no provider data. Fetch only the small public
     // availability response before allowing service-scoped cards to appear.
     try {
-      const providers = await tmdb(`${row.media_type}/${row.id}/watch/providers`);
+      const providers = options.preview ? providerHit!.value : await tmdb(providerPath);
       return { ...normalizeTMDB({ ...summary, "watch/providers": providers }, row.media_type),
         checked: new Date(retrievedAt.get(providers) || Date.now()).toISOString() };
     } catch {
       unchecked++;
       return { ...normalizeTMDB(summary, row.media_type), checked: undefined };
     }
+  };
+  // Autocomplete never starts provider lookups. Submitted searches use a small
+  // worker pool and publish each checked result without waiting for the slowest.
+  const out: Title[] = new Array(rows.length);
+  let cursor = 0;
+  await Promise.all(Array.from({ length: Math.min(4, rows.length) }, async () => {
+    while (!options.signal?.aborted && cursor < rows.length) {
+      const index = cursor++;
+      out[index] = await hydrate(rows[index]);
+      if (!options.signal?.aborted) options.onTitle?.(out[index], index);
+    }
   }));
+  if (options.signal?.aborted) throw new DOMException("Search cancelled", "AbortError");
   const people = page === 1 ? (data.results || []).filter((row: any) => row.media_type === "person").map(personSummary).filter(Boolean) : [];
   return {
     titles: out,

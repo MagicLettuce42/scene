@@ -63,7 +63,8 @@ export function secureResponse(request: Request, response: Response): Response {
     "Content-Security-Policy-Report-Only",
     "default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://cqgauurbkmdbxckjdals.supabase.co https://challenges.cloudflare.com; object-src 'none'; base-uri 'none'",
   );
-  if (url.pathname.startsWith("/api/")) headers.set("Cache-Control", "no-store");
+  if (url.pathname.startsWith("/api/")) headers.set("Cache-Control",
+    headers.get("Content-Type")?.startsWith("application/x-ndjson") ? "no-store, no-transform" : "no-store");
   if (url.pathname === "/sw.js" || url.pathname === "/manifest.webmanifest")
     headers.set("Cache-Control", "no-cache");
   return new Response(response.body, { status: response.status, statusText: response.statusText, headers });

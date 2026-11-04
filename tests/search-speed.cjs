@@ -33,6 +33,9 @@ global.fetch = async input => {
 };
 (async () => {
   const { searchTMDB, tmdbDetails } = require('../lib/tmdb.ts');
+  const preview = await searchTMDB('Blue Planet',1,{preview:true});
+  assert.equal(calls.length,1,'typing fetches metadata only; no provider fanout');
+  assert.ok(preview.titles.every(t=>!t.offers.length),'autocomplete never invents availability');
   const first = await searchTMDB('Blue Planet');
   assert.equal(calls.length, 21, 'twenty bounded provider-only lookups accompany one metadata/people request');
   assert.equal(calls.filter(p=>p.endsWith('/watch/providers')).length,20,'search never fetches full title details per result');
@@ -63,6 +66,8 @@ global.fetch = async input => {
   const request = page => new Request('https://scene.invalid/api/search?q=route-speed&page=' + page);
   member = false;
   assert.equal((await route.GET(request(1))).status, 401);
+  assert.equal((await route.GET(new Request(request(1).url+'&stream=1'))).status,401,'streaming still requires membership');
+  assert.equal((await route.GET(new Request(request(1).url+'&suggest=1'))).status,401,'autocomplete still requires membership');
   member = true;
   for (const page of ['0', '501', '-1', '1.5']) assert.equal((await route.GET(request(page))).status, 400);
   const before = calls.length;
