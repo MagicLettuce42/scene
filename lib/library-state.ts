@@ -17,7 +17,7 @@ import {
   type Game,
 } from "./gaming-state";
 import { cleanUpcomingRelease } from "./upcoming";
-import { resolveHome, validHomePatch, type HomePreferences } from "./home-preferences";
+import { resolveHome, validHomePatch, migrateHomePatch, type HomePreferences } from "./home-preferences";
 import { services, sameTitle, type Title } from "./catalogue";
 import { type Feedback } from "./preferences";
 import { isTheme, resolveTheme, type ThemeId } from "./themes";
@@ -467,8 +467,9 @@ export function validateMutation(body: any): { revision: number; mutation: Mutat
       continue;
     }
     if (op?.type === "home") {
-      if (!validHomePatch(op.fields)) return null;
-      operations.push({ type: "home", fields: op.fields });
+      const fields = migrateHomePatch(op.fields);
+      if (!validHomePatch(fields)) return null;
+      operations.push({ type: "home", fields });
       continue;
     }
     if (op?.type === "review") {

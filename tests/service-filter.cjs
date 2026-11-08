@@ -103,6 +103,8 @@ async function choose(value) { scope().props.onChange(value); await render(); }
     assert.deepEqual(scope().props.selected, ['netflix', 'disney']);
     const homeOrder = () => nodes(tree).filter(n => n.props?.className === 'home-section').map(n => n.key);
     const initialHome = library.home;
+    assert.ok(!nodes(tree).some(n=>n.type===get('app/components/next-up.js').default),'Discover no longer renders episode tracking');
+    assert.equal(nodes(tree).filter(n=>n.type===get('app/components/daylight-watchlist.js').default).length,1,'Discover has one watchlist shelf');
     assert.deepEqual(homeOrder(), initialHome.sections.filter(id=>id!=='tonight').slice(0, 2), 'collapsed Discover respects saved order');
     library.home = { ...initialHome, sections: ['tonight', 'popular', 'leaving', 'arrivals', 'personal'] };
     await render();

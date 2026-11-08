@@ -2,7 +2,6 @@ import type { View } from "./tab-memory";
 
 export const homeSections = [
   { id: "personal", label: "For you" },
-  { id: "next", label: "Next up" },
   { id: "arrivals", label: "New on your services" },
   { id: "leaving", label: "Leaving soon" },
   { id: "tonight", label: "Watch tonight" },
@@ -22,7 +21,7 @@ export type HomePreferences = {
 export const defaultHome = (): HomePreferences => ({
   startView: "discover",
   density: "compact",
-  sections: ["popular", "personal", "next", "arrivals", "leaving", "tonight", "rated", "recent", "short", "calendar"],
+  sections: ["popular", "personal", "arrivals", "leaving", "tonight", "rated", "recent", "short", "calendar"],
   hidden: ["calendar"],
 });
 const views = ["discover", "films", "series", "upcoming", "watchlist", "gaming"];
@@ -50,16 +49,19 @@ export function validHomePatch(value: unknown): value is Partial<HomePreferences
     )
   );
 }
+export function migrateHomePatch(value: unknown): unknown {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const migrated = { ...value } as Record<string, unknown>;
+  for (const key of ["sections", "hidden"]) {
+    if (Array.isArray(migrated[key])) migrated[key] = migrated[key].filter(id => id !== "halloween" && id !== "next");
+  }
+  return migrated;
+}
 export function resolveHome(value?: Partial<HomePreferences>): HomePreferences {
   const d = defaultHome();
   if (!value) return d;
-  // Migrate retired campaign entries without losing custom order or hidden sections.
-  value = { ...value };
-  for (const key of ["sections", "hidden"] as const) {
-    if (Array.isArray(value[key])) {
-      value[key] = value[key].filter((id: string) => id !== "halloween");
-    }
-  }
+  // Retire old Discover shelves while keeping account order and visibility choices.
+  value = migrateHomePatch(value) as Partial<HomePreferences>;
   for (const k of Object.keys(d) as (keyof HomePreferences)[])
     if (validHomePatch({ [k]: value[k] })) Object.assign(d, { [k]: value[k] });
   // Add new sections without discarding an existing customised order.

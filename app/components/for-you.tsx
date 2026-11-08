@@ -39,33 +39,50 @@ export default function ForYou({
       genre,
       ...extraParams(extra),
     });
-  const successful = useRef("");
+  const successful = useRef(""), lastAttempt = useRef(0), inFlight = useRef(false), synced = useRef(false);
+  synced.current = syncStatus === "saved";
   const key = url + "|" + signature + "|" + mode,
-    [state, setState] = useState<{ key: string; data: Data | null; error: string; busy: boolean }>({
+    [state, setState] = useState<{ key: string; data: Data | null; error: string; busy: boolean; checkedAt: number }>({
       key: "",
       data: null,
       error: "",
       busy: true,
+      checkedAt: 0,
     }),
     [retry, setRetry] = useState(0);
   useEffect(() => {
-    if (syncStatus !== "saved" || successful.current === key + "|" + retry) return;
+    if (syncStatus !== "saved" || (successful.current === key + "|" + retry && state.key === key && state.data)) return;
     const ac = new AbortController();
-    setState({ key, data: null, error: "", busy: true });
-    sceneFetch(url, { signal: ac.signal, cache: "no-store" })
+    inFlight.current = true;
+    lastAttempt.current = Date.now();
+    setState(old => ({ key, data: old.key === key ? old.data : null, error: "", busy: true, checkedAt: old.key === key ? old.checkedAt : 0 }));
+    sceneFetch(url, { signal: AbortSignal.any([ac.signal, AbortSignal.timeout(45000)]), cache: "no-store" })
       .then(async (r) => {
         const data = (await r.json()) as Data & { error?: string };
         if (!r.ok) throw Error(data.error || "Recommendations could not load.");
         if (!ac.signal.aborted) {
           successful.current = key + "|" + retry;
-          setState({ key, data, error: "", busy: false });
+          setState({ key, data, error: "", busy: false, checkedAt: Date.now() });
         }
       })
       .catch((e) => {
-        if (!ac.signal.aborted) setState({ key, data: null, error: e.message, busy: false });
-      });
-    return () => ac.abort();
+        if (!ac.signal.aborted) setState(old => ({ ...old, error: "Suggestions could not refresh. Please try again.", busy: false }));
+      })
+      .finally(() => { if (!ac.signal.aborted) inFlight.current = false; });
+    return () => { ac.abort(); inFlight.current = false; };
   }, [key, syncStatus, retry]);
+  useEffect(() => {
+    const refresh = () => {
+      if (!synced.current || inFlight.current || document.visibilityState !== "visible" || navigator.onLine === false || Date.now() - lastAttempt.current < 15 * 60 * 1000) return;
+      lastAttempt.current = Date.now();
+      setRetry(n => n + 1);
+    };
+    const timer = setInterval(refresh, 60000);
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("online", refresh);
+    return () => { clearInterval(timer); document.removeEventListener("visibilitychange", refresh); window.removeEventListener("focus", refresh); window.removeEventListener("online", refresh); };
+  }, []);
   const [showAll, setShowAll] = useState(false);
   const data = state.key === key ? state.data : null,
     candidates = data?.picks.filter((p) => !exclude.some((t) => sameTitle(t, p.title))) || [];
@@ -77,7 +94,7 @@ export default function ForYou({
           <h3 id="for-you-heading">
             <Sparkles size={18} /> For you
           </h3>
-          <p>Fresh suggestions from your likes and ratings, on your services.</p>
+          <p>Suggestions from your likes and ratings, on your services.</p>
         </div>
         {candidates.length > 5 && <button className="text-button" aria-expanded={showAll} onClick={() => setShowAll(!showAll)}>{showAll ? "Show less" : "See all"}</button>}
       </div>
@@ -87,9 +104,9 @@ export default function ForYou({
             ? "Connect to see personal recommendations."
             : "Recommendations will update when your library has synced."}
         </p>
-      ) : state.key !== key || state.busy ? (
+      ) : !data && (state.key !== key || state.busy) ? (
         <Skeletons row />
-      ) : state.error ? (
+      ) : !data && state.error ? (
         <div className="error-notice" role="alert">
           {state.error}
           <button onClick={() => setRetry((n) => n + 1)}>
@@ -118,7 +135,10 @@ export default function ForYou({
           like a few more titles.
         </p>
       )}
+      {data && state.busy && <p className="fine-print" role="status">Updating your suggestions…</p>}
+      {data && state.error && <p className="fine-print" role="alert">{state.error} Your previous suggestions are still shown. <button className="text-button" onClick={() => setRetry(n => n + 1)}>Retry</button></p>}
       <details className="recommendation-settings"><summary>Tune your recommendations</summary><div className="recommendation-controls">
+        <p className="fine-print">Updates after your favourites, likes, ratings or services sync. Scene also rechecks while you’re here. The same preferences can produce the same suggestions.{state.key === key && state.checkedAt > 0 ? ` Last checked ${new Date(state.checkedAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}.` : ""}</p>
         {onMode && <label>Suggestions<SelectControl value={mode} onChange={e => onMode(e.target.value as RecommendationMode)}>
           <option value="balanced">A mix for me</option><option value="familiar">Familiar favourites</option><option value="adventurous">Something different</option>
         </SelectControl></label>}

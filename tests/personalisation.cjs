@@ -13,6 +13,9 @@ const settings={startView:'films',density:'comfortable',sections:[...home.defaul
 const changed=state.applyOperations(initial,[{type:'home',fields:settings},{type:'review',title:first,fields:{rating:5,note:'A private note <script>hello</script>'}}]);
 const projected=state.projectLibrary(changed);assert.deepEqual(projected.home,settings);assert.equal(projected.theme,'yellow');assert.equal(projected.tracking.length,1);assert.equal(projected.saved.length,1);assert.equal(projected.reviews[0].rating,5);
 assert.equal(initial.preferences.home,undefined,'source document stays immutable');
+const oldHome={...settings,sections:['next',...settings.sections],hidden:['next',...settings.hidden]};
+const migrated=state.validateMutation({revision:0,id:'legacy-home-pending',operations:[{type:'home',fields:oldHome}]});assert.ok(migrated,'queued settings from the previous app remain valid');assert.deepEqual(migrated.mutation.operations[0].fields,settings);assert.deepEqual(home.resolveHome(oldHome),settings);assert.deepEqual(oldHome.sections[0],'next','migration does not mutate stored source');
+
 const merged=state.applyOperations(changed,[{type:'home',fields:{density:'compact'}},{type:'review',title:first,fields:{note:'Edited on another device'}}]);
 assert.equal(state.projectLibrary(merged).home.startView,'films');assert.equal(state.projectLibrary(merged).reviews[0].rating,5);
 const cleared=state.applyOperations(merged,[{type:'review',title:first,fields:{rating:null,note:''}}]);assert.equal(state.projectLibrary(cleared).reviews.length,0);assert.equal(state.projectLibrary(cleared).saved.length,1);

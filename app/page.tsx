@@ -1395,6 +1395,7 @@ function Catalogue() {
           ) : discovering && ready ? (
             <DiscoverVariety order={displayedHomeSections}><div className="home-sections">
               {!library.home.hidden.includes("tonight")&&<Tonight featured {...cardActions} onMovieNight={()=>{setMovieNightEntry(true);navigate("watchlist");setWatchlistTab("shared");}}/>}
+              {!displayedHomeSections.length&&<DaylightWatchlist titles={saved} onOpen={openTitle} onViewAll={()=>navigate("watchlist")}/>}
               {displayedHomeSections.map((id,index) => (
                   <div key={id} className="home-section">
                     {id === "arrivals" || id === "leaving" ? (
@@ -1418,20 +1419,6 @@ function Catalogue() {
                         extra={extra}
                       />
                       {library.followedPeople.length>0&&<Suspense fallback={null}><PeopleFollowing compact accountId={account.id} follows={library.followedPeople} pending={library.pending} onFollow={library.followPerson} onPreferences={library.setPersonPreferences} onSeen={library.markPeopleUpdatesSeen} onChoose={p=>openPerson(p,"","following")} onSearch={()=>openPerson(null)} onViewAll={()=>openPerson(null,"","following")} onOpen={openTitle} onSave={cardActions.onSave} isSaved={cardActions.isSaved}/></Suspense>}</>
-                    ) : id === "next" ? (
-                      <NextUp
-                        spoilerFree={library.spoilerFree}
-                        compact
-                        items={scopedTracking}
-                        onOpen={openTitle}
-                        onEpisodes={onEpisodes}
-                        onViewAll={() => {
-                          navigate("watchlist");
-                          setWatchlistTab("watching");
-                        }}
-                      />
-                    ) : id === "tonight" ? (
-                      <Tonight {...cardActions} />
                     ) : id === "calendar" ? (
                       <EpisodeCalendar
                         spoilerFree={library.spoilerFree}
@@ -1455,7 +1442,7 @@ function Catalogue() {
                   </div>
                 ))}
               {visibleHomeSections.length > 2 && <button className="button secondary discover-more" aria-expanded={showMoreDiscover} onClick={() => setShowMoreDiscover(!showMoreDiscover)}>{showMoreDiscover ? "Show fewer sections" : "More to explore"}</button>}
-              {!visibleHomeSections.length && (
+              {!visibleHomeSections.length && !saved.length && library.home.hidden.includes("tonight") && (
                 <div className="quiet-empty">
                   <h3>Your home screen is clear</h3>
                   <p>Choose sections in Account → Home screen & poster size.</p>

@@ -50,7 +50,7 @@ export default function HomeSettings({
         </label>
       </div>
       <h3>Discover sections</h3>
-      <p className="fine-print">Choose what appears and move sections into your preferred order. Discover starts with your first four enabled sections; the rest appear under More to explore. Seasonal sections appear when available.</p>
+      <p className="fine-print">Choose what appears and move shelves into your preferred order. Discover starts with your first two enabled shelves; the rest appear under More to explore. Watch tonight appears at the top when enabled. Episode tracking is in Watchlist → Watching.</p>
       <ol className="home-section-order">
         {value.sections.map((id, i) => {
           const label = homeSections.find((s) => s.id === id)!.label;

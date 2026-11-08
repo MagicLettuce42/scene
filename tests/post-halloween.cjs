@@ -31,7 +31,7 @@ assert.equal(state.projectLibrary(original).seasonal, true, 'no source mutation'
 for (const value of ['false', null, 1]) assert.equal(state.validateMutation({ id: 'halloween-test-123', revision: 0, operations: [{ type: 'seasonal', value }] }), null);
 assert.ok(state.validateMutation({ id: 'halloween-test-123', revision: 0, operations: [{ type: 'seasonal', value: false }] }));
 const custom = home.resolveHome({ sections: ['next', 'personal'], hidden: ['halloween'] });
-assert.deepEqual(custom.sections.slice(0, 2), ['next', 'personal']);
+assert.equal(custom.sections[0], 'personal');assert.ok(!custom.sections.includes('next'));
 assert.ok(!custom.hidden.includes('halloween'), 'retired shelf is removed');
 const themes = get('lib/themes.js');
 assert.equal(themes.resolveTheme('halloween'), themes.defaultTheme);
