@@ -1,0 +1,23 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),ts=require('typescript');
+for(const ext of ['.ts','.tsx'])require.extensions[ext]=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,f);
+const themes=require('../lib/themes.ts'),home=require('../lib/home-preferences.ts');
+assert.equal(themes.defaultTheme,'daylight');for(const t of themes.themes)assert.equal(themes.resolveTheme(t.id),t.id);
+const custom={...home.defaultHome(),sections:[...home.defaultHome().sections].reverse(),hidden:['personal']};assert.deepEqual(home.resolveHome(custom),custom);
+const React=require('react'),Module=require('module'),load=Module._load;let open=false;
+Module._load=function(id,...args){if(id==='react')return {...React,useState:()=>[open,v=>{open=typeof v==='function'?v(open):v;}],useRef:()=>({current:null}),useEffect:()=>{}};return load.call(this,id,...args);};
+const Navigation=require('../app/components/scene-navigation.tsx').default;Module._load=load;
+const elements=node=>{if(!node||typeof node!=='object')return[];return[node,...React.Children.toArray(node.props?.children).flatMap(elements)];};
+const text=n=>typeof n==='string'?n:React.Children.toArray(n?.props?.children).map(text).join('');
+let navigated,searched=0,account=0;const props={view:'discover',submitted:false,gamingEnabled:false,ready:true,savedCount:3,photo:null,name:'Fixture',onNavigate:v=>navigated=v,onSearch:()=>searched++,onAccount:()=>account++};
+let nodes=elements(Navigation(props)),buttons=nodes.filter(n=>n.type==='button');assert.equal(buttons.some(b=>text(b)==='Gaming'),false);
+buttons.find(b=>text(b)==='Search').props.onClick();assert.equal(searched,1);
+buttons.find(b=>text(b)==='More').props.onClick();assert.equal(open,true);
+nodes=elements(Navigation({...props,gamingEnabled:true}));const more=nodes.find(n=>n.type==='nav'&&n.props.id==='scene-more-navigation');
+elements(more).find(n=>n.type==='button'&&text(n)==='Gaming').props.onClick();assert.equal(navigated,'gaming');assert.equal(open,false);
+open=true;elements(Navigation(props)).find(n=>n.type==='button'&&text(n)==='Account & settings').props.onClick();assert.equal(account,1);assert.equal(open,false);
+assert.equal(elements(Navigation({...props,ready:false})).find(n=>n.props?.['aria-label']==='Your Scene account and settings').props.disabled,true);
+console.log('PASS: Daylight defaults, saved theme/home preferences, mobile search, More navigation, gaming gating, account actions and loading controls.');
+const {renderToStaticMarkup}=require('react-dom/server'),Results=require('../app/components/search-results.tsx').default;
+const base={titles:[],people:[],peopleHasMore:false,peopleMessage:'',busy:false,checking:false,selected:['netflix'],offer:'all',feedback:[],isSaved:()=>false,onSave(){},onOpen(){},onFeedback(){},onServices(){},onPerson(){},onMorePeople(){}};
+for(const [scope,label] of [['movie','Films'],['series','TV series'],['games','Games']]){const html=renderToStaticMarkup(React.createElement(Results,{...base,mediaScope:scope}));assert.ok(html.includes('>'+label+'</h3>'));if(scope==='games')assert.match(html,/No matching games found/);}
+console.log('PASS: scoped film, TV and game result headings and game empty state.');

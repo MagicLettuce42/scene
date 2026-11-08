@@ -1,6 +1,7 @@
 "use client";
 import SceneMotion from "./scene-motion";
 import SceneWordmark from "./scene-wordmark";
+import AuthIntroduction from "./auth-introduction";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { LoaderCircle, LogIn, LockKeyhole, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { getSceneClient, sceneFetch, signOutScene } from "../../lib/auth/client";
@@ -264,17 +265,18 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
       </main>
     );
   return (
-    <main id="main" tabIndex={-1} className={`account-page ${halloween ? "seasonal-login" : "screening-login"}`}>
+    <main id="main" tabIndex={-1} className={`account-page daylight-auth ${halloween ? "seasonal-login" : "screening-login"}`}>
       {!halloween && <SceneMotion entrance />}
       <div className="account-brand">
         <SceneWordmark />
       </div>
+      {!halloween && <AuthIntroduction />}
       <section className="account-card">
         {halloween ? <HalloweenBadge /> : (
           null
         )}
 
-        <h1>{invite ? "Your place on Scene" : signup ? "Create your Scene account." : halloween ? "A good night for a fright." : "Your next great watch."}</h1>
+        <h1>{invite ? "Your place on Scene" : signup ? "Create your Scene account." : halloween ? "A good night for a fright." : "Welcome back."}</h1>
         {accountDeleted && <p className="success-notice" role="status">Your Scene account has been deleted. You are signed out.</p>}
         <p className="account-intro">
           {invite

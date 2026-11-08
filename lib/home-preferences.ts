@@ -22,7 +22,7 @@ export type HomePreferences = {
 export const defaultHome = (): HomePreferences => ({
   startView: "discover",
   density: "compact",
-  sections: homeSections.map((s) => s.id),
+  sections: ["popular", "personal", "next", "arrivals", "leaving", "tonight", "rated", "recent", "short", "calendar"],
   hidden: ["calendar"],
 });
 const views = ["discover", "films", "series", "upcoming", "watchlist", "gaming"];

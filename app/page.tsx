@@ -63,6 +63,8 @@ import ShareTitle from "./components/share-title";
 import SpoilerContent, { SpoilerSettings } from "./components/spoiler-content";
 import SeriesGuide from "./components/series-guide";
 import SceneWordmark from "./components/scene-wordmark";
+import SceneNavigation from "./components/scene-navigation";
+import DaylightWatchlist from "./components/daylight-watchlist";
 import EpisodeTracker from "./components/episode-tracker";
 import NextUp from "./components/next-up";
 import SyncStatus from "./components/sync-status";
@@ -102,6 +104,7 @@ import {
   LoaderCircle,
   RefreshCw,
   CalendarDays,
+  Layers,
 } from "lucide-react";
 import {
   titles,
@@ -160,6 +163,7 @@ function Catalogue() {
     tabsStorageKey = tabMemoryKey(account.id);
   const [activeCollection,setActiveCollection]=useState("");
   const [searchFocused,setSearchFocused]=useState(false);
+  const [searchScope,setSearchScope]=useState<"all"|"movie"|"series"|"games">("all");
   const searchRegion = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!searchFocused) return;
@@ -184,6 +188,7 @@ function Catalogue() {
   const [requestedView, setView] = useState<View>("discover"),
     [query, setQuery] = useState(""),
     [submitted, setSubmitted] = useState("");
+  useEffect(()=>setSearchScope("all"),[submitted]);
   const [searchPage, setSearchPage] = useState(1), [searchHasMore, setSearchHasMore] = useState(false),
     [searchMoreBusy, setSearchMoreBusy] = useState(false), [searchMoreError, setSearchMoreError] = useState("");
   const [searchPeople, setSearchPeople] = useState<Person[]>([]),
@@ -974,7 +979,7 @@ function Catalogue() {
   const visibleHomeSections = library.home.sections.filter(
     (id) => !library.home.hidden.includes(id),
   );
-  const displayedHomeSections = showMoreDiscover ? visibleHomeSections : visibleHomeSections.slice(0, 4);
+  const displayedHomeSections = showMoreDiscover ? visibleHomeSections : visibleHomeSections.slice(0, 2);
   const halloweenHome = false;
   const specialLibrary =
     view === "watchlist" && !submitted && ["shared", "watching", "calendar", "stats"].includes(watchlistTab);
@@ -1126,7 +1131,7 @@ function Catalogue() {
     onChange={value => { restoreScroll.current = null; setProvider(value); }}/>;
   const catalogueActions = (
             <div className="catalogue-actions">
-              
+
               {submitted && (
                 <button className="text-button" aria-label="Clear search" onClick={clearSearch}>
                   <X size={15} /><span className="discovery-action-label">Clear search</span>
@@ -1155,14 +1160,6 @@ function Catalogue() {
               )}
             </div>
   );
-  const tabs: { id: View; label: string; icon: typeof Compass }[] = [
-    { id: "discover", label: "Discover", icon: Compass },
-    { id: "films", label: "Films", icon: Film },
-    { id: "series", label: "TV series", icon: MonitorPlay },
-    { id: "upcoming", label: "Upcoming", icon: CalendarDays },
-    { id: "watchlist", label: "Watchlist", icon: Bookmark },
-  ];
-  if (library.gamingEnabled) tabs.splice(3, 0, { id: "gaming", label: "Gaming", icon: Gamepad2 });
   if (inSetup)
     return (
       <Welcome
@@ -1183,50 +1180,19 @@ function Catalogue() {
       />
     );
   return (
-    <>
+    <div className="daylight-shell">
       <SceneMotion />
       <QualityMonitor userId={account.id} enabled={library.sharePerformance && library.loaded && privacyConsent.performance} />
-      <header className={`site-header ${!halloween ? "screening-header" : ""} ${library.gamingEnabled ? "with-gaming" : ""}`}>
-        <div className="header-inner">
-          <button className="brand" onClick={() => navigate("discover")} aria-label="Scene home">
-            <SceneWordmark decorative />
-          </button>
-          <nav className="desktop-nav" aria-label="Main navigation">
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                className={view === t.id ? "active" : ""}
-                aria-current={view === t.id ? "page" : undefined}
-                onClick={() => navigate(t.id)}
-              >
-                {t.label}
-                {t.id === "watchlist" && saved.length > 0 && <span className="count">{saved.length}</span>}
-              </button>
-            ))}
-          </nav>
-          <div className="header-actions">
-            <span className="country">
-              <Globe2 size={15} /> United Kingdom
-            </span>
-            <button
-              className="account-button"
-              disabled={!ready}
-              onClick={() => setDialog("account")}
-              aria-label="Your Scene account and settings"
-            >
-              <ProfileAvatar photo={library.avatar} name={account.name} />
-            </button>
-          </div>
-        </div>
-      </header>
+      <SceneNavigation view={view} submitted={Boolean(submitted)} gamingEnabled={library.gamingEnabled} ready={ready} savedCount={saved.length} photo={library.avatar} name={account.name} onNavigate={navigate} onSearch={()=>{window.scrollTo({top:0,behavior:"instant"});searchInput.current?.focus();}} onAccount={()=>setDialog("account")}/>
       <main
         id="main"
         className={`page compact-page density-${library.home.density} ${view === "films" || view === "series" ? "library-browse" : ""} ${halloweenHome ? "seasonal-home" : discovering && !halloween ? "screening-home" : ""} ${watchlistScreen ? "watchlist-page" : ""}`}
       >
         <AppUpdateNotice pending={library.pending} />
         <section className="intro">
-          <h1 className="sr-only">{heading}</h1>
-          <div className={discovering && !halloween ? "discovery-toolbar" : undefined}>
+          <h1 className="daylight-page-heading">{discovering ? "Find your next favourite." : heading}</h1>
+          {library.theme!=="daylight"&&<button className="daylight-theme-invite text-button" onClick={()=>library.setTheme("daylight")}>Try the new Daylight theme</button>}
+          <div className="daylight-search-area">
             <div className="search-region" ref={searchRegion} onFocusCapture={()=>setSearchFocused(true)} onKeyDown={e=>{if(e.key==="Escape"){e.preventDefault();document.getElementById("search")?.focus();setSearchFocused(false);}}}>
           <form className="search-form" onSubmit={search} role="search">
             <label htmlFor="search" className="sr-only">
@@ -1244,9 +1210,7 @@ function Catalogue() {
               enterKeyHint="search"
               minLength={2}
               maxLength={100}
-              placeholder={
-                library.gamingEnabled ? "Search titles, people or games…" : "Search titles or people…"
-              }
+              placeholder={library.gamingEnabled ? "Search for a film, TV series or game" : "Search for a film or TV series"}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -1256,7 +1220,10 @@ function Catalogue() {
           </form>
           <SearchSuggestions query={query} accountId={account.id} selected={activeServices} active={searchFocused} onChoose={t=>{setSearchFocused(false);openTitle(t);}} onSearch={q=>{setQuery(q);void search(undefined,q);}}/>
             </div>
-            {discovering && !halloween && catalogueActions}
+          </div>
+          <div className="daylight-catalogue-toolbar">
+            <div className="daylight-type-tabs" role="group" aria-label="Title type">{([{id:"all",label:"All",view:"discover"},{id:"movie",label:"Films",view:"films"},{id:"series",label:"TV series",view:"series"},...(library.gamingEnabled?[{id:"games",label:"Games",view:"gaming"}]:[])] as const).map(t=><button key={t.id} aria-pressed={submitted?searchScope===t.id:view===t.view} className={(submitted?searchScope===t.id:view===t.view)?"active":""} onClick={()=>{if(submitted)setSearchScope(t.id as typeof searchScope);else navigate(t.view as View);}}>{t.label}</button>)}</div>
+            <div className="daylight-toolbar-actions"><button className="daylight-services-button" disabled={!ready} onClick={()=>setDialog("services")}><Layers size={18}/><span>My services</span></button>{catalogueActions}</div>
           </div>
         </section>
         <section className="catalogue" aria-labelledby="results-heading">
@@ -1269,7 +1236,7 @@ function Catalogue() {
                 )}
               </h2>
             </div>
-            {!(discovering && !halloween) && catalogueActions}
+
           </div>}
           {watchlistScreen && <WatchlistToolbar
             tab={watchlistTab} onTab={setWatchlistTab} count={specialLibrary ? undefined : filtered.length} headingRef={resultHeading}
@@ -1354,18 +1321,19 @@ function Catalogue() {
           ) : submitted ? (
             <SearchResults
               query={submitted}
-              hasMore={searchHasMore} moreBusy={searchMoreBusy} moreError={searchMoreError} onLoadMore={loadMoreSearch}
-              gameResults={library.gamingEnabled ? gameResults : undefined}
-              gameBusy={gameBusy} gameMode={gameMode} gameMessage={gameMessage} gameHasMore={gameHasMore}
+              mediaScope={searchScope}
+              hasMore={searchScope!=="games" && searchHasMore} moreBusy={searchMoreBusy} moreError={searchMoreError} onLoadMore={loadMoreSearch}
+              gameResults={library.gamingEnabled && (searchScope==="all" || searchScope==="games") ? gameResults : undefined}
+              gameBusy={(searchScope === "all" || searchScope === "games") && gameBusy} gameMode={gameMode} gameMessage={gameMessage} gameHasMore={gameHasMore}
               onMoreGames={() => moreGames()} onRetryGames={() => moreGames(true)}
               gameCollection={library.games}
               onGameStatus={setGameStatus}
-              titles={filtered}
-              people={searchPeople}
+              titles={searchScope==="games" ? [] : searchScope==="all" ? filtered : filtered.filter(t=>t.kind===searchScope)}
+              people={searchScope==="all" ? searchPeople : []}
               peopleHasMore={searchPeopleHasMore}
               peopleMessage={searchPeopleMessage}
-              busy={catalogueLoading}
-              checking={searchChecking}
+              busy={searchScope!=="games" && catalogueLoading}
+              checking={searchScope!=="games" && searchChecking}
               onPerson={(p) => openPerson(p, submitted)}
               onMorePeople={() => openPerson(null, submitted)}
               onServices={() => setDialog("services")}
@@ -1405,7 +1373,7 @@ function Catalogue() {
             </div>
           ) : discovering && ready ? (
             <DiscoverVariety order={displayedHomeSections}><div className="home-sections">
-              {displayedHomeSections.map((id) => (
+              {displayedHomeSections.map((id,index) => (
                   <div key={id} className="home-section">
                     {id === "arrivals" || id === "leaving" ? (
                       <ServiceActivity
@@ -1461,9 +1429,10 @@ function Catalogue() {
                         onGenres={mergeDiscoverGenres}
                       />
                     )}
+                    {index===0&&<DaylightWatchlist titles={saved} onOpen={openTitle} onViewAll={()=>navigate("watchlist")}/>}
                   </div>
                 ))}
-              {visibleHomeSections.length > 4 && <button className="button secondary discover-more" aria-expanded={showMoreDiscover} onClick={() => setShowMoreDiscover(!showMoreDiscover)}>{showMoreDiscover ? "Show fewer sections" : "More to explore"}</button>}
+              {visibleHomeSections.length > 2 && <button className="button secondary discover-more" aria-expanded={showMoreDiscover} onClick={() => setShowMoreDiscover(!showMoreDiscover)}>{showMoreDiscover ? "Show fewer sections" : "More to explore"}</button>}
               {!visibleHomeSections.length && (
                 <div className="quiet-empty">
                   <h3>Your home screen is clear</h3>
@@ -1615,25 +1584,6 @@ function Catalogue() {
           </span>
         </footer>
       </main>
-      <nav
-        className={`mobile-nav ${library.gamingEnabled ? "with-gaming" : ""}`}
-        aria-label="Mobile navigation"
-      >
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => navigate(t.id)}
-            aria-current={view === t.id ? "page" : undefined}
-            className={view === t.id ? "active" : ""}
-          >
-            <span className="mobile-nav-art" aria-hidden="true">{t.id === "series" ? <Tv size={24} strokeWidth={2} /> : <t.icon size={24} strokeWidth={2} />}</span>
-            <span>
-              {t.label}
-              {t.id === "watchlist" && !library.gamingEnabled && saved.length > 0 ? ` (${saved.length})` : ""}
-            </span>
-          </button>
-        ))}
-      </nav>
       <dialog
         ref={modal}
         className={`modal ${dialog === "title" ? "title-modal" : ""}`}
@@ -2087,6 +2037,6 @@ function Catalogue() {
         <span key={toast} className="toast-message">{toast}</span>
         {(undoFeedback || library.canUndo) && <button onClick={undoLastFeedback}>Undo</button>}
       </div>
-    </>
+    </div>
   );
 }

@@ -34,8 +34,8 @@ const custom = home.resolveHome({ sections: ['next', 'personal'], hidden: ['hall
 assert.deepEqual(custom.sections.slice(0, 2), ['next', 'personal']);
 assert.ok(!custom.hidden.includes('halloween'), 'retired shelf is removed');
 const themes = get('lib/themes.js');
-assert.equal(themes.resolveTheme('halloween'), 'ocean');
-assert.equal(seasonal.effectiveTheme('halloween', true, october), 'ocean');
+assert.equal(themes.resolveTheme('halloween'), themes.defaultTheme);
+assert.equal(seasonal.effectiveTheme('halloween', true, october), themes.defaultTheme);
 assert.ok(!themes.themes.some(t => t.id === 'halloween'));
 const legacyHome = { ...home.defaultHome(), sections: ['halloween', ...home.defaultHome().sections].reverse(), hidden: ['halloween', 'tonight'] };
 const migrated = home.resolveHome(legacyHome);
@@ -45,13 +45,13 @@ assert.ok(legacyHome.hidden.includes('halloween'), 'source is not mutated');
 const legacyDoc = JSON.parse(JSON.stringify(original));
 legacyDoc.preferences.theme = 'halloween';
 legacyDoc.preferences.home = legacyHome;
-assert.equal(state.projectLibrary(legacyDoc).theme, 'ocean');
+assert.equal(state.projectLibrary(legacyDoc).theme, themes.defaultTheme);
 assert.deepEqual(state.projectLibrary(legacyDoc).home, migrated);
 
 const savedDoc = state.applyOperations(original, [{type: 'title', title: {id:'tmdb-movie-101',tmdbId:101,name:'Saved film',kind:'movie',year:2021,genres:[],summary:'',poster:null,offers:[]}, fields:{saved:true,liked:true}}]);
 const savedBefore = JSON.stringify(savedDoc.entries);
 savedDoc.preferences.theme = 'halloween';
-assert.equal(state.projectLibrary(savedDoc).theme, 'ocean');
+assert.equal(state.projectLibrary(savedDoc).theme, themes.defaultTheme);
 assert.equal(JSON.stringify(savedDoc.entries), savedBefore, 'saved lists and feedback are untouched');
 for (const theme of themes.themes) assert.equal(seasonal.effectiveTheme(theme.id, true, october), theme.id);
 console.log('Post-Halloween migration, future dates, themes and saved-data checks passed');

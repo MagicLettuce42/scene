@@ -9,6 +9,7 @@ import { TitleCard, Skeletons, type CardActions } from "./catalogue-cards";
 import ProviderSearch from "./provider-search";
 export default function SearchResults({
   query,
+  mediaScope = "all",
   hasMore, moreBusy, moreError, onLoadMore,
   gameResults,
   gameBusy = false, gameMode = "selected", gameMessage = "", gameHasMore = false, onMoreGames, onRetryGames,
@@ -26,6 +27,7 @@ export default function SearchResults({
   ...actions
 }: CardActions & {
   query: string;
+  mediaScope?: "all"|"movie"|"series"|"games";
   hasMore?: boolean; moreBusy?: boolean; moreError?: string; onLoadMore?: () => void;
   gameResults?: Game[];
   gameBusy?: boolean; gameMode?: "igdb" | "selected"; gameMessage?: string; gameHasMore?: boolean;
@@ -50,7 +52,7 @@ export default function SearchResults({
   return (
     <div className="unified-search-results">
       <section aria-labelledby="title-results-heading">
-        <h3 id="title-results-heading">{showGames ? "Films, TV series & games" : "Films & TV series"}</h3>
+        <h3 id="title-results-heading">{mediaScope==="games" ? "Games" : mediaScope==="movie" ? "Films" : mediaScope==="series" ? "TV series" : showGames ? "Films, TV series & games" : "Films & TV series"}</h3>
         <p className="fine-print">Films and TV series are limited to subscription or free listings on your selected services. Availability is checked again when you open a title.</p>
         {(checking || busy) && <p className="refresh-status" role="status"><LoaderCircle size={16} className="spin" /> Checking streaming availability… Matches appear as they are checked.</p>}
         {showGames && gameBusy && <p className="refresh-status" role="status"><LoaderCircle size={16} className="spin" /> Searching the games catalogue…</p>}
@@ -71,7 +73,7 @@ export default function SearchResults({
         ) : (
           <div className="quiet-empty">
             <p>
-              {checking || gameBusy ? "Checking for matching titles…" : showGames
+              {checking || gameBusy ? "Checking for matching titles…" : mediaScope==="games" ? "No matching games found. Try another game name." : showGames
                   ? "No matching films or series on your selected services, or games in Scene’s catalogue. Try another name or adjust your filters."
                   : people.length
                     ? "No matching film or series titles. Select a person below to explore their work."

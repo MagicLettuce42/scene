@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./daylight.css";
 import AppInstallProvider from "./components/app-install-provider";
 import BrowserTheme from "./components/browser-theme";
 import AppUpdateProvider from "./components/app-updates";
@@ -29,7 +30,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#031d2d",
+  themeColor: "#faf9f7",
 };
 
 export default function RootLayout({

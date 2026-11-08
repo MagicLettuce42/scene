@@ -10,8 +10,8 @@ import { TitleCard, Skeletons, type CardActions } from "./catalogue-cards";
 const sections = [
   {
     id: "popular",
-    name: "Trending",
-    description: "Films and series getting attention.",
+    name: "Selected for your evening",
+    description: "Films and series on your selected services.",
     view: "films",
     sort: "recommended",
   },
@@ -98,7 +98,7 @@ function DiscoverSection({
       actions.feedback,
       hideWatched,
     ).filter((t) => matchesExtra(t, extra));
-  const items=useDiscoverVariety(section.id,candidates,t=>t,showAll?100:6);
+  const items=useDiscoverVariety(section.id,candidates,t=>t,showAll?100:5);
   if(candidates.length && !items.length)return null;
   return (
     <section className="discover-section" aria-labelledby={"discover-" + section.id}>
@@ -107,7 +107,7 @@ function DiscoverSection({
           <h3 id={"discover-" + section.id}>{section.name}</h3>
           <p>{section.description}</p>
         </div>
-        {items.length > 6 && <button className="text-button" aria-expanded={showAll} onClick={() => setShowAll(!showAll)}>{showAll ? "Show less" : "See all"}</button>}
+        {candidates.length > 5 && <button className="text-button" aria-expanded={showAll} onClick={() => setShowAll(!showAll)}>{showAll ? "Show less" : "See all"}</button>}
       </div>
       {(!active || state.busy) && !data ? (
         <Skeletons row />
@@ -120,7 +120,7 @@ function DiscoverSection({
         </div>
       ) : items.length ? (
         <div className="discovery-row">
-          {(showAll ? items : items.slice(0, 6)).map((t) => (
+          {(showAll ? items : items.slice(0, 5)).map((t) => (
             <TitleCard key={t.id} title={t} {...actions} />
           ))}
         </div>

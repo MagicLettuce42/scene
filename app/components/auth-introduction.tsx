@@ -1,0 +1,3 @@
+export default function AuthIntroduction() {
+  return <aside className="auth-introduction" aria-label="Discover Scene"><h2>Find your next<br/>favourite.</h2><p>Films, TV series and games.<br/>One place to find your next great story.</p><div className="auth-poster-row" aria-hidden="true"><img src="/posters/film-dune-2020.jpg" alt="" loading="lazy" decoding="async" width={300} height={450}/><img src="/posters/film-the-grand-budapest-hotel.jpg" alt="" loading="lazy" decoding="async" width={300} height={450}/><img src="/posters/film-interstellar.jpg" alt="" loading="lazy" decoding="async" width={300} height={450}/></div><small>Choose on Scene. Watch through your streaming provider.</small></aside>;
+}

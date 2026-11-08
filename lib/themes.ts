@@ -20,9 +20,9 @@ export const themes = [
   {
     id: "daylight",
     name: "Daylight",
-    description: "Soft cream & terracotta",
-    background: "#f6f2e9",
-    accent: "#a43e24",
+    description: "Warm white & clear cobalt",
+    background: "#faf9f7",
+    accent: "#1851ef",
   },
   {
     id: "yellow",
@@ -33,7 +33,7 @@ export const themes = [
   },
 ] as const;
 export type ThemeId = (typeof themes)[number]["id"];
-export const defaultTheme: ThemeId = "ocean";
+export const defaultTheme: ThemeId = "daylight";
 export function isTheme(value: unknown): value is ThemeId {
   return themes.some((theme) => theme.id === value);
 }

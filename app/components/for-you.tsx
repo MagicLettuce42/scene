@@ -4,8 +4,7 @@ import {useDiscoverVariety} from "./discover-variety";
 import { useEffect, useRef, useState } from "react";
 import TasteSetup from "./taste-setup";
 import type { RecommendationMode } from "../../lib/filter-presets";
-import { useHalloween } from "./seasonal";
-import { Sparkles, RotateCcw, Bookmark, ArrowUpRight } from "lucide-react";
+import { Sparkles, RotateCcw } from "lucide-react";
 import { sceneFetch } from "../../lib/auth/client";
 import { sameTitle, type Title } from "../../lib/catalogue";
 import { extraParams, type ExtraFilters } from "../../lib/catalogue-filters";
@@ -32,7 +31,6 @@ export default function ForYou({
   genre: string;
   extra: ExtraFilters;
 }) {
-  const halloween = useHalloween();
   const url =
     "/api/for-you?" +
     new URLSearchParams({
@@ -71,7 +69,7 @@ export default function ForYou({
   const [showAll, setShowAll] = useState(false);
   const data = state.key === key ? state.data : null,
     candidates = data?.picks.filter((p) => !exclude.some((t) => sameTitle(t, p.title))) || [];
-  const items=useDiscoverVariety("personal",candidates,p=>p.title,showAll?100:6);
+  const items=useDiscoverVariety("personal",candidates,p=>p.title,showAll?100:5);
   return (
     <section className="discover-section for-you" aria-labelledby="for-you-heading">
       <div className="discover-heading">
@@ -81,7 +79,7 @@ export default function ForYou({
           </h3>
           <p>Fresh suggestions from your likes and ratings, on your services.</p>
         </div>
-        {candidates.length > 6 && <button className="text-button" aria-expanded={showAll} onClick={() => setShowAll(!showAll)}>{showAll ? "Show less" : "See all"}</button>}
+        {candidates.length > 5 && <button className="text-button" aria-expanded={showAll} onClick={() => setShowAll(!showAll)}>{showAll ? "Show less" : "See all"}</button>}
       </div>
       {syncStatus !== "saved" && !data ? (
         <p className="section-empty">
@@ -105,15 +103,8 @@ export default function ForYou({
         </p>
       ) : items.length ? (
         <>
-        {!halloween && <article className="featured-pick">
-          <button className="featured-pick-open" onClick={() => actions.onOpen(items[0].title)} aria-label={`View ${items[0].title.name}`}>
-            {(items[0].title.backdrop || items[0].title.poster) && <img src={items[0].title.backdrop || items[0].title.poster!} alt="" />}
-            <span className="featured-pick-copy"><strong>{items[0].title.name}</strong><small>{items[0].reason}</small><span>View details <ArrowUpRight size={16}/></span></span>
-          </button>
-          <button className="save-button" aria-label={`${actions.isSaved(items[0].title) ? "Remove" : "Save"} ${items[0].title.name}`} aria-pressed={actions.isSaved(items[0].title)} onClick={() => actions.onSave(items[0].title)}><Bookmark size={18} fill={actions.isSaved(items[0].title)?"currentColor":"none"}/></button>
-        </article>}
         <div className="discovery-row">
-          {(showAll ? items : items.slice(0, 6)).slice(halloween ? 0 : 1).map((p) => (
+          {(showAll ? items : items.slice(0, 5)).map((p) => (
             <div className="personal-pick" key={p.title.id}>
               <TitleCard title={p.title} {...actions} />
               <p className="recommendation-reason">{p.reason}</p>

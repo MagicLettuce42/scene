@@ -5,6 +5,7 @@ import { services } from "../../lib/catalogue";
 import { themes, type ThemeId } from "../../lib/themes";
 import { ServiceMark } from "./catalogue-cards";
 import ThemePicker from "./theme-picker";
+import SceneWordmark from "./scene-wordmark";
 import InstallScene from "./install-scene";
 export default function Welcome({
   name,
@@ -39,7 +40,7 @@ export default function Welcome({
   return (
     <main className="welcome-page">
       <div className="welcome-brand">
-        scene<span>.</span>
+        <SceneWordmark />
       </div>
       <section className="welcome-card">
         <p className="eyebrow">MAKE YOURSELF AT HOME · {step + 1} OF 3</p>

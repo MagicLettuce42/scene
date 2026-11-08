@@ -3,7 +3,7 @@ import { appIcons } from "./app-icons";
 
 export function appManifest(now = new Date()) {
   const halloween = halloweenActive(now),
-    background = halloween ? "#16121d" : "#101a28";
+    background = halloween ? "#16121d" : "#faf9f7";
   return {
     id: "/",
     name: "Scene — Find your next watch",
