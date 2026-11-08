@@ -7,6 +7,7 @@ import { assertSessionBoundary, onSessionBoundaryChange, sessionBoundary } from 
 import { recordQuality } from "./quality";
 
 export type SearchPage = {
+  suggestion?: string | null; interpretation?: string; matchedCount?: number; emptyReason?: string;
   titles: Title[]; page?: number; hasMore?: boolean; people?: Person[];
   peopleHasMore?: boolean; peopleMessage?: string | null; message?: string | null;
 };

@@ -1,5 +1,5 @@
 import { requireSceneMember } from "../../../lib/auth/server";
-import { searchCatalogue } from "../../../lib/server-catalogue";
+import { smartSearch } from "../../../lib/smart-search";
 export async function GET(req: Request) {
   const access = await requireSceneMember(req);
   if (access.error) return access.error;
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
         void (async () => {
           try {
             emit({ type: "start", page });
-            const result = await searchCatalogue(q, page, { signal: abort.signal,
+            const result = await smartSearch(q, page, p, { signal: abort.signal,
               onTitle: (title, index) => emit({ type: "title", title, index }) });
             emit({ type: "complete", result });
           } catch {
@@ -40,7 +40,7 @@ export async function GET(req: Request) {
     return new Response(stream, { headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store, no-transform" } });
   }
   try {
-  const catalogue = await searchCatalogue(q, page, { preview: p.get("suggest") === "1", signal: req.signal });
+  const catalogue = await smartSearch(q, page, p, { preview: p.get("suggest") === "1", signal: req.signal });
   return Response.json({ people: [], peopleHasMore: false, peopleMessage: null, ...catalogue, page, hasMore: "hasMore" in catalogue && catalogue.hasMore === true },
     { headers: { "Cache-Control": "private, max-age=300", "Server-Timing": `search;dur=${Math.round(performance.now() - started)}` } });
   } catch { return Response.json({ error: "More search results could not load. Please retry." }, { status: 503 }); }

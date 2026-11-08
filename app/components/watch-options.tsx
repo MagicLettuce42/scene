@@ -12,9 +12,11 @@ export default function WatchOptions({ title, offers, selected }: { title: Title
     <ServiceMark serviceKey={o.key}/><span className="offer-copy"><strong>{o.name}</strong><small>{offerDescription(o)}</small></span>
     <span className="offer-action">{o.linkKind === "guide" || o.url.includes("justwatch.com") ? "View options" : "Open provider"}<ArrowUpRight size={18}/></span>
   </a>)}</div>;
+  const first=included[0], direct=first && safeUrl(first.url) && first.linkKind!=="guide"&&!first.url.includes("justwatch.com");
   return <div className="watch-options">
+    {first&&<a className="button primary watch-primary" href={safeUrl(first.url)||availabilityUrl(title)} target="_blank" rel="noopener noreferrer">{direct?`Watch on ${first.name}`:`View ${first.name} watch options`}<ArrowUpRight size={18}/></a>}
     <h4>Listed on your selected services</h4>
-    {included.length ? <><p className="fine-print">Reported subscription and free options. Listings can lag behind provider changes; confirm access with the provider.</p>{rows(included)}</> :
+    {included.length ? <><p className="fine-print">Reported subscription and free options. Listings can lag behind provider changes; confirm access with the provider.</p>{included.length>1&&<details><summary>More options on your services</summary>{rows(included.slice(1))}</details>}</> :
       <div className="unknown-box"><Info size={20}/><p>No subscription or free options are confirmed for your current service filter.</p></div>}
     {!included.length && selected.includes("bbc") && <ProviderSearch query={title.name} />}
 

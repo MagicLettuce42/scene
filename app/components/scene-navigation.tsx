@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Home, Film, Tv, Gamepad2, CalendarDays, Bookmark, Search, MoreHorizontal, Settings, X } from "lucide-react";
+import { Home, Film, Tv, Gamepad2, CalendarDays, Bookmark, Search, MoreHorizontal, Settings, X, Bell } from "lucide-react";
 import type { View } from "../../lib/tab-memory";
 import SceneWordmark from "./scene-wordmark";
 import ProfileAvatar from "./profile-avatar";
 export type SceneNavigationProps = {
   view: View; submitted: boolean; gamingEnabled: boolean; ready: boolean;
+  unreadCount?: number; onUpdates?: () => void;
   savedCount: number; photo: string | null; name: string;
   onNavigate: (view: View) => void; onSearch: () => void; onAccount: () => void;
 };
@@ -25,7 +26,7 @@ export default function SceneNavigation(props: SceneNavigationProps) {
       <div className="header-inner">
         <button className="brand" onClick={()=>navigate("discover")} aria-label="Scene home"><SceneWordmark decorative/></button>
         <nav className="desktop-nav" aria-label="Main navigation">{tabs.map(t=><button key={t.id} className={props.view===t.id?"active":""} aria-current={props.view===t.id?"page":undefined} onClick={()=>navigate(t.id)}><t.Icon size={22}/><span>{t.label}</span>{t.id==="watchlist"&&props.savedCount>0&&<span className="count">{props.savedCount}</span>}</button>)}</nav>
-        <div className="header-actions"><button className="daylight-settings" disabled={!props.ready} onClick={account} aria-label="Your Scene account and settings"><ProfileAvatar photo={props.photo} name={props.name}/><span><strong>Account & settings</strong><small>{props.name}</small></span><Settings size={18}/></button></div>
+        <div className="header-actions">{props.onUpdates&&<button className="daylight-updates-button" disabled={!props.ready} onClick={()=>{setOpen(false);props.onUpdates?.();}} aria-label={`Your updates${props.unreadCount ? `, ${props.unreadCount} new` : ""}`}><Bell size={21}/><span>Updates</span>{Boolean(props.unreadCount)&&<b>{props.unreadCount!>99?"99+":props.unreadCount}</b>}</button>}<button className="daylight-settings" disabled={!props.ready} onClick={account} aria-label="Your Scene account and settings"><ProfileAvatar photo={props.photo} name={props.name}/><span><strong>Account & settings</strong><small>{props.name}</small></span><Settings size={18}/></button></div>
       </div>
     </header>
     <nav className="mobile-nav daylight-mobile-nav" aria-label="Mobile navigation">

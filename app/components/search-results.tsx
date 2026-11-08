@@ -9,6 +9,7 @@ import { TitleCard, Skeletons, type CardActions } from "./catalogue-cards";
 import ProviderSearch from "./provider-search";
 export default function SearchResults({
   query,
+  matchedCount, interpretation, emptyReason, suggestion, onSuggestion,
   mediaScope = "all",
   hasMore, moreBusy, moreError, onLoadMore,
   gameResults,
@@ -27,6 +28,7 @@ export default function SearchResults({
   ...actions
 }: CardActions & {
   query: string;
+  matchedCount?:number; interpretation?:string; emptyReason?:string; suggestion?:string|null; onSuggestion?:(q:string)=>void;
   mediaScope?: "all"|"movie"|"series"|"games";
   hasMore?: boolean; moreBusy?: boolean; moreError?: string; onLoadMore?: () => void;
   gameResults?: Game[];
@@ -44,6 +46,7 @@ export default function SearchResults({
   onMorePeople: () => void;
   onServices: () => void;
 }) {
+  const catalogueMatches = matchedCount ?? titles.length;
   const showGames = gameResults !== undefined && Boolean(onGameStatus),
     matchingGames = showGames ? gameResults || [] : [];
   if (busy && !matchingGames.length) return <Skeletons count={6} />;
@@ -52,6 +55,8 @@ export default function SearchResults({
   return (
     <div className="unified-search-results">
       <section aria-labelledby="title-results-heading">
+        {interpretation&&<p className="search-interpretation">Searching for {interpretation}</p>}
+        {suggestion&&onSuggestion&&!checking&&<p className="search-correction">Did you mean <button className="text-button" onClick={()=>onSuggestion(suggestion)}>{suggestion}</button>?</p>}
         <h3 id="title-results-heading">{mediaScope==="games" ? "Games" : mediaScope==="movie" ? "Films" : mediaScope==="series" ? "TV series" : showGames ? "Films, TV series & games" : "Films & TV series"}</h3>
         <p className="fine-print">Films and TV series are limited to subscription or free listings on your selected services. Availability is checked again when you open a title.</p>
         {(checking || busy) && <p className="refresh-status" role="status"><LoaderCircle size={16} className="spin" /> Checking streaming availability… Matches appear as they are checked.</p>}
@@ -73,13 +78,13 @@ export default function SearchResults({
         ) : (
           <div className="quiet-empty">
             <p>
-              {checking || gameBusy ? "Checking for matching titles…" : mediaScope==="games" ? "No matching games found. Try another game name." : showGames
-                  ? "No matching films or series on your selected services, or games in Scene’s catalogue. Try another name or adjust your filters."
+              {checking || gameBusy ? "Checking for matching titles…" : mediaScope==="games" ? "No matching games found. Try another game name." : catalogueMatches>0 || emptyReason==="services" ? "Matching titles have no confirmed subscription or free listing for your selected services and filters. Try adjusting the filters or services." : showGames
+                  ? "No matching title found in this search. Try another spelling or a shorter title."
                   : people.length
                     ? "No matching film or series titles. Select a person below to explore their work."
-                    : "No films or series are listed on your selected services for this search and filters. Try another name or edit your services."}
+                    : "No matching film or series title found in this search. Try another spelling or a shorter title."}
             </p>
-            {!checking && !gameBusy && <button className="button secondary" onClick={onServices}>
+            {!checking && !gameBusy && mediaScope!=="games" && (catalogueMatches>0||emptyReason==="services"||!actions.selected.length) && <button className="button secondary" onClick={onServices}>
               {actions.selected.length ? "Edit my services" : "Choose my services"}
             </button>}
           </div>

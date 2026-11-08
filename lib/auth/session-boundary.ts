@@ -28,6 +28,7 @@ export function setSessionAccount(userId: string | null) {
   requests.clear();
   if (previous && previous !== userId) {
     remove("localStorage", "scene.library." + previous);
+    remove("localStorage", "scene.updates.read." + previous);
     remove("sessionStorage", "scene.tabs.v2." + previous);
     remove("sessionStorage", "scene.catalogue-cache.v2." + previous);
     remove("sessionStorage", "scene.recent-searches." + previous);

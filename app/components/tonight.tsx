@@ -7,7 +7,7 @@ import { moods, chooseThree, tonightCandidates } from "../../lib/tonight";
 import { type Title } from "../../lib/catalogue";
 import { TitleCard, type CardActions } from "./catalogue-cards";
 type Data = { titles: Title[]; hasMore: boolean; message: string | null };
-export default function Tonight(actions: CardActions) {
+export default function Tonight({ featured = false, onMovieNight, ...actions }: CardActions & {featured?: boolean; onMovieNight?: () => void}) {
   const [open, setOpen] = useState(false),
     [mood, setMood] = useState("any"),
     [kind, setKind] = useState("movie"),
@@ -84,7 +84,7 @@ export default function Tonight(actions: CardActions) {
     }
   }
   return (
-    <section className="tonight" aria-label="Watch tonight">
+    <section className={`tonight ${featured ? "tonight-featured" : ""}`} aria-label="Watch tonight">
       <button
         className="tonight-toggle disclosure-trigger"
         aria-expanded={open}
@@ -93,10 +93,11 @@ export default function Tonight(actions: CardActions) {
       >
         <span>
           <Sparkles size={18} />
-          <strong>What should I watch tonight?</strong>
+          <strong>{featured ? "Pick something tonight" : "What should I watch tonight?"}</strong>
         </span>
 
       </button>
+      {featured && <div className="tonight-intro"><p>Tell us your mood and how much time you have. We’ll narrow it down to three.</p>{onMovieNight && <button className="text-button" onClick={onMovieNight}>Watching together? Start a Movie Night →</button>}</div>}
       {open && (
         <div id="tonight-panel" className="tonight-panel">
           <p className="fine-print">

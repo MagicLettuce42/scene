@@ -26,15 +26,18 @@ import MovieNight from "./movie-night";
 import { Poster } from "./catalogue-cards";
 export default function SharedWatchlists({
   accountId,
+  startMovieNight = false,
   onOpen,
   inviteToken,
   onDismissInvite,
 }: {
   accountId: string;
+  startMovieNight?: boolean;
   onOpen: (title: Title) => void;
   inviteToken: string;
   onDismissInvite: () => void;
 }) {
+  const [step,setStep]=useState(0);
   const [lists, setLists] = useState<SharedList[] | null>(null),
     [selected, setSelected] = useState(""),
     [detail, setDetail] = useState<SharedDetail | null>(null),
@@ -108,6 +111,7 @@ export default function SharedWatchlists({
   }, [inviteToken]);
   function choose(id: string) {
     setSelected(id);
+    setStep(0);
     setDetail(null);
     setLink("");
     setMessage("");
@@ -135,7 +139,7 @@ export default function SharedWatchlists({
     if (!createId.current) createId.current = newId();
     void mutate(
       { action: "create", name, id: createId.current },
-      "List created. Add titles from a title’s details.",
+      "Movie Night created. Invite someone to get started.",
       (d) => {
         createId.current = "";
         setName("");
@@ -234,7 +238,7 @@ export default function SharedWatchlists({
       )}
       {!selected ? (
         <>
-          <details className="shared-create-disclosure"><summary><Plus size={16} aria-hidden="true"/>New shared list</summary>
+          <details className="shared-create-disclosure" open={startMovieNight||undefined}><summary><Plus size={16} aria-hidden="true"/>Start a Movie Night</summary>
           <form className="shared-create stack-form" onSubmit={create}>
             <label>
               New shared list
@@ -250,7 +254,7 @@ export default function SharedWatchlists({
               />
             </label>
             <button className="button primary" disabled={busy || !name.trim()}>
-              <Plus size={17} /> Create list
+              <Plus size={17} /> Create Movie Night
             </button>
           </form></details>
           <div className="inline-actions">
@@ -306,18 +310,13 @@ export default function SharedWatchlists({
               <p>
                 {showArchived
                   ? "Lists you archive can be restored here."
-                  : "Create a list, then open any film or series and choose “Add to a shared list”. Invite people when you’re ready."}
+                  : "Start a Movie Night, invite someone, then find films on services you both use and vote together."}
               </p>
             </div>
           )}
         </>
       ) : active ? (
         <>
-          <MovieNight key={active.id} listId={active.id} accountId={accountId} onOpen={onOpen}
-            onAdd={async (title) => {
-              await sharedRequest({ action: "add", listId: active.id, title });
-              setRefresh(n => n + 1);
-            }} />
           <div className="shared-detail-heading">
             <div>
               <p className="eyebrow">WATCH TOGETHER · {active.people.length} PEOPLE</p>
@@ -326,12 +325,13 @@ export default function SharedWatchlists({
                 {active.people.map((p) => (p.id === accountId ? "You" : p.name)).join(", ")}
               </p>
             </div>
-            <button className="button secondary" aria-expanded={manage} onClick={() => setManage((v) => !v)}>
+            <button className="button secondary" aria-expanded={manage} onClick={() => {setStep(0);setManage((v) => !v);}}>
               <Users size={16} />
               {owner ? "People & settings" : "People"}
             </button>
           </div>
-          {manage && (
+          <nav className="movie-night-steps" aria-label="Movie Night steps">{["Invite someone","Find our films","Vote & choose"].map((label,index)=><button key={label} aria-current={step===index?"step":undefined} className={step===index?"active":""} onClick={()=>{setStep(index);setManage(false);}}><b>{index+1}</b>{label}</button>)}</nav>
+          {(manage || step===0) && (
             <section className="shared-settings">
               <h4>People in this list</h4>
               {active.people.map((p) => (
@@ -386,7 +386,7 @@ export default function SharedWatchlists({
                   </form>
                   <p className="fine-print">
                     The link works only for that account and lasts seven days. Share it yourself. To invite
-                    someone new to Scene, use Account first.
+                    someone new, ask them to create a Scene account first.
                   </p>
                   {link && (
                     <div className="invite-result">
@@ -502,6 +502,15 @@ export default function SharedWatchlists({
               )}
             </section>
           )}
+          {step===0&&<button className="button primary" onClick={()=>{setManage(false);setStep(1);}}>Next: find films together <ArrowRight size={17}/></button>}
+          <div hidden={step!==1}>
+          <MovieNight guided onVote={()=>setStep(2)} key={active.id} listId={active.id} accountId={accountId} onOpen={onOpen}
+            onAdd={async (title) => {
+              await sharedRequest({ action: "add", listId: active.id, title });
+              setRefresh(n => n + 1);
+            }} />
+          </div>
+          <div hidden={step!==2} className="movie-night-voting">
           <div className="shared-voting-heading">
             <p className="fine-print">Vote for as many titles as you like. Most votes rise to the top.</p>
             <button
@@ -586,6 +595,7 @@ export default function SharedWatchlists({
               <p>Browse films or series, open a title, and choose “Add to a shared list”.</p>
             </div>
           )}
+          </div>
         </>
       ) : loading ? (
         <p role="status">Loading this list…</p>

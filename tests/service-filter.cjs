@@ -14,10 +14,12 @@ const boundary = get('lib/auth/session-boundary.js'); boundary.setSessionAccount
 const account = { id: 'filter-a', name: 'Fixture', role: 'member' };
 get('app/components/scene-access.js').useAccount = () => account;
 get('lib/use-mobile-viewport.js').useMobileViewport = () => {};
+get('app/components/updates-inbox.js').useSceneUpdates = () => ({unread:0,rows:[],errors:[],busy:false});
 get('app/components/privacy-consent.js').usePrivacyConsent = () => ({ performance: false, choose() {}, open() {} });
 let halloweenActive = true;
 get('app/components/seasonal.js').useHalloween = () => halloweenActive;
 const { titles, filterTitles } = get('lib/catalogue.js');
+const searchCalls=[];get('lib/search-client.js').streamSearch = async (url, signal, update) => {searchCalls.push(url);update({titles,page:1,hasMore:false},true);};
 const library = { ...get('lib/library-state.js').projectLibrary(get('lib/library-state.js').emptyLibrary()),
   ready: true, loaded: true, onboarded: true, selected: ['netflix', 'disney'], saved: titles.slice(0, 10),
   status: 'saved', home: { startView: 'discover', sections: ['personal', 'arrivals', 'leaving', 'tonight', 'popular'], hidden: [], density: 'comfortable' } };
@@ -73,7 +75,7 @@ async function openFilters() {
   const button = nodes(tree).find(n => n.type === 'button' && n.props['aria-controls'] === 'catalogue-filters');
   if (button && !button.props['aria-expanded']) { button.props.onClick(); await render(); }
 }
-const navigate = label => node(n => n.type === 'button' && (n.props.children === label || n.props.children?.[0] === label)).props.onClick();
+const navigate = label => node(n => n.type === get('app/components/scene-navigation.js').default).props.onNavigate(({Films:'films','TV series':'series',Upcoming:'upcoming',Watchlist:'watchlist'})[label]);
 async function choose(value) { scope().props.onChange(value); await render(); }
 (async () => {
   try {
@@ -83,22 +85,22 @@ async function choose(value) { scope().props.onChange(value); await render(); }
     assert.deepEqual(scope().props.selected, ['netflix', 'disney']);
     const homeOrder = () => nodes(tree).filter(n => n.props?.className === 'home-section').map(n => n.key);
     const initialHome = library.home;
-    assert.deepEqual(homeOrder(), initialHome.sections.slice(0, 4), 'collapsed Discover respects saved order');
+    assert.deepEqual(homeOrder(), initialHome.sections.filter(id=>id!=='tonight').slice(0, 2), 'collapsed Discover respects saved order');
     library.home = { ...initialHome, sections: ['tonight', 'popular', 'leaving', 'arrivals', 'personal'] };
     await render();
-    assert.deepEqual(homeOrder(), ['tonight', 'popular', 'leaving', 'arrivals'], 'moving a secondary section to the top makes it visible immediately');
+    assert.deepEqual(homeOrder(), ['popular', 'leaving'], 'moving a secondary section to the top makes it visible immediately');
     const HomeSettings = get('app/components/home-settings.js').default;
     const settings = HomeSettings({ value: library.home, onChange: fields => { library.home = { ...library.home, ...fields }; } });
     nodes(settings).find(n => n.props?.['aria-label'] === 'Move Popular on your services up').props.onClick();
     await render();
-    assert.deepEqual(homeOrder(), ['popular', 'tonight', 'leaving', 'arrivals'], 'settings move buttons update the rendered order');
+    assert.deepEqual(homeOrder(), ['popular', 'leaving'], 'settings move buttons update the rendered order');
     node(n => n.type === 'button' && n.props.children === 'More to explore').props.onClick(); await render();
-    assert.deepEqual(homeOrder(), library.home.sections, 'expanded Discover preserves the complete saved order');
+    assert.deepEqual(homeOrder(), library.home.sections.filter(id=>id!=='tonight'), 'expanded Discover preserves the complete saved order');
     assert.deepEqual(node(n => n.type === get('app/components/discover-variety.js').DiscoverVariety).props.order, homeOrder(), 'duplicate-title priority follows the rendered order');
     node(n => n.type === 'button' && n.props.children === 'Show fewer sections').props.onClick();
     library.home = { ...library.home, hidden: ['popular', 'leaving'] }; halloweenActive = false; await render();
-    assert.deepEqual(homeOrder(), ['tonight', 'arrivals', 'personal'], 'hidden and unavailable seasonal rows do not occupy the first four slots');
-    assert.ok(!nodes(tree).some(n => n.type === 'button' && n.props.children === 'More to explore'), 'no empty expansion when at most four sections are available');
+    assert.deepEqual(homeOrder(), ['arrivals', 'personal'], 'hidden and unavailable seasonal rows do not occupy the first four slots');
+    assert.ok(!nodes(tree).some(n => n.type === 'button' && n.props.children === 'More to explore'), 'no empty expansion when at most two sections are available');
     library.home = initialHome; halloweenActive = true; await render();
     await choose('netflix');
     node(n=>n.type==='button'&&n.props.children==='More to explore').props.onClick(); await render();
@@ -128,11 +130,15 @@ async function choose(value) { scope().props.onChange(value); await render(); }
     const results = node(n => n.type === get('app/components/search-results.js').default);
     await openFilters();
     assert.deepEqual(results.props.selected, ['disney']);
-    assert.ok(results.props.titles.length, 'search keeps matches visible when availability is unconfirmed or on another service');
+    assert.ok(results.props.titles.length, 'search has available fixtures');
+    assert.ok(results.props.titles.every(t=>t.offers.some(o=>o.key==='disney'&&['sub','free'].includes(o.type))), 'search includes only the selected service');
     const tabs = get('lib/tab-memory.js');
     assert.equal(tabs.readTabs(account.id).provider, 'disney', 'refresh restores the selected service');
     assert.equal(tabs.readTabs('another-account').provider, 'mine', 'filter state is account scoped');
+    node(n => n.props?.id === 'search').props.onChange({ target: { value: 'short horror films' } }); await render();
+    await node(n => n.type === 'form' && n.props.role === 'search').props.onSubmit({ preventDefault() {} }); await render();
     library.selected = ['netflix']; await render();
+    assert.equal(new URL(searchCalls.at(-1),'https://fixture.invalid').searchParams.get('services'),'netflix','natural queries automatically rerun when selected services change');
     assert.equal(scope().props.provider, 'mine', 'removing the filtered service resets safely');
     library.selected = ['netflix', 'disney']; await choose('netflix');
     await choose('mine'); assert.equal(scope().props.provider, 'mine');

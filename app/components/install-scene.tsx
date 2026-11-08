@@ -1,10 +1,12 @@
 "use client";
 import { Download, Share, Check, MoreVertical } from "lucide-react";
+import { appIcons } from "../../lib/app-icons";
 import { useAppInstall } from "./app-install-provider";
 export default function InstallScene() {
   const { available, installed, standalone, platform, busy, message, install } = useAppInstall();
   return (
     <section className="install-scene">
+      <div className="install-brand"><img src={appIcons.apple} width={72} height={72} alt="Scene Daylight app icon"/><div><strong>Your next favourite, one tap away.</strong><p>Scene on your Home Screen</p></div></div>
       <h3>
         {installed ? (
           <>
@@ -42,7 +44,7 @@ export default function InstallScene() {
                 Keep <strong>Open as Web App</strong> enabled, then tap <strong>Add</strong>.
               </li>
             </ol>
-          ) : (
+          ) : platform === "android" ? (
             <ol>
               <li>
                 Open Scene in <strong>Chrome on Android</strong>.
@@ -55,11 +57,11 @@ export default function InstallScene() {
                 Choose <strong>Install</strong> when offered, then open the Scene icon.
               </li>
             </ol>
-          )}
+          ) : null}
           {platform === "other" && (
             <p className="fine-print">
               On a computer, use your browser’s install icon or menu. If you opened Scene inside another app,
-              open this link in Chrome first.
+              open Scene in your usual browser first.
             </p>
           )}
           <p className="fine-print">
@@ -68,6 +70,7 @@ export default function InstallScene() {
           </p>
         </>
       )}
+      <details className="install-icon-help"><summary>Still seeing the old app icon?</summary><p>Some devices keep the icon added when you installed Scene. If it does not update, make sure your library has finished syncing, remove the Home Screen shortcut and add Scene again. Sign in to the same account to restore your saved library.</p></details>
       {message && (
         <p className="fine-print" role="status">
           {message}

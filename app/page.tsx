@@ -64,6 +64,8 @@ import SpoilerContent, { SpoilerSettings } from "./components/spoiler-content";
 import SeriesGuide from "./components/series-guide";
 import SceneWordmark from "./components/scene-wordmark";
 import SceneNavigation from "./components/scene-navigation";
+import UpdatesInbox, { useSceneUpdates } from "./components/updates-inbox";
+import { parseSearchIntent } from "../lib/search-intent";
 import DaylightWatchlist from "./components/daylight-watchlist";
 import EpisodeTracker from "./components/episode-tracker";
 import NextUp from "./components/next-up";
@@ -163,6 +165,9 @@ function Catalogue() {
     tabsStorageKey = tabMemoryKey(account.id);
   const [activeCollection,setActiveCollection]=useState("");
   const [searchFocused,setSearchFocused]=useState(false);
+  const updates = useSceneUpdates(account.id);
+  const [searchInfo,setSearchInfo]=useState<{suggestion?:string|null;interpretation?:string;emptyReason?:string}>({});
+  const [movieNightEntry,setMovieNightEntry]=useState(false);
   const [searchScope,setSearchScope]=useState<"all"|"movie"|"series"|"games">("all");
   const searchRegion = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -240,7 +245,7 @@ function Catalogue() {
     [detailBusy, setDetailBusy] = useState(false),
     [detailError, setDetailError] = useState("");
   const [dialog, setDialog] = useState<
-      "services" | "about" | "title" | "account" | "releases" | "people" | "feedback" | null
+      "services" | "about" | "title" | "account" | "releases" | "people" | "feedback" | "updates" | null
     >(null),
     [toast, setToastText] = useState(""),
     [toastWarning, setToastWarning] = useState(false),
@@ -333,15 +338,11 @@ function Catalogue() {
   }, [library.loaded, library.home.startView, library.gamingEnabled]);
   useEffect(() => {
     if (
+      new URLSearchParams(location.search).get("scene") === "updates" ||
       new URLSearchParams(location.search).get("scene") === "reminders" ||
       new URLSearchParams(location.search).get("scene") === "availability"
     ) {
-      setAccountSection(
-        new URLSearchParams(location.search).get("scene") === "availability"
-          ? "availability-alerts"
-          : "release-reminders",
-      );
-      setDialog("account");
+      setDialog("updates");
       history.replaceState(null, "", location.pathname + location.hash);
     }
     const acceptLink = () => {
@@ -693,6 +694,15 @@ function Catalogue() {
     };
   }, [view, ready, browse, results]);
 
+  const naturalServiceScope = [...activeServices].sort().join(",");
+  const previousNaturalSearch = useRef({ query: "", services: "" });
+  useEffect(() => {
+    const previous = previousNaturalSearch.current;
+    previousNaturalSearch.current = { query: submitted, services: naturalServiceScope };
+    if (submitted && parseSearchIntent(submitted) && previous.query === submitted && previous.services !== naturalServiceScope)
+      void search(undefined, submitted);
+  }, [submitted, naturalServiceScope]);
+
   async function search(e?: React.FormEvent, searchText = query) {
     e?.preventDefault();
     userNavigated.current = true;
@@ -713,6 +723,7 @@ function Catalogue() {
     setSearching(true);
     setSearchChecking(true);
     setResults([]);
+    setSearchInfo({});
     setSearchPage(1); setSearchHasMore(false); setSearchMoreBusy(false); setSearchMoreError("");
     setSearchError("");
     setSearchPeople([]);
@@ -722,10 +733,11 @@ function Catalogue() {
     setSubmitted(q);
     restoreScroll.current = null;
     try {
-      await streamSearch(`/api/search?q=${encodeURIComponent(q)}&scope=services&stream=1&page=1`, controller.signal, (data, complete) => {
+      await streamSearch(`/api/search?q=${encodeURIComponent(q)}&services=${encodeURIComponent(activeServices.join(","))}&offer=all&scope=services&stream=1&page=1`, controller.signal, (data, complete) => {
         if (controller.signal.aborted) return;
         setSearching(false); setSearchChecking(!complete);
         setResults(data.titles);
+        if(complete)setSearchInfo({suggestion:data.suggestion,interpretation:data.interpretation,emptyReason:data.emptyReason});
         setSearchPage(data.page || 1); setSearchHasMore(data.hasMore === true);
         setSearchPeople(data.people || []);
         setSearchPeopleHasMore(data.peopleHasMore === true);
@@ -751,7 +763,7 @@ function Catalogue() {
     searchAbort.current?.abort(); const controller = new AbortController(); searchAbort.current = controller;
     setSearchMoreBusy(true); setSearchMoreError("");
     try {
-      await streamSearch(`/api/search?q=${encodeURIComponent(submitted)}&scope=services&stream=1&page=${searchPage + 1}`, controller.signal, (data, complete) => {
+      await streamSearch(`/api/search?q=${encodeURIComponent(submitted)}&services=${encodeURIComponent(activeServices.join(","))}&offer=all&scope=services&stream=1&page=${searchPage + 1}`, controller.signal, (data, complete) => {
         if (controller.signal.aborted) return;
         setResults(old => mergeBrowseTitles(old, data.titles));
         if (complete) { setSearchPage(data.page || searchPage + 1); setSearchHasMore(data.hasMore === true); }
@@ -938,7 +950,7 @@ function Catalogue() {
   useEffect(() => {
     const controller = new AbortController(); gameAbort.current?.abort(); gameAbort.current = controller;
     setGameResults([]); setGamePage(1); setGameHasMore(false); setGameMessage(""); setGameMode("selected"); setGameBusy(false);
-    if (library.gamingEnabled && submitted.length >= 2) {
+    if (library.gamingEnabled && submitted.length >= 2 && !parseSearchIntent(submitted)) {
       setGameBusy(true);
       void import("../lib/gaming").then(({ searchGames }) => {
         if (!controller.signal.aborted) { setGameResults(searchGames(submitted, true)); void loadGameSearch(submitted, 1, false, false, controller); }
@@ -977,7 +989,7 @@ function Catalogue() {
   }
   const [showMoreDiscover, setShowMoreDiscover] = useState(false);
   const visibleHomeSections = library.home.sections.filter(
-    (id) => !library.home.hidden.includes(id),
+    (id) => id !== "tonight" && !library.home.hidden.includes(id),
   );
   const displayedHomeSections = showMoreDiscover ? visibleHomeSections : visibleHomeSections.slice(0, 2);
   const halloweenHome = false;
@@ -1183,7 +1195,7 @@ function Catalogue() {
     <div className="daylight-shell">
       <SceneMotion />
       <QualityMonitor userId={account.id} enabled={library.sharePerformance && library.loaded && privacyConsent.performance} />
-      <SceneNavigation view={view} submitted={Boolean(submitted)} gamingEnabled={library.gamingEnabled} ready={ready} savedCount={saved.length} photo={library.avatar} name={account.name} onNavigate={navigate} onSearch={()=>{window.scrollTo({top:0,behavior:"instant"});searchInput.current?.focus();}} onAccount={()=>setDialog("account")}/>
+      <SceneNavigation unreadCount={updates.unread} onUpdates={()=>setDialog("updates")} view={view} submitted={Boolean(submitted)} gamingEnabled={library.gamingEnabled} ready={ready} savedCount={saved.length} photo={library.avatar} name={account.name} onNavigate={navigate} onSearch={()=>{window.scrollTo({top:0,behavior:"instant"});searchInput.current?.focus();}} onAccount={()=>setDialog("account")}/>
       <main
         id="main"
         className={`page compact-page density-${library.home.density} ${view === "films" || view === "series" ? "library-browse" : ""} ${halloweenHome ? "seasonal-home" : discovering && !halloween ? "screening-home" : ""} ${watchlistScreen ? "watchlist-page" : ""}`}
@@ -1321,9 +1333,10 @@ function Catalogue() {
           ) : submitted ? (
             <SearchResults
               query={submitted}
+              matchedCount={results.filter(t=>searchScope==="all"||t.kind===searchScope).length} interpretation={searchInfo.interpretation} emptyReason={searchInfo.emptyReason} suggestion={searchInfo.suggestion} onSuggestion={q=>{setQuery(q);void search(undefined,q);}}
               mediaScope={searchScope}
               hasMore={searchScope!=="games" && searchHasMore} moreBusy={searchMoreBusy} moreError={searchMoreError} onLoadMore={loadMoreSearch}
-              gameResults={library.gamingEnabled && (searchScope==="all" || searchScope==="games") ? gameResults : undefined}
+              gameResults={!parseSearchIntent(submitted) && library.gamingEnabled && (searchScope==="all" || searchScope==="games") ? gameResults : undefined}
               gameBusy={(searchScope === "all" || searchScope === "games") && gameBusy} gameMode={gameMode} gameMessage={gameMessage} gameHasMore={gameHasMore}
               onMoreGames={() => moreGames()} onRetryGames={() => moreGames(true)}
               gameCollection={library.games}
@@ -1348,7 +1361,7 @@ function Catalogue() {
                 onOpen={openTitle}
               />
             ) : watchlistTab === "shared" ? (
-              <SharedWatchlists
+              <SharedWatchlists startMovieNight={movieNightEntry}
                 accountId={account.id}
                 onOpen={openTitle}
                 inviteToken={sharedToken}
@@ -1373,6 +1386,7 @@ function Catalogue() {
             </div>
           ) : discovering && ready ? (
             <DiscoverVariety order={displayedHomeSections}><div className="home-sections">
+              {!library.home.hidden.includes("tonight")&&<Tonight featured {...cardActions} onMovieNight={()=>{setMovieNightEntry(true);navigate("watchlist");setWatchlistTab("shared");}}/>}
               {displayedHomeSections.map((id,index) => (
                   <div key={id} className="home-section">
                     {id === "arrivals" || id === "leaving" ? (
@@ -1712,7 +1726,7 @@ function Catalogue() {
                         Films and TV Series browse the TMDB catalogue page by page, starting with popular
                         titles.
                       </li>
-                      <li>Browsing uses your selected services. Search also shows title matches without confirmed availability on those services, so you can save them and check with the provider.</li>
+                      <li>Browsing and search show subscription or free listings on your selected services. Search explains when titles match but no listing is confirmed under your filters.</li>
                       <li>
                         Subscription and free/ad-supported offers on your services appear together; rental and
                         purchase offers are excluded.
@@ -1870,6 +1884,7 @@ function Catalogue() {
               </button>
             </>
           )}
+          {dialog === "updates" && <UpdatesInbox updates={updates} onOpen={openTitle} onUpcoming={()=>{setDialog(null);navigate("upcoming");}} onSettings={()=>{setAccountSection("settings-notifications");setDialog("account");}}/>}
           {dialog === "title" && detail && (
             <>
               <div className="detail-top">
@@ -1897,10 +1912,6 @@ function Catalogue() {
                 </div>
               </div>
               <div className="detail-actions" aria-label="Title actions">
-                <button className="button primary" onClick={() => {
-                  const target = document.getElementById("where-to-watch");
-                  target?.focus({ preventScroll: true }); target?.scrollIntoView({ block: "start", behavior: "instant" });
-                }}>Where to watch <ArrowRight size={17}/></button>
                 <button className={`button secondary ${isSaved(detail) ? "saved" : ""}`} aria-pressed={isSaved(detail)} onClick={() => toggleSave(detail)}>
                   {isSaved(detail) ? <Check size={17}/> : <Plus size={17}/>} {isSaved(detail) ? "On watchlist" : "Add to watchlist"}
                 </button>
@@ -1909,11 +1920,7 @@ function Catalogue() {
                   <Check size={17}/>{findFeedback(feedback, detail)?.watched ? "Watched" : "Mark watched"}
                 </button>
               </div>
-              <details className="detail-synopsis" key={"synopsis-" + detail.id}><summary>Synopsis</summary>
-                <div className="detail-summary"><SpoilerContent hidden={library.spoilerFree && !feedback.some(f => sameTitle(f.title, detail) && f.watched)} identity={detail.id} label="synopsis">
-                  {detail.summary || "No synopsis is available for this title yet."}
-                </SpoilerContent></div>
-              </details>
+              <div className="detail-summary detail-short-summary"><SpoilerContent hidden={library.spoilerFree && !feedback.some(f=>sameTitle(f.title,detail)&&f.watched)} identity={detail.id} label="synopsis"><p>{detail.summary ? detail.summary.length>260 ? detail.summary.slice(0,257)+"…" : detail.summary : "No synopsis is available yet."}</p>{detail.summary.length>260&&<details><summary>Read full synopsis</summary><p>{detail.summary}</p></details>}</SpoilerContent></div>
               <TitleExtrasPanel
                 key={"extras-" + detail.id}
                 onPerson={openPerson}
@@ -1942,6 +1949,7 @@ function Catalogue() {
                   <RefreshCw size={16} /> Retry availability
                 </button>}
                 <WatchOptions title={detail} offers={detailOffers} selected={activeServices}/>
+                <details className="detail-disclosure"><summary>Availability details & other links</summary>
                 <p className="fine-print availability-credit">
                   {detail.dataSource === "tmdb" ? <>Availability by <a href="https://www.justwatch.com/uk" target="_blank" rel="noopener noreferrer">JustWatch</a> via TMDB. </> : "UK availability listings. "}
                   {checkedDate ? `Retrieved ${checkedDate}. ` : "Last check date unavailable. "}
@@ -1976,17 +1984,9 @@ function Catalogue() {
                   {detail.dataSource === "tmdb" ? "View UK watch options" : "Check on JustWatch UK"}{" "}
                   <ArrowUpRight size={17} />
                 </a>
+                </details>
                 <FeedbackForm key={"report-" + detail.id} title={detail} defaultKind="availability" />
-                <SeriesGuide key={"guide-" + detail.id} title={detail} progress={library.progressEntries.find(e => sameTitle(e.title, detail))?.progress} />
-                <ShareTitle
-                  key={"share-" + (detail.tmdbId || detail.id)}
-                  title={detail}
-                  onManage={() => {
-                    setDialog(null);
-                    navigate("watchlist");
-                    setWatchlistTab("shared");
-                  }}
-                />
+                {detail.kind==="series"&&<details className="detail-disclosure"><summary>Seasons & episode tracking</summary><SeriesGuide key={"guide-" + detail.id} title={detail} progress={library.progressEntries.find(e => sameTitle(e.title, detail))?.progress} />
                 <EpisodeTracker
                   spoilerFree={library.spoilerFree}
                   onSpoilerFreeChange={library.setSpoilerFree}
@@ -1996,6 +1996,17 @@ function Catalogue() {
                   onTrack={library.track}
                   onEpisodes={onEpisodes}
                 />
+                </details>}
+                <ShareTitle
+                  key={"share-" + (detail.tmdbId || detail.id)}
+                  title={detail}
+                  onManage={() => {
+                    setDialog(null);
+                    navigate("watchlist");
+                    setWatchlistTab("shared");
+                  }}
+                />
+                <details className="detail-disclosure"><summary>Your rating, notes & preferences</summary>
                 <FeedbackButtons title={detail} feedback={feedback} onFeedback={onFeedback} />
                 <PersonalReview
                   key={"review-" + detail.id}
@@ -2009,6 +2020,7 @@ function Catalogue() {
                     Undo last change
                   </button>
                 )}
+                </details>
               </TitleExtrasPanel>
               {safeUrl(detail.sourceUrl) && (
                 <p className="source-credit">
