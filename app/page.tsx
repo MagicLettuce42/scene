@@ -594,6 +594,13 @@ function Catalogue() {
       resetFilters(false);
       restoreScroll.current = 0;
     }
+    // Discover is the home destination, even when a search was saved in this tab.
+    if (next === "discover") {
+      clearSearch();
+      setSearchFocused(false);
+      restoreScroll.current = 0;
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
     try {
       sessionStorage.setItem(tabsStorageKey, JSON.stringify({ view: next, provider: activeProvider, tabs: tabMemory.current }));
     } catch {}
@@ -773,6 +780,7 @@ function Catalogue() {
     finally { if (!controller.signal.aborted) setSearchMoreBusy(false); }
   }
   function clearSearch() {
+    setSearchInfo({});
     setSearchChecking(false);
     setSearchPage(1); setSearchHasMore(false); setSearchMoreBusy(false); setSearchMoreError("");
     setSearchPeople([]);

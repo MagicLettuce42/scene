@@ -6,7 +6,7 @@ const storage = () => { const entries = new Map(); return { getItem: k => entrie
   setItem: (k, v) => entries.set(k, v), removeItem: k => entries.delete(k) }; };
 global.sessionStorage = storage(); global.localStorage = storage();
 global.location = { search: '', hash: '', pathname: '/' }; global.history = { replaceState() {} };
-global.window = { scrollY: 0, innerHeight: 800, addEventListener() {}, removeEventListener() {}, scrollTo() {} };
+global.window = { scrollY: 0, innerHeight: 800, addEventListener() {}, removeEventListener() {}, scrollTo(options) {this.scrollY=options.top;} };
 global.document = { documentElement: { dataset: {}, scrollHeight: 800 }, body: { style: {} }, getElementById() { return null; } };
 global.requestAnimationFrame = () => 1; global.cancelAnimationFrame = () => {};
 global.ResizeObserver = class { observe() {} disconnect() {} };
@@ -75,11 +75,29 @@ async function openFilters() {
   const button = nodes(tree).find(n => n.type === 'button' && n.props['aria-controls'] === 'catalogue-filters');
   if (button && !button.props['aria-expanded']) { button.props.onClick(); await render(); }
 }
-const navigate = label => node(n => n.type === get('app/components/scene-navigation.js').default).props.onNavigate(({Films:'films','TV series':'series',Upcoming:'upcoming',Watchlist:'watchlist'})[label]);
+const navigate = label => node(n => n.type === get('app/components/scene-navigation.js').default).props.onNavigate(({Discover:'discover',Films:'films','TV series':'series',Upcoming:'upcoming',Watchlist:'watchlist'})[label]);
 async function choose(value) { scope().props.onChange(value); await render(); }
 (async () => {
   try {
     await render();
+    const Navigation = get('app/components/scene-navigation.js').default;
+    const nav = () => node(n => n.type === Navigation);
+    const searchFor = async query => {
+      node(n => n.props?.id === 'search').props.onChange({target:{value:query}}); await render();
+      await node(n => n.type === 'form' && n.props.role === 'search').props.onSubmit({preventDefault(){}}); await render();
+    };
+    await searchFor('Resident Evil');
+    assert.equal(nav().props.submitted, true);
+    navigate('Discover'); await render();
+    assert.equal(nav().props.submitted, false, 'Discover exits search even when it is already the underlying tab');
+    assert.ok(nodes(tree).some(n => n.type === get('app/components/tonight.js').default && n.props.featured), 'Discover home content returns');
+    await searchFor('short horror films');
+    navigate('Watchlist'); await render();
+    navigate('Discover'); await render();
+    assert.equal(nav().props.submitted, false, 'returning to Discover does not restore its old search');
+    assert.equal(get('lib/tab-memory.js').readTabs(account.id).tabs.discover.submitted, '', 'saved Discover snapshot is clean');
+    window.scrollY = 900; navigate('Discover'); await render();
+    assert.equal(window.scrollY, 0, 'tapping Discover again returns to the top');
     assert.ok(scope(), 'service scope is visible without expanding Filters');
     assert.equal(scope().props.provider, 'mine');
     assert.deepEqual(scope().props.selected, ['netflix', 'disney']);
