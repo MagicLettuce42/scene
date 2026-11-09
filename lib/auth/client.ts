@@ -18,6 +18,7 @@ export function getSceneClient(): Promise<SupabaseClient> {
           detectSessionInUrl: false,
           storageKey: "scene.auth.v1",
           flowType: "pkce",
+          experimental: { passkey: true },
         },
       });
       client.auth.onAuthStateChange((_event, session) => {

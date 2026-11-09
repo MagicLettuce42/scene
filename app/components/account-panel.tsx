@@ -21,6 +21,7 @@ import AccountSettingsSection, { AccountSettingsShell } from "./account-settings
 import ProfileAvatar from "./profile-avatar";
 import ProfilePhotoEditor from "./profile-photo-editor";
 import { sceneFetch, signOutScene } from "../../lib/auth/client";
+import PasskeySettings from "./passkeys";
 import AccountSecurity, { VerifyTwoFactor } from "./two-factor";
 import { useAccount } from "./scene-access";
 import GamingSettings, { type GamingSettingsProps } from "./gaming-settings";
@@ -232,10 +233,11 @@ export default function AccountPanel({
           id="settings-security" menuDescription=""
           group="Account"
           title="Security & sessions"
-          description="Authenticators, recovery and your other signed-in devices"
+          description="Passkeys, authenticators and your signed-in devices"
           Icon={ShieldCheck}
           status={account.security.enrolled ? "Two-factor on" : "Two-factor off"}
         >
+          <PasskeySettings userId={account.id} owner={account.role === "owner"} />
           <AccountSecurity
             owner={account.role === "owner"}
             pending={pending}

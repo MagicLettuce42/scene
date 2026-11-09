@@ -105,3 +105,18 @@ Catalogue requests carry a validated `region` query parameter. Request-local asy
 US support includes current service availability and regional cinema/digital dates. The reviewed streaming arrival/leaving announcements and release-day reminders still cover the UK only and are excluded for US users. Availability alerts work in both countries; the existing delivery window remains 9am–9pm UK time. Movie Night currently requires participants to use the same country.
 
 Database changes: `supabase/changes/us-service-regions.sql`. Deploy `scene-watchlist-refresh` with `_shared/watchlist-catalogue.ts` and `scene-release-reminders` alongside the web release. Validate with `node tests/regions.cjs`, `node tests/worker-regions.cjs`, `tests/service-regions-access.sql` (transaction rolled back), and existing search, service, sign-up and session regression tests.
+
+### Passkey sign-in
+
+Passkeys use Supabase Auth’s native WebAuthn ceremonies (experimental opt-in in the pinned SDK). Members register, rename and remove their own passkeys in **Account → Security & sessions → Passkeys**. The sign-in screen offers passkeys on supported secure browsers after `/api/auth/passkeys` confirms the provider is enabled. Password recovery and Scene’s member, revoked-session and authenticator MFA policies still apply. No biometric data or private passkey keys enter Scene storage.
+
+One provider setup step is required in Supabase **Authentication → Passkeys**:
+
+- Enable Passkey authentication.
+- Relying Party Display Name: `Scene`.
+- Relying Party ID: `scene.leardigital.workers.dev`.
+- Relying Party Origins: `https://scene.leardigital.workers.dev`.
+
+The RP ID must remain stable; moving to a different domain requires passkey re-enrollment. The owner sees these setup values when the provider is disabled. After activation, refresh availability in Settings, then add a passkey on a real device. Registration and sign-in are initiated explicitly; browser cancellation leaves password sign-in available. Existing MFA users still complete authenticator verification.
+
+Validation: `node tests/passkeys.cjs`, sign-up/account/session regression tests, TypeScript checks and production build. Hardware biometrics require verification on a real supported device; UI previews use sample credentials only.

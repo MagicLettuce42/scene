@@ -15,6 +15,7 @@ import { effectiveTheme } from "../../lib/seasonal";
 import { defaultTheme } from "../../lib/themes";
 import { finishSceneEmailConfirmation, registerScene } from "../../lib/auth/registration";
 import { useTurnstile } from "./turnstile";
+import { PasskeySignIn } from "./passkeys";
 import ConfirmationResend from "./confirmation-resend";
 import { policyVersion } from "../../lib/privacy-consent";
 export type SceneAccount = {
@@ -397,6 +398,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
                 {error}
               </p>
             )}
+            {!invite && !signup && <PasskeySignIn disabled={busy || !captcha.ready} captchaToken={captcha.token} onBusy={setBusy} onSuccess={async () => { setPassword(""); await check(); }} onError={setError} onFinished={captcha.reset} />}
             {!invite && !signup && <p className="account-help"><a className="text-button" href="/reset-password">Forgot your password?</a></p>}
             <p className="account-help">
               {invite
