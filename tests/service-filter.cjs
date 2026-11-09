@@ -103,6 +103,12 @@ async function choose(value) { scope().props.onChange(value); await render(); }
     assert.deepEqual(scope().props.selected, ['netflix', 'disney']);
     const homeOrder = () => nodes(tree).filter(n => n.props?.className === 'home-section').map(n => n.key);
     const initialHome = library.home;
+    const allSections=get('lib/home-preferences.js').defaultHome().sections;
+    library.home={...initialHome,sections:['manga','reading',...allSections.filter(id=>!['manga','reading'].includes(id))],hidden:allSections.filter(id=>!['manga','reading'].includes(id))};await render();
+    assert.deepEqual(homeOrder(),['manga','reading'],'Manga focus replaces film shelves on Discover');
+    assert.ok(!nodes(tree).some(n=>n.type===get('app/components/for-you.js').default),'film recommendations stay hidden in Manga focus');
+    assert.ok(!nodes(tree).some(n=>n.type===get('app/components/daylight-watchlist.js').default),'film watchlist shelf respects Discover settings');
+    library.home=initialHome;await render();
     assert.ok(!nodes(tree).some(n=>n.type===get('app/components/next-up.js').default),'Discover no longer renders episode tracking');
     assert.equal(nodes(tree).filter(n=>n.type===get('app/components/daylight-watchlist.js').default).length,1,'Discover has one watchlist shelf');
     assert.deepEqual(homeOrder(), initialHome.sections.filter(id=>id!=='tonight').slice(0, 2), 'collapsed Discover respects saved order');

@@ -1,0 +1,25 @@
+const assert=require('node:assert/strict'),fs=require('fs'),ts=require('typescript');for(const ext of ['.ts','.tsx'])require.extensions[ext]=(m,f)=>m._compile(ts.transpileModule(fs.readFileSync(f,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX,esModuleInterop:true}}).outputText,f);
+const state=require('../lib/library-state.ts'),manga=require('../lib/manga-state.ts');
+const title={id:'kitsu-38',slug:'one-piece',name:'One Piece',poster:'https://media.kitsu.app/manga/poster_images/38/medium.jpg',summary:'A manga.',chapters:null,volumes:null,publication:'current'};
+const op=fields=>({type:'manga-progress',manga:title,fields}),validate=operations=>state.validateMutation({revision:0,id:'manga-fixture-1234',operations});
+assert.ok(validate([op({status:'planned'})]));
+for(const fields of [{chapters:-1},{chapters:Infinity},{chapters:0.123},{volumes:1.5},{status:'unknown'},{chapters:1,owner:'other'},{}])assert.equal(validate([op(fields)]),null);
+assert.equal(validate([{...op({status:'reading'}),manga:{...title,id:'__proto__'}}]),null);
+assert.equal(manga.cleanManga({...title,poster:'javascript:alert(1)'}).poster,null);
+const empty=state.emptyLibrary(),a=state.applyOperations(empty,[op({status:'reading',chapters:12.5,volumes:2})]);assert.equal(Object.keys(empty).includes('manga'),false);
+const b=state.applyOperations(a,[op({chapters:13.5}),op({status:'paused'})]);assert.deepEqual(state.projectLibrary(b).manga[title.id].progress,{status:'paused',chapters:13.5,volumes:2});
+assert.equal(state.projectLibrary(JSON.parse(JSON.stringify(b))).manga[title.id].manga.name,'One Piece');assert.equal(state.projectLibrary(state.emptyLibrary()).manga[title.id],undefined,'another account begins empty');
+assert.equal(Object.keys(state.applyOperations(b,[op(null)]).manga).length,0);assert.equal(a.manga[title.id].progress.chapters,12.5);
+const removed=state.applyMutation(b,{id:'manga-fixture-delete',operations:[op(null)]});assert.equal(state.applyMutation(removed,{id:'manga-fixture-delete',operations:[op({status:'reading'})]}),removed,'duplicate replay cannot re-add a removed entry');
+const home=require('../lib/home-preferences.ts'),React=require('react'),Settings=require('../app/components/home-settings.tsx').default;
+const settings=home.defaultHome();let patch;
+const tree=Settings({value:settings,onChange:p=>patch=p,gamingEnabled:true});
+function nodes(n){if(!n||typeof n!=='object')return [];return [n,...React.Children.toArray(n.props?.children).flatMap(nodes)];}
+nodes(tree).find(n=>n.type==='button'&&n.props.children==='Manga focus').props.onClick();
+assert.ok(home.validHomePatch(patch));const custom=state.projectLibrary(state.applyOperations(a,[{type:'home',fields:patch}]));
+assert.deepEqual(custom.home.sections.filter(id=>!custom.home.hidden.includes(id)),['manga','reading']);assert.equal(custom.manga[title.id].progress.chapters,12.5);
+assert.deepEqual(home.resolveHome(JSON.parse(JSON.stringify(custom.home))),custom.home);
+const legacy={sections:settings.sections.filter(id=>!['manga','reading','games','watchlist'].includes(id)),hidden:['calendar']};const migrated=home.resolveHome(legacy);assert.ok(migrated.hidden.includes('manga'));assert.equal(migrated.sections[0],legacy.sections[0]);
+const auth=require('../lib/auth/server.ts'),source=require('../lib/manga-source.ts');let signedIn=true;auth.requireSceneMember=async()=>signedIn?{error:null,user:{id:'fixture-a'}}:{error:Response.json({error:'Sign in'},{status:401})};source.searchManga=async(q,page)=>({manga:[title],page,hasMore:false});const route=require('../app/api/manga/route.ts');
+(async()=>{const request=path=>new Request('https://scene.test/api/manga'+path);signedIn=false;assert.equal((await route.GET(request(''))).status,401);signedIn=true;assert.equal((await route.GET(request('?q=x'))).status,400);assert.equal((await route.GET(request('?page=51'))).status,400);const r=await route.GET(request('?q=One%20Piece&page=2'));assert.equal(r.headers.get('cache-control'),'no-store');assert.equal((await r.json()).page,2);source.searchManga=async()=>{throw Error('private source error')};const failure=await route.GET(request(''));assert.equal(failure.status,503);assert.ok(!(await failure.text()).includes('private source error'));
+console.log('PASS: manga validation, fractional chapters, independent progress fields, immutable save/reload/remove, replay protection, account defaults, authenticated search, pagination and safe source failures.');})();

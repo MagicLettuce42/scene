@@ -30,6 +30,7 @@ export type Game = {
   sourceUrl: string;
   image: string;
   imageFit?: "contain";
+  imageLayout?: "wide" | "square" | "portrait";
   checked: string;
 };
 export const isGamePlatform = (value: unknown): value is GamePlatform =>

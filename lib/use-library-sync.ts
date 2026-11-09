@@ -1,3 +1,4 @@
+import type {Manga,MangaProgress} from "./manga-state";
 "use client";
 import {newCollectionId} from "./collections";
 import type { FilterPreset, RecommendationMode } from "./filter-presets";
@@ -275,6 +276,7 @@ export function useLibrarySync(account: Account) {
     setRecommendationMode: (value: RecommendationMode) => enqueue([{ type: "recommendation-mode", value }]),
     setSpoilerFree: (value: boolean) => enqueue([{ type: "spoiler-free", value }]),
     setSharePerformance: (value: boolean) => enqueue([{ type: "share-performance", value }]),
+    updateManga: (manga:Manga, fields:Partial<MangaProgress>|null) => enqueue([{type:"manga-progress",manga,fields}]),
     addFavourites: (titles: Title[]) => enqueue(titles.map(title => ({ type: "title" as const, title, fields: { liked: true, hidden: false } }))),
     setAvatar: (value: string | null) => enqueue([{ type: "avatar", value }]),
     setGaming: (value: boolean) => enqueue([{ type: "gaming", value }]),

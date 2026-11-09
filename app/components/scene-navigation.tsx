@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Home, Film, Tv, Gamepad2, CalendarDays, Bookmark, Search, MoreHorizontal, Settings, X, Bell } from "lucide-react";
+import { Home, Film, Tv, Gamepad2, CalendarDays, Bookmark, Search, MoreHorizontal, Settings, X, Bell, BookOpen } from "lucide-react";
 import type { View } from "../../lib/tab-memory";
 import SceneWordmark from "./scene-wordmark";
 import ProfileAvatar from "./profile-avatar";
@@ -13,7 +13,7 @@ export type SceneNavigationProps = {
 const destinations = [
   {id:"discover",label:"Discover",Icon:Home}, {id:"films",label:"Films",Icon:Film},
   {id:"series",label:"TV series",Icon:Tv}, {id:"gaming",label:"Gaming",Icon:Gamepad2},
-  {id:"upcoming",label:"Upcoming",Icon:CalendarDays}, {id:"watchlist",label:"Watchlist",Icon:Bookmark},
+  {id:"manga",label:"Manga",Icon:BookOpen}, {id:"upcoming",label:"Upcoming",Icon:CalendarDays}, {id:"watchlist",label:"Watchlist",Icon:Bookmark},
 ] as const;
 export default function SceneNavigation(props: SceneNavigationProps) {
   const [open,setOpen]=useState(false), more=useRef<HTMLButtonElement>(null);
@@ -33,7 +33,7 @@ export default function SceneNavigation(props: SceneNavigationProps) {
       <button onClick={()=>navigate("discover")} className={props.view==="discover"&&!props.submitted?"active":""} aria-current={props.view==="discover"&&!props.submitted?"page":undefined}><Home size={23}/><span>Discover</span></button>
       <button onClick={props.onSearch} className={props.submitted?"active":""} aria-current={props.submitted?"page":undefined}><Search size={23}/><span>Search</span></button>
       <button onClick={()=>navigate("watchlist")} className={props.view==="watchlist"&&!props.submitted?"active":""} aria-current={props.view==="watchlist"&&!props.submitted?"page":undefined}><Bookmark size={23}/><span>Watchlist</span></button>
-      <button ref={more} onClick={()=>setOpen(x=>!x)} className={open||["films","series","gaming","upcoming"].includes(props.view)?"active":""} aria-expanded={open} aria-controls="scene-more-navigation"><MoreHorizontal size={23}/><span>More</span></button>
+      <button ref={more} onClick={()=>setOpen(x=>!x)} className={open||["films","series","gaming","manga","upcoming"].includes(props.view)?"active":""} aria-expanded={open} aria-controls="scene-more-navigation"><MoreHorizontal size={23}/><span>More</span></button>
     </nav>
     {open&&<><button className="daylight-nav-backdrop" aria-label="Close navigation menu" onClick={()=>setOpen(false)}/><nav id="scene-more-navigation" className="daylight-more-menu" aria-label="More navigation"><div><strong>Explore Scene</strong><button aria-label="Close navigation menu" onClick={()=>{setOpen(false);more.current?.focus();}}><X size={20}/></button></div>{tabs.filter(t=>t.id!=="discover"&&t.id!=="watchlist").map(t=><button key={t.id} className={props.view===t.id?"active":""} onClick={()=>navigate(t.id)}><t.Icon size={21}/>{t.label}</button>)}<button disabled={!props.ready} onClick={account}><Settings size={21}/>Account & settings</button></nav></>}
   </>;

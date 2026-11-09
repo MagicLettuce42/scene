@@ -2,6 +2,10 @@ import type { View } from "./tab-memory";
 
 export const homeSections = [
   { id: "personal", label: "For you" },
+  { id: "watchlist", label: "Next on your watchlist" },
+  { id: "manga", label: "Manga picks" },
+  { id: "reading", label: "Continue reading manga" },
+  { id: "games", label: "Games for you" },
   { id: "arrivals", label: "New on your services" },
   { id: "leaving", label: "Leaving soon" },
   { id: "tonight", label: "Watch tonight" },
@@ -21,10 +25,10 @@ export type HomePreferences = {
 export const defaultHome = (): HomePreferences => ({
   startView: "discover",
   density: "compact",
-  sections: ["popular", "personal", "arrivals", "leaving", "tonight", "rated", "recent", "short", "calendar"],
-  hidden: ["calendar"],
+  sections: ["popular", "personal", "arrivals", "leaving", "tonight", "rated", "recent", "short", "calendar", "watchlist", "manga", "reading", "games"],
+  hidden: ["calendar", "manga", "reading", "games"],
 });
-const views = ["discover", "films", "series", "upcoming", "watchlist", "gaming"];
+const views = ["discover", "films", "series", "upcoming", "watchlist", "gaming", "manga"];
 const validSections = (v: unknown): v is HomeSection[] =>
   Array.isArray(v) &&
   v.length <= homeSections.length &&
@@ -54,6 +58,11 @@ export function migrateHomePatch(value: unknown): unknown {
   const migrated = { ...value } as Record<string, unknown>;
   for (const key of ["sections", "hidden"]) {
     if (Array.isArray(migrated[key])) migrated[key] = migrated[key].filter(id => id !== "halloween" && id !== "next");
+  }
+  if (Array.isArray(migrated.sections) && new Set(migrated.sections).size === migrated.sections.length && migrated.sections.every(id => homeSections.some(s => s.id === id))) {
+    const added = homeSections.filter(s => !(migrated.sections as unknown[]).includes(s.id)).map(s => s.id);
+    migrated.sections = [...migrated.sections, ...added];
+    if (Array.isArray(migrated.hidden)) migrated.hidden = [...new Set([...migrated.hidden, ...added.filter(id => ["manga", "reading", "games"].includes(id))])];
   }
   return migrated;
 }

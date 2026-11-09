@@ -89,3 +89,9 @@ The title dialog automatically refreshes UK TMDB availability whenever a title i
 
 Run `node tests/availability-corrections.cjs` and `node tests/catalogue-edge-cache.cjs` for correction and refresh regression checks.
 
+
+Manga discovery uses Kitsu’s public manga metadata API. Members keep reading status, fractional chapter progress and whole volume progress in their private Scene library. Manga is under More → Manga on phones, with a dedicated My manga list and search. Source chapter/volume totals may be unknown; no manga pages are hosted.
+
+Additional official Steam library covers (9 November 2026): Baldur’s Gate 3 (1086940), Hades II (1145350), Elden Ring (1245620), Clair Obscur: Expedition 33 (1903340), Cyberpunk 2077 (1091500), Split Fiction (2001120). Each app title was verified through Steam appdetails before downloading its library_600x900 artwork. Catalogue artwork layout records preserve wide, square and portrait sources without cropping. IGDB cover rendering supports the documented retina 2x size.
+
+Discover customization is in Account & settings → Home screen & poster size: Films & TV, Manga focus, Everything, plus per-shelf visibility and ordering. New manga and games shelves default to hidden for existing accounts. Manga focus replaces film/TV shelves with Manga picks and Continue reading manga, independently of streaming services.

@@ -1,3 +1,4 @@
+import {cleanManga,cleanMangaCollection,validMangaFields,type Manga,type MangaProgress,type MangaCollection} from "./manga-state";
 import { collectionId, collectionName, readCollections, type PersonalCollection } from "./collections";
 import { cleanPreset, isRecommendationMode, type FilterPreset, type RecommendationMode } from "./filter-presets";
 import { cleanFollowPerson, readFollows, validPersonPreferences, peopleFollowLimit, type FollowedPerson, type PersonPreferences } from "./people-following";
@@ -37,6 +38,7 @@ export type LibraryDocument = {
   entries: Record<string, LibraryEntry>;
   services: Record<string, boolean>;
   receipts: string[];
+  manga?: MangaCollection;
   games?: GameCollection;
   gameDetails?: Record<string, Game>;
   preferences?: {
@@ -58,6 +60,7 @@ export type LibraryDocument = {
 };
 export type ReviewFields = { rating?: number | null; note?: string };
 export type LibraryOperation =
+  | {type:"manga-progress";manga:Manga;fields:Partial<MangaProgress>|null}
   | {type:"collection";id:string;action:"create"|"rename"|"delete";name?:string}
   | {type:"collection-member";id:string;key:string;value:boolean}
   | { type: "person-follow"; person: Person; value: boolean; at: number }
@@ -104,6 +107,7 @@ export function titleKey(t: Title) {
 }
 export function applyOperations(source: LibraryDocument, operations: LibraryOperation[]): LibraryDocument {
   const doc = {
+    manga: cleanMangaCollection(source.manga),
     games: cleanGameCollection(source.games),
     gameDetails: cleanGameSnapshots(source.gameDetails),
     entries: Object.assign(Object.create(null), source.entries) as Record<string, LibraryEntry>,
@@ -112,6 +116,7 @@ export function applyOperations(source: LibraryDocument, operations: LibraryOper
     preferences: { ...source.preferences },
   };
   for (const op of operations) {
+    if(op.type==="manga-progress"){const id=op.manga.id,old=doc.manga[id];if(op.fields===null)delete doc.manga[id];else {if(!old&&Object.keys(doc.manga).length>=500)throw Error("You can track up to 500 manga.");doc.manga[id]={manga:op.manga,progress:{...(old?.progress||{status:"planned",chapters:0,volumes:0}),...op.fields}};}continue;}
     if(op.type === "collection" || op.type === "collection-member") {
       const collections = {...doc.preferences.collections}, old = collections[op.id];
       if(op.type === "collection") {
@@ -187,7 +192,7 @@ export function applyOperations(source: LibraryDocument, operations: LibraryOper
       continue;
     }
     if (op.type === "home") {
-      doc.preferences.home = { ...doc.preferences.home, ...op.fields };
+      doc.preferences.home = { ...resolveHome(doc.preferences.home), ...op.fields };
       continue;
     }
     if (op.type === "onboard") {
@@ -261,6 +266,7 @@ export function projectLibrary(doc: LibraryDocument) {
     gamingPlatforms: gamePlatforms
       .filter((p) => doc.preferences?.gamePlatforms?.[p.id] === true)
       .map((p) => p.id),
+    manga: cleanMangaCollection(doc.manga),
     games: cleanGameCollection(doc.games),
     gameDetails: cleanGameSnapshots(doc.gameDetails),
     autoAvailability: doc.preferences?.autoAvailability !== false,
@@ -392,6 +398,7 @@ export function validateMutation(body: any): { revision: number; mutation: Mutat
     return null;
   const operations: LibraryOperation[] = [];
   for (const op of body.operations) {
+    if(op?.type==="manga-progress"){const manga=cleanManga(op.manga);if(!manga||(op.fields!==null&&!validMangaFields(op.fields)))return null;operations.push({type:"manga-progress",manga,fields:op.fields});continue;}
     if(op?.type === "collection") {
       if(!collectionId(op.id)||!["create","rename","delete"].includes(op.action)||(op.action!=="delete"&&!collectionName(op.name)))return null;
       operations.push({type:"collection",id:op.id,action:op.action,...(op.action!=="delete"?{name:op.name.trim()}:{})});continue;

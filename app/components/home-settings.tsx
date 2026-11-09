@@ -15,7 +15,11 @@ export default function HomeSettings({
 }) {
   function move(index: number, delta: number) {
     const sections = [...value.sections];
-    [sections[index], sections[index + delta]] = [sections[index + delta], sections[index]];
+    const moving=sections[index];if(moving==="tonight"||moving==="watchlist")return;
+    const movable=sections.filter(id=>id!=="tonight"&&id!=="watchlist"), position=movable.indexOf(moving);
+    const other=sections.indexOf(movable[position+delta]);
+    if(position<0||other<0)return;
+    [sections[index], sections[other]] = [sections[other], sections[index]];
     onChange({ sections });
   }
   const content = (
@@ -35,6 +39,7 @@ export default function HomeSettings({
             <option value="series">TV series</option>
             <option value="upcoming">Upcoming</option>
             <option value="watchlist">Watchlist</option>
+            <option value="manga">Manga</option>
             {gamingEnabled && <option value="gaming">Gaming</option>}
           </SelectControl>
         </label>
@@ -49,8 +54,14 @@ export default function HomeSettings({
           </SelectControl>
         </label>
       </div>
+      <h3>Your Discover mix</h3>
+      <div className="inline-actions">
+        <button className="button secondary" onClick={()=>{const d=defaultHome();onChange({sections:d.sections,hidden:d.hidden});}}>Films & TV</button>
+        <button className="button secondary" onClick={()=>onChange({sections:["manga","reading",...value.sections.filter(id=>id!=="manga"&&id!=="reading")],hidden:value.sections.filter(id=>id!=="manga"&&id!=="reading")})}>Manga focus</button>
+        <button className="button secondary" onClick={()=>onChange({hidden:gamingEnabled?[]:["games"]})}>Everything</button>
+      </div>
       <h3>Discover sections</h3>
-      <p className="fine-print">Choose what appears and move shelves into your preferred order. Discover starts with your first two enabled shelves; the rest appear under More to explore. Watch tonight appears at the top when enabled. Episode tracking is in Watchlist → Watching.</p>
+      <p className="fine-print">Choose what appears and move shelves into your preferred order. Discover starts with your first two enabled shelves; the rest appear under More to explore. Watch tonight stays at the top and your watchlist follows the first shelf when enabled. Episode tracking is in Watchlist → Watching. Enable Gaming in your account to add games.</p>
       <ol className="home-section-order">
         {value.sections.map((id, i) => {
           const label = homeSections.find((s) => s.id === id)!.label;
@@ -59,6 +70,7 @@ export default function HomeSettings({
               <label>
                 <input
                   type="checkbox"
+                  disabled={id==="games"&&!gamingEnabled}
                   checked={!value.hidden.includes(id)}
                   onChange={(e) =>
                     onChange({
@@ -72,7 +84,7 @@ export default function HomeSettings({
                 <button
                   className="icon-button"
                   aria-label={`Move ${label} up`}
-                  disabled={!i}
+                  disabled={id==="tonight"||id==="watchlist"||value.sections.filter(k=>k!=="tonight"&&k!=="watchlist")[0]===id}
                   onClick={() => move(i, -1)}
                 >
                   <ArrowUp size={17} />
@@ -80,7 +92,7 @@ export default function HomeSettings({
                 <button
                   className="icon-button"
                   aria-label={`Move ${label} down`}
-                  disabled={i === value.sections.length - 1}
+                  disabled={id==="tonight"||id==="watchlist"||value.sections.filter(k=>k!=="tonight"&&k!=="watchlist").at(-1)===id}
                   onClick={() => move(i, 1)}
                 >
                   <ArrowDown size={17} />

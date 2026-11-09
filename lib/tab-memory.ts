@@ -2,7 +2,7 @@ import type { Person } from "./people";
 import { cleanUpcomingFilters, type UpcomingFilters } from "./upcoming";
 import { parseExtraFilters, noExtraFilters, type ExtraFilters } from "./catalogue-filters";
 import { services, type Title } from "./catalogue";
-export type View = "discover" | "films" | "series" | "upcoming" | "watchlist" | "gaming";
+export type View = "discover" | "films" | "series" | "upcoming" | "watchlist" | "gaming" | "manga";
 export type TabSnapshot = {
   searchPage?: number;
   searchHasMore?: boolean;
@@ -33,10 +33,10 @@ export function readTabs(userId: string): {
 } {
   try {
     const v = JSON.parse(sessionStorage.getItem(tabMemoryKey(userId)) || "null");
-    if (!v || !["discover", "films", "series", "upcoming", "watchlist", "gaming"].includes(v.view))
+    if (!v || !["discover", "films", "series", "upcoming", "watchlist", "gaming", "manga"].includes(v.view))
       throw Error();
     const tabs: Partial<Record<View, TabSnapshot>> = {};
-    for (const key of ["discover", "films", "series", "upcoming", "watchlist", "gaming"] as const) {
+    for (const key of ["discover", "films", "series", "upcoming", "watchlist", "gaming", "manga"] as const) {
       const x = v.tabs?.[key];
       if (
         x &&

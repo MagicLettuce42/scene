@@ -9,7 +9,7 @@ export default function GameSearchCard({ game, collection, onStatus }: GameActio
   const status = collection[game.id];
   return (
     <article className="title-card game-search-card">
-      <div className="poster-wrap">
+      <div className={`poster-wrap game-art-${game.imageLayout || "portrait"}`}>
         <a
           className="poster-open game-poster-open"
           href={game.sourceUrl}

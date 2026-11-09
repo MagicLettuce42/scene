@@ -59,7 +59,7 @@ export default function AccountDataControls({ accountId, pending }: { accountId:
   <p>You control your records. Read the <a href="/privacy">Privacy Policy</a>, <a href="/cookies">Cookie policy</a> or <a href="/delete-account">deletion guide</a>. You can request help without signing in using the contact in the Privacy Policy.</p>
   <section>
    <h3>Download your data</h3>
-   <p>Get a JSON file with your profile, watchlist, ratings, notes, episode and gaming progress, settings, reminders, feedback and your shared-list contributions.</p>
+   <p>Get a JSON file with your profile, watchlist, ratings, notes, episode, gaming and manga reading progress, settings, reminders, feedback and your shared-list contributions.</p>
    <p className="fine-print">Passwords, security codes, sign-in tokens and other members’ account details are excluded. This is a data download; importing it back into Scene is not available yet.</p>
    <button className="button secondary" disabled={!!busy||pending>0} onClick={download}>{busy==="export"?<LoaderCircle size={16} className="spin"/>:<Download size={16}/>} {busy==="export"?"Preparing download…":"Download my data"}</button>
   </section>

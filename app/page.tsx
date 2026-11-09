@@ -17,6 +17,8 @@ import QualityMonitor from "./components/quality-monitor";
 import { PerformanceSharing, usePrivacyConsent } from "./components/privacy-consent";
 import TasteSetup from "./components/taste-setup";
 const TasteProfile = lazy(() => import("./components/taste-profile"));
+const MediaShelf = lazy(() => import("./components/media-shelves"));
+const MangaView = lazy(() => import("./components/manga"));
 const Gaming = lazy(() => import("./components/gaming"));
 import type { Game, GameStatus } from "../lib/gaming";
 import Discover from "./components/discover";
@@ -168,6 +170,7 @@ function Catalogue() {
   const updates = useSceneUpdates(account.id);
   const [searchInfo,setSearchInfo]=useState<{suggestion?:string|null;interpretation?:string;emptyReason?:string}>({});
   const [movieNightEntry,setMovieNightEntry]=useState(false);
+  const [mangaInitialTab,setMangaInitialTab]=useState<"explore"|"mine">("explore");
   const [searchScope,setSearchScope]=useState<"all"|"movie"|"series"|"games">("all");
   const searchRegion = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -997,7 +1000,7 @@ function Catalogue() {
   }
   const [showMoreDiscover, setShowMoreDiscover] = useState(false);
   const visibleHomeSections = library.home.sections.filter(
-    (id) => id !== "tonight" && !library.home.hidden.includes(id),
+    (id) => id !== "tonight" && id !== "watchlist" && (id!=="games"||library.gamingEnabled) && !library.home.hidden.includes(id),
   );
   const displayedHomeSections = showMoreDiscover ? visibleHomeSections : visibleHomeSections.slice(0, 2);
   const halloweenHome = false;
@@ -1203,12 +1206,14 @@ function Catalogue() {
     <div className="daylight-shell">
       <SceneMotion />
       <QualityMonitor userId={account.id} enabled={library.sharePerformance && library.loaded && privacyConsent.performance} />
-      <SceneNavigation unreadCount={updates.unread} onUpdates={()=>setDialog("updates")} view={view} submitted={Boolean(submitted)} gamingEnabled={library.gamingEnabled} ready={ready} savedCount={saved.length} photo={library.avatar} name={account.name} onNavigate={navigate} onSearch={()=>{window.scrollTo({top:0,behavior:"instant"});searchInput.current?.focus();}} onAccount={()=>setDialog("account")}/>
+      <SceneNavigation unreadCount={updates.unread} onUpdates={()=>setDialog("updates")} view={view} submitted={Boolean(submitted)} gamingEnabled={library.gamingEnabled} ready={ready} savedCount={saved.length} photo={library.avatar} name={account.name} onNavigate={navigate} onSearch={()=>{if(view==="manga")navigate("discover");window.scrollTo({top:0,behavior:"instant"});requestAnimationFrame(()=>searchInput.current?.focus());}} onAccount={()=>setDialog("account")}/>
       <main
         id="main"
         className={`page compact-page density-${library.home.density} ${view === "films" || view === "series" ? "library-browse" : ""} ${halloweenHome ? "seasonal-home" : discovering && !halloween ? "screening-home" : ""} ${watchlistScreen ? "watchlist-page" : ""}`}
       >
         <AppUpdateNotice pending={library.pending} />
+        {view==="manga"&&!submitted&&<Suspense fallback={<p role="status">Loading manga…</p>}><MangaView initialTab={mangaInitialTab} collection={library.manga} onUpdate={library.updateManga} syncStatus={library.status} syncMessage={library.message}/></Suspense>}
+        <div hidden={view==="manga"&&!submitted}>
         <section className="intro">
           <h1 className={`daylight-page-heading${discovering ? " daylight-discover-title" : ""}`}>{discovering ? "Find your next favourite." : heading}</h1>
           {library.theme!=="daylight"&&<button className="daylight-theme-invite text-button" onClick={()=>library.setTheme("daylight")}>Try the new Daylight theme</button>}
@@ -1380,7 +1385,7 @@ function Catalogue() {
             ) : (
               <NextUp spoilerFree={library.spoilerFree} items={scopedTracking} onOpen={openTitle} onEpisodes={onEpisodes} />
             )
-          ) : needsServices && view !== "watchlist" ? (
+          ) : needsServices && view !== "watchlist" && !(discovering && visibleHomeSections.some(id=>id==="manga"||id==="reading"||id==="games")) ? (
             <div className="empty-state">
               <SlidersHorizontal size={34} />
               <h3>Choose your services to get started</h3>
@@ -1395,10 +1400,12 @@ function Catalogue() {
           ) : discovering && ready ? (
             <DiscoverVariety order={displayedHomeSections}><div className="home-sections">
               {!library.home.hidden.includes("tonight")&&<Tonight featured {...cardActions} onMovieNight={()=>{setMovieNightEntry(true);navigate("watchlist");setWatchlistTab("shared");}}/>}
-              {!displayedHomeSections.length&&<DaylightWatchlist titles={saved} onOpen={openTitle} onViewAll={()=>navigate("watchlist")}/>}
+              {!displayedHomeSections.length&&!library.home.hidden.includes("watchlist")&&<DaylightWatchlist titles={saved} onOpen={openTitle} onViewAll={()=>navigate("watchlist")}/>}
               {displayedHomeSections.map((id,index) => (
                   <div key={id} className="home-section">
-                    {id === "arrivals" || id === "leaving" ? (
+                    {id === "manga" || id === "reading" || id === "games" ? (
+                      <Suspense fallback={<p role="status">Loading your picks…</p>}><MediaShelf kind={id} collection={library.manga} onManga={library.updateManga} onViewAll={()=>{setMangaInitialTab(id==="reading"?"mine":"explore");navigate(id==="games"?"gaming":"manga");}} onGame={setGameStatus} gameCollection={library.games} platforms={library.gamingPlatforms}/></Suspense>
+                    ) : id === "arrivals" || id === "leaving" ? (
                       <ServiceActivity
                         mode={id === "arrivals" ? "new" : "leaving"}
                         {...cardActions}
@@ -1438,11 +1445,11 @@ function Catalogue() {
                         onGenres={mergeDiscoverGenres}
                       />
                     )}
-                    {index===0&&<DaylightWatchlist titles={saved} onOpen={openTitle} onViewAll={()=>navigate("watchlist")}/>}
+                    {index===0&&!library.home.hidden.includes("watchlist")&&<DaylightWatchlist titles={saved} onOpen={openTitle} onViewAll={()=>navigate("watchlist")}/>}
                   </div>
                 ))}
               {visibleHomeSections.length > 2 && <button className="button secondary discover-more" aria-expanded={showMoreDiscover} onClick={() => setShowMoreDiscover(!showMoreDiscover)}>{showMoreDiscover ? "Show fewer sections" : "More to explore"}</button>}
-              {!visibleHomeSections.length && !saved.length && library.home.hidden.includes("tonight") && (
+              {!visibleHomeSections.length && (!saved.length || library.home.hidden.includes("watchlist")) && library.home.hidden.includes("tonight") && (
                 <div className="quiet-empty">
                   <h3>Your home screen is clear</h3>
                   <p>Choose sections in Account → Home screen & poster size.</p>
@@ -1573,6 +1580,7 @@ function Catalogue() {
             </a>
           )}
         </section>
+        </div>
         <footer>
           <span className="footer-brand"><SceneWordmark /></span>
           <p>

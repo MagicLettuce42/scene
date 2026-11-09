@@ -11,7 +11,8 @@
     "sourceUrl": "https://www.playstation.com/en-gb/games/marvels-wolverine/",
     "image": "/games/wolverine.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "forza-horizon-6",
@@ -25,7 +26,8 @@
     "released": true,
     "sourceUrl": "https://www.xbox.com/en-gb/games/forza-horizon-6",
     "image": "/games/forza-horizon-6.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "mario-kart-world",
@@ -38,7 +40,8 @@
     "released": true,
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Mario-Kart-World-2790000.html",
     "image": "/games/mario-kart-world.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "split-fiction",
@@ -53,8 +56,9 @@
     ],
     "released": true,
     "sourceUrl": "https://www.ea.com/en/games/split-fiction/split-fiction",
-    "image": "/games/split-fiction.webp",
-    "checked": "2026-10-18"
+    "image": "/games/split-fiction-cover.jpg",
+    "checked": "2026-10-18",
+    "imageLayout": "portrait"
   },
   {
     "id": "hades-ii",
@@ -70,8 +74,9 @@
     ],
     "released": true,
     "sourceUrl": "https://www.supergiantgames.com/blog/hades2-faq/",
-    "image": "/games/hades-ii.webp",
-    "checked": "2026-10-18"
+    "image": "/games/hades-ii-cover.jpg",
+    "checked": "2026-10-18",
+    "imageLayout": "portrait"
   },
   {
     "id": "donkey-kong-bananza",
@@ -84,7 +89,8 @@
     "released": true,
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Donkey-Kong-Bananza-2785804.html",
     "image": "/games/donkey-kong-bananza.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "astro-bot",
@@ -98,7 +104,8 @@
     "sourceUrl": "https://www.playstation.com/en-gb/games/astro-bot/",
     "image": "/games/astro-bot.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "baldurs-gate-3",
@@ -112,8 +119,9 @@
     ],
     "released": true,
     "sourceUrl": "https://baldursgate3.game/",
-    "image": "/games/baldurs-gate-3.webp",
-    "checked": "2026-10-18"
+    "image": "/games/baldurs-gate-3-cover.jpg",
+    "checked": "2026-10-18",
+    "imageLayout": "portrait"
   },
   {
     "id": "stardew-valley",
@@ -128,7 +136,8 @@
     "sourceUrl": "https://www.stardewvalley.net/",
     "image": "/games/stardew-valley.webp",
     "imageFit": "contain",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "ghost-of-yotei",
@@ -142,7 +151,8 @@
     "released": true,
     "image": "/games/ghost-of-yotei.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "god-of-war-ragnarok",
@@ -157,7 +167,8 @@
     "released": true,
     "image": "/games/god-of-war-ragnarok.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "spider-man-2",
@@ -172,7 +183,8 @@
     "released": true,
     "image": "/games/spider-man-2.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "ghost-of-tsushima",
@@ -187,7 +199,8 @@
     "released": true,
     "image": "/games/ghost-of-tsushima.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "horizon-forbidden-west",
@@ -202,7 +215,8 @@
     "released": true,
     "image": "/games/horizon-forbidden-west.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "returnal",
@@ -217,7 +231,8 @@
     "released": true,
     "image": "/games/returnal.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "ratchet-clank-rift-apart",
@@ -232,7 +247,8 @@
     "released": true,
     "image": "/games/ratchet-clank-rift-apart.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "the-last-of-us-part-i",
@@ -247,7 +263,8 @@
     "released": true,
     "image": "/games/the-last-of-us-part-i.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "death-stranding-2",
@@ -262,7 +279,8 @@
     "released": true,
     "image": "/games/death-stranding-2.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "demons-souls",
@@ -276,7 +294,8 @@
     "released": true,
     "image": "/games/demons-souls.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "elden-ring",
@@ -290,8 +309,9 @@
     ],
     "sourceUrl": "https://en.bandainamcoent.eu/elden-ring/elden-ring",
     "released": true,
-    "image": "/games/elden-ring.webp",
-    "checked": "2026-10-18"
+    "image": "/games/elden-ring-cover.jpg",
+    "checked": "2026-10-18",
+    "imageLayout": "portrait"
   },
   {
     "id": "cyberpunk-2077",
@@ -306,9 +326,10 @@
     ],
     "sourceUrl": "https://www.cyberpunk.net/gb/en/",
     "released": true,
-    "image": "/games/cyberpunk-2077.webp",
+    "image": "/games/cyberpunk-2077-cover.jpg",
     "checked": "2026-10-18",
-    "edition": "Ultimate Edition"
+    "edition": "Ultimate Edition",
+    "imageLayout": "portrait"
   },
   {
     "id": "the-witcher-3",
@@ -325,7 +346,8 @@
     "released": true,
     "image": "/games/the-witcher-3.webp",
     "checked": "2026-10-18",
-    "edition": "Complete Edition"
+    "edition": "Complete Edition",
+    "imageLayout": "wide"
   },
   {
     "id": "expedition-33",
@@ -339,8 +361,9 @@
     ],
     "sourceUrl": "https://www.expedition33.com/",
     "released": true,
-    "image": "/games/expedition-33.webp",
-    "checked": "2026-10-18"
+    "image": "/games/expedition-33-cover.jpg",
+    "checked": "2026-10-18",
+    "imageLayout": "portrait"
   },
   {
     "id": "hogwarts-legacy",
@@ -357,7 +380,8 @@
     "sourceUrl": "https://www.hogwartslegacy.com/en-gb/",
     "released": true,
     "image": "/games/hogwarts-legacy.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "street-fighter-6",
@@ -374,7 +398,8 @@
     "released": true,
     "image": "/games/street-fighter-6.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "tekken-8",
@@ -389,7 +414,8 @@
     "sourceUrl": "https://en.bandainamcoent.eu/tekken/tekken-8",
     "released": true,
     "image": "/games/tekken-8.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "monster-hunter-wilds",
@@ -405,7 +431,8 @@
     "released": true,
     "image": "/games/monster-hunter-wilds.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "it-takes-two",
@@ -422,7 +449,8 @@
     "sourceUrl": "https://www.ea.com/en/games/it-takes-two/it-takes-two",
     "released": true,
     "image": "/games/it-takes-two.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "jedi-survivor",
@@ -437,7 +465,8 @@
     "sourceUrl": "https://www.ea.com/games/starwars/jedi-survivor",
     "released": true,
     "image": "/games/jedi-survivor.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "zelda-tears-kingdom",
@@ -451,7 +480,8 @@
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/The-Legend-of-Zelda-Tears-of-the-Kingdom-1576884.html",
     "released": true,
     "image": "/games/zelda-tears-kingdom.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "zelda-breath-wild",
@@ -465,7 +495,8 @@
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/The-Legend-of-Zelda-Breath-of-the-Wild-1173609.html",
     "released": true,
     "image": "/games/zelda-breath-wild.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "super-mario-odyssey",
@@ -478,7 +509,8 @@
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Super-Mario-Odyssey-1173332.html",
     "released": true,
     "image": "/games/super-mario-odyssey.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "super-mario-wonder",
@@ -492,7 +524,8 @@
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Super-Mario-Bros-Wonder-2404150.html",
     "released": true,
     "image": "/games/super-mario-wonder.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "animal-crossing",
@@ -506,7 +539,8 @@
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Animal-Crossing-New-Horizons-1438623.html",
     "released": true,
     "image": "/games/animal-crossing.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "kirby-forgotten-land",
@@ -520,7 +554,8 @@
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Kirby-and-the-Forgotten-Land-2045110.html",
     "released": true,
     "image": "/games/kirby-forgotten-land.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "pikmin-4",
@@ -533,7 +568,8 @@
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Pikmin-4-2267217.html",
     "released": true,
     "image": "/games/pikmin-4.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "luigis-mansion-3",
@@ -546,7 +582,8 @@
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Luigi-s-Mansion-3-1437312.html",
     "released": true,
     "image": "/games/luigis-mansion-3.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "indiana-jones",
@@ -563,7 +600,8 @@
     "released": true,
     "image": "/games/indiana-jones.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "age-of-empires-iv",
@@ -578,7 +616,8 @@
     "released": true,
     "image": "/games/age-of-empires-iv.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "flight-simulator-2024",
@@ -593,7 +632,8 @@
     "sourceUrl": "https://www.xbox.com/en-gb/games/microsoft-flight-simulator-2024",
     "released": true,
     "image": "/games/flight-simulator-2024.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "halo-infinite",
@@ -608,7 +648,8 @@
     "released": true,
     "image": "/games/halo-infinite.webp",
     "checked": "2026-10-18",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "square"
   },
   {
     "id": "gta-vi",
@@ -623,7 +664,8 @@
     "date": "2026-11-19",
     "sourceUrl": "https://www.rockstargames.com/VI",
     "image": "/games/gta-vi.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "lets-sing-2027",
@@ -638,7 +680,8 @@
     "date": "2026-11-03",
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-games/Let-s-Sing-2027-3171829.html",
     "image": "/games/lets-sing-2027.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "frostpunk-switch",
@@ -653,7 +696,8 @@
     "date": "2026-10-19",
     "sourceUrl": "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-download-software/Frostpunk-3215042.html",
     "image": "/games/frostpunk-switch.webp",
-    "checked": "2026-10-18"
+    "checked": "2026-10-18",
+    "imageLayout": "wide"
   },
   {
     "id": "resident-evil-0",
@@ -672,7 +716,8 @@
     "sourceUrl": "https://store.steampowered.com/app/339340/",
     "image": "/games/resident-evil-0.jpg",
     "checked": "2026-11-04",
-    "edition": "HD Remaster"
+    "edition": "HD Remaster",
+    "imageLayout": "portrait"
   },
   {
     "id": "resident-evil-hd",
@@ -692,7 +737,8 @@
     "sourceUrl": "https://store.steampowered.com/app/304240/",
     "image": "/games/resident-evil-hd.jpg",
     "checked": "2026-11-04",
-    "edition": "HD Remaster"
+    "edition": "HD Remaster",
+    "imageLayout": "portrait"
   },
   {
     "id": "resident-evil-2",
@@ -713,7 +759,8 @@
     "sourceUrl": "https://store.steampowered.com/app/883710/",
     "image": "/games/resident-evil-2.jpg",
     "checked": "2026-11-04",
-    "edition": "2019 remake"
+    "edition": "2019 remake",
+    "imageLayout": "portrait"
   },
   {
     "id": "resident-evil-3",
@@ -734,7 +781,8 @@
     "sourceUrl": "https://store.steampowered.com/app/952060/",
     "image": "/games/resident-evil-3.jpg",
     "checked": "2026-11-04",
-    "edition": "2020 remake"
+    "edition": "2020 remake",
+    "imageLayout": "portrait"
   },
   {
     "id": "resident-evil-4",
@@ -755,7 +803,8 @@
     "sourceUrl": "https://store.steampowered.com/app/2050650/",
     "image": "/games/resident-evil-4.jpg",
     "checked": "2026-11-04",
-    "edition": "2023 remake"
+    "edition": "2023 remake",
+    "imageLayout": "portrait"
   },
   {
     "id": "resident-evil-4-2005",
@@ -774,7 +823,8 @@
     "sourceUrl": "https://store.steampowered.com/app/254700/",
     "image": "/games/resident-evil-4-2005.jpg",
     "checked": "2026-11-04",
-    "edition": "Original game · HD edition"
+    "edition": "Original game · HD edition",
+    "imageLayout": "portrait"
   },
   {
     "id": "resident-evil-5",
@@ -791,7 +841,8 @@
     "released": true,
     "sourceUrl": "https://store.steampowered.com/app/21690/",
     "image": "/games/resident-evil-5.jpg",
-    "checked": "2026-11-04"
+    "checked": "2026-11-04",
+    "imageLayout": "portrait"
   },
   {
     "id": "resident-evil-6",
@@ -808,7 +859,8 @@
     "released": true,
     "sourceUrl": "https://store.steampowered.com/app/221040/",
     "image": "/games/resident-evil-6.jpg",
-    "checked": "2026-11-04"
+    "checked": "2026-11-04",
+    "imageLayout": "portrait"
   },
   {
     "id": "resident-evil-7",
@@ -828,7 +880,8 @@
     "released": true,
     "sourceUrl": "https://store.steampowered.com/app/418370/",
     "image": "/games/resident-evil-7.jpg",
-    "checked": "2026-11-04"
+    "checked": "2026-11-04",
+    "imageLayout": "portrait"
   },
   {
     "id": "resident-evil-village",
@@ -848,7 +901,8 @@
     "released": true,
     "sourceUrl": "https://store.steampowered.com/app/1196590/",
     "image": "/games/resident-evil-village.jpg",
-    "checked": "2026-11-04"
+    "checked": "2026-11-04",
+    "imageLayout": "portrait"
   },
   {
     "id": "resident-evil-requiem",
@@ -870,7 +924,8 @@
     "image": "/games/resident-evil-requiem.png",
     "checked": "2026-11-04",
     "date": "2026-02-27",
-    "imageFit": "contain"
+    "imageFit": "contain",
+    "imageLayout": "wide"
   },
   {
     "id": "resident-evil-revelations",
@@ -887,7 +942,8 @@
     "released": true,
     "sourceUrl": "https://store.steampowered.com/app/222480/",
     "image": "/games/resident-evil-revelations.jpg",
-    "checked": "2026-11-04"
+    "checked": "2026-11-04",
+    "imageLayout": "portrait"
   },
   {
     "id": "resident-evil-revelations-2",
@@ -904,6 +960,7 @@
     "released": true,
     "sourceUrl": "https://store.steampowered.com/app/287290/",
     "image": "/games/resident-evil-revelations-2.jpg",
-    "checked": "2026-11-04"
+    "checked": "2026-11-04",
+    "imageLayout": "portrait"
   }
 ]
