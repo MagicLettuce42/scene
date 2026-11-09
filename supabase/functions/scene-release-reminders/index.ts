@@ -16,9 +16,9 @@ Deno.serve(async req=>{
   let status=0;
   try{
    // Recheck consent and access immediately before handing the message to a push service.
-   const [follow,member,release,device]=await Promise.all([db.from('scene_release_reminders').select('release_id').eq('user_id',item.userId).eq('release_id',item.releaseId).maybeSingle(),db.from('scene_members').select('active').eq('user_id',item.userId).maybeSingle(),db.from('scene_releases').select('active,release_date').eq('id',item.releaseId).maybeSingle(),db.from('scene_push_subscriptions').select('id').eq('id',item.subscriptionId).maybeSingle()]);
-   if(follow.error||member.error||release.error||device.error)throw Error('Consent check failed');
-   if(!follow.data||!member.data?.active||!release.data?.active||release.data.release_date!==item.date||!device.data){status=204;}
+   const [follow,member,release,device,library]=await Promise.all([db.from('scene_release_reminders').select('release_id').eq('user_id',item.userId).eq('release_id',item.releaseId).maybeSingle(),db.from('scene_members').select('active').eq('user_id',item.userId).maybeSingle(),db.from('scene_releases').select('active,release_date').eq('id',item.releaseId).maybeSingle(),db.from('scene_push_subscriptions').select('id').eq('id',item.subscriptionId).maybeSingle(),db.from('scene_libraries').select('payload').eq('user_id',item.userId).maybeSingle()]);
+   if(follow.error||member.error||release.error||device.error||library.error)throw Error('Consent check failed');
+   if(library.data?.payload?.preferences?.region==='US'||!follow.data||!member.data?.active||!release.data?.active||release.data.release_date!==item.date||!device.data){status=204;}
    else if(!allowed(item.endpoint)){status=410;}
    else{
     const payload=await buildPushPayload({data:JSON.stringify({type:'scene-release-day'}),options:{ttl:3600}},{endpoint:item.endpoint,expirationTime:null,keys:item.keys},{subject:'https://scene-streaming.airyokapi2.chatgpt.site',publicKey:config.data.scene_push_vapid_public,privateKey:config.data.scene_push_vapid_private});
