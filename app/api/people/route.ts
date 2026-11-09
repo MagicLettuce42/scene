@@ -1,10 +1,11 @@
+import { regionalHandler } from "../../../lib/region-server";
 import { requireSceneMember } from "../../../lib/auth/server";
 import { hasTMDB, searchPeopleTMDB, personFilmographyTMDB } from "../../../lib/tmdb";
 import { services } from "../../../lib/catalogue";
 import type { PersonRole } from "../../../lib/people";
 const reply = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const auth = await requireSceneMember(req);
   if (auth.error) return auth.error;
   if (!hasTMDB()) return reply({ error: "People discovery is temporarily unavailable." }, 503);
@@ -34,3 +35,5 @@ export async function GET(req: Request) {
     return reply({ error: "People discovery could not load. Please try again." }, 503);
   }
 }
+
+export const GET = regionalHandler(handleGET);

@@ -1,6 +1,7 @@
+import { regionalHandler } from "../../../../lib/region-server";
 import { requireSceneMember } from "../../../../lib/auth/server";
 import { parseActivityQuery, serviceActivity } from "../../../../lib/service-activity";
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const access = await requireSceneMember(req);
   if (access.error) return access.error;
   const options = parseActivityQuery(new URL(req.url).searchParams);
@@ -16,3 +17,5 @@ export async function GET(req: Request) {
     );
   }
 }
+
+export const GET = regionalHandler(handleGET);

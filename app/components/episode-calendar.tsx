@@ -106,7 +106,7 @@ export default function EpisodeCalendar({
             <CalendarDays size={19} /> {compact ? "Upcoming episodes" : "Your episode calendar"}
           </h3>
           <p className="fine-print">
-            Published air dates for series you track. UK streaming dates may differ; dates can change.
+            Published air dates for series you track. regional streaming dates may differ; dates can change.
           </p>
         </div>
         {compact && (

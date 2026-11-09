@@ -15,7 +15,7 @@ assert.equal(upcoming.selectUpcomingRelease({release_date:'2026-10-26'},'movie',
 assert.equal(upcoming.selectUpcomingRelease(gb([{type:3,release_date:'2026-02-30'}]),'movie','2026-01-01'),undefined);
 assert.equal(upcoming.selectUpcomingRelease({first_air_date:'2024-01-01',next_episode_to_air:{air_date:'2026-10-25'}},'tv','2026-10-25'),undefined,'returning episodes are not new series premieres');
 assert.equal(upcoming.selectUpcomingRelease({first_air_date:'2026-10-25'},'tv','2026-10-25').region,'original');
-for(const value of [{date:'2026-02-30',kind:'cinema',region:'GB'},{date:'2026-10-25',kind:'cinema',region:'US'},{date:'2026-10-25',kind:'series',region:'GB'}])assert.equal(upcoming.cleanUpcomingRelease(value),undefined);
+for(const value of [{date:'2026-02-30',kind:'cinema',region:'GB'},{date:'2026-10-25',kind:'cinema',region:'CA'},{date:'2026-10-25',kind:'series',region:'GB'}])assert.equal(upcoming.cleanUpcomingRelease(value),undefined);
 const release={date:'2099-10-25',kind:'digital',region:'GB'};
 const title={id:'tmdb-movie-5',tmdbId:5,name:'Upcoming film',kind:'movie',year:2099,genres:[],summary:'',poster:null,offers:[],upcomingRelease:release};
 const mutation=state.validateMutation({id:'upcoming-save-test',revision:0,operations:[{type:'title',title,fields:{saved:true}}]});

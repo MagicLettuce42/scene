@@ -1,9 +1,10 @@
+import { regionalHandler } from "../../../../lib/region-server";
 import { requireSceneMember } from "../../../../lib/auth/server";
 import { followedPeopleTMDB, hasTMDB } from "../../../../lib/tmdb";
 import { readFollows } from "../../../../lib/people-following";
 import type { LibraryDocument } from "../../../../lib/library-state";
 const reply=(body:unknown,status=200)=>Response.json(body,{status,headers:{"Cache-Control":"no-store"}});
-export async function GET(req:Request){
+async function handleGET(req:Request){
  const auth=await requireSceneMember(req);if(auth.error)return auth.error;
  const q=new URL(req.url).searchParams,view=q.get("view")||"upcoming",rawPage=q.get("page")||"1",rawPerson=q.get("person"),page=Number(rawPage),person=rawPerson?Number(rawPerson):undefined;
  if(!["upcoming","recent"].includes(view)||!/^\d+$/.test(rawPage)||!Number.isSafeInteger(page)||page<1||page>200||(rawPerson!==null&&(!/^[1-9]\d*$/.test(rawPerson)||!Number.isSafeInteger(person)||person!>2147483647)))return reply({error:"Invalid following request."},400);
@@ -16,3 +17,5 @@ export async function GET(req:Request){
  try{return reply(await followedPeopleTMDB(follows,Object.values(doc.entries||{}).filter(e=>e.hidden).map(e=>e.title.tmdbId?`tmdb-${e.title.kind==="movie"?"movie":"tv"}-${e.title.tmdbId}`:e.title.id),view as "upcoming"|"recent",page,person));}
  catch{return reply({error:"People updates could not load. Please try again."},503);}
 }
+
+export const GET = regionalHandler(handleGET);

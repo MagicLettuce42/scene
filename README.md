@@ -95,3 +95,13 @@ Manga discovery uses Kitsu’s public manga metadata API. Members keep reading s
 Additional official Steam library covers (9 November 2026): Baldur’s Gate 3 (1086940), Hades II (1145350), Elden Ring (1245620), Clair Obscur: Expedition 33 (1903340), Cyberpunk 2077 (1091500), Split Fiction (2001120). Each app title was verified through Steam appdetails before downloading its library_600x900 artwork. Catalogue artwork layout records preserve wide, square and portrait sources without cropping. IGDB cover rendering supports the documented retina 2x size.
 
 Discover customization is in Account & settings → Home screen & poster size: Films & TV, Manga focus, Everything, plus per-shelf visibility and ordering. New manga and games shelves default to hidden for existing accounts. Manga focus replaces film/TV shelves with Manga picks and Continue reading manga, independently of streaming services.
+
+### Viewing regions
+
+Members choose United Kingdom (`GB`) or United States (`US`) on public sign-up, in welcome setup, or in **Account → Region & services**. The private library stores `preferences.region` (legacy accounts default to `GB`). Service selections are filtered to that country; saved titles, ratings, episode and manga progress are retained. Country changes discard incompatible offer snapshots and recheck unchecked saved titles automatically when enabled.
+
+Catalogue requests carry a validated `region` query parameter. Request-local async context scopes TMDB discovery, hydration, recommendations and Watchmode links. All-country raw TMDB responses may be shared; normalized titles, browser caches and tab snapshots retain their country. Missing country offers never fall back to another country's data. Background checks read the account region; alert comparisons and delivery guards require matching countries.
+
+US support includes current service availability and regional cinema/digital dates. The reviewed streaming arrival/leaving announcements and release-day reminders still cover the UK only and are excluded for US users. Availability alerts work in both countries; the existing delivery window remains 9am–9pm UK time. Movie Night currently requires participants to use the same country.
+
+Database changes: `supabase/changes/us-service-regions.sql`. Deploy `scene-watchlist-refresh` with `_shared/watchlist-catalogue.ts` alongside the web release. Validate with `node tests/regions.cjs`, `tests/service-regions-access.sql` (transaction rolled back), and existing search, service, sign-up and session regression tests.

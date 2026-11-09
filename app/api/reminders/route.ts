@@ -1,8 +1,9 @@
+import { regionalHandler, catalogueRegion } from "../../../lib/region-server";
 import { requireSceneMember } from "../../../lib/auth/server";
 import { validPushSubscription } from "../../../lib/push-validation";
 const reply = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const auth = await requireSceneMember(req);
   if (auth.error) return auth.error;
   const [reminders, status, devices] = await Promise.all([
@@ -17,12 +18,12 @@ export async function GET(req: Request) {
   if (reminders.error || status.error || devices.error)
     return reply({ error: "Reminders could not load. Try again." }, 503);
   return reply({
-    reminders: reminders.data,
+    reminders: catalogueRegion() === "US" ? [] : reminders.data,
     publicKey: status.data.public_vapid_key,
     endpoints: devices.data.map((d) => d.endpoint),
   });
 }
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const auth = await requireSceneMember(req);
   if (auth.error) return auth.error;
   let body: any;
@@ -34,6 +35,7 @@ export async function POST(req: Request) {
   } catch {
     return reply({ error: "Invalid reminder request." }, 400);
   }
+  if (catalogueRegion() === "US" && body.action === "follow") return reply({ error: "US announcement reminders are not available yet." }, 422);
   let data: Record<string, string> = {};
   if (
     ["follow", "unfollow"].includes(body.action) &&
@@ -59,3 +61,6 @@ export async function POST(req: Request) {
     );
   return reply({ ok: true });
 }
+
+export const GET = regionalHandler(handleGET);
+export const POST = regionalHandler(handlePOST);

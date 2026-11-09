@@ -1,8 +1,9 @@
+import { regionalHandler } from "../../../lib/region-server";
 import { requireSceneMember } from "../../../lib/auth/server";
 import { browseTMDB, hasTMDB } from "../../../lib/tmdb";
 import { requestServices } from "../../../lib/request-services";
 import { moods, timeLimits } from "../../../lib/tonight";
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const access = await requireSceneMember(req);
   if (access.error) return access.error;
   const p = new URL(req.url).searchParams,
@@ -49,3 +50,5 @@ export async function GET(req: Request) {
     );
   }
 }
+
+export const GET = regionalHandler(handleGET);

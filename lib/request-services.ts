@@ -1,5 +1,7 @@
-import { services } from "./catalogue";
+import { catalogueRegion } from "./region-server";
+import { servicesForRegion } from "./catalogue";
 export function requestServices(p: URLSearchParams) {
+  const services = servicesForRegion(catalogueRegion());
   const selected = [...new Set((p.get("services") || "").split(",").filter(Boolean))],
     offer = p.get("offer") || "sub";
   if (

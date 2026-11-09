@@ -1,8 +1,10 @@
+import { catalogueRegion } from "../../../lib/region-server";
+import { regionalHandler } from "../../../lib/region-server";
 import { parseExtraFilters } from "../../../lib/catalogue-filters";
 import { requireSceneMember } from "../../../lib/auth/server";
 import { browseTMDB, hasTMDB } from "../../../lib/tmdb";
-import { services } from "../../../lib/catalogue";
-export async function GET(req: Request) {
+import { servicesForRegion } from "../../../lib/catalogue";
+async function handleGET(req: Request) {
   const access = await requireSceneMember(req);
   if (access.error) return access.error;
   const p = new URL(req.url).searchParams,
@@ -13,6 +15,7 @@ export async function GET(req: Request) {
     genre = p.get("genre") || "all",
     sort = p.get("sort") || "recommended",
     mine = p.get("mine") || "0";
+  const services = servicesForRegion(catalogueRegion());
   const selected = [...new Set((p.get("services") || "").split(",").filter(Boolean))];
   const known = (key: string) => services.some((s) => s.key === key);
   if (
@@ -55,3 +58,5 @@ export async function GET(req: Request) {
     );
   }
 }
+
+export const GET = regionalHandler(handleGET);

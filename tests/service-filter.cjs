@@ -35,7 +35,7 @@ cache.cachedJSON = async url => {
     people: [], page: 1, hasMore: false, capped: false, genres: [], message: null };
 };
 const Home = get('app/page.js').default;
-const Catalogue = Home().props.children.props.children.type;
+const Catalogue = () => { const boundary = Home().props.children.type(); const child = boundary.props.children; return child.type(child.props); };
 let hooks = [], index = 0, pending = [], dirty = false;
 React.useState = initial => {
   const i = index++; if (!(i in hooks)) hooks[i] = typeof initial === 'function' ? initial() : initial;

@@ -1,3 +1,4 @@
+import { clientRegion } from "./region-client";
 import type { Person } from "./people";
 import { cleanUpcomingFilters, type UpcomingFilters } from "./upcoming";
 import { parseExtraFilters, noExtraFilters, type ExtraFilters } from "./catalogue-filters";
@@ -24,7 +25,7 @@ export type TabSnapshot = {
   watchlistTab: string;
   scroll: number;
 };
-export const tabMemoryKey = (userId: string) => "scene.tabs.v2." + userId;
+export const tabMemoryKey = (userId: string) => "scene.tabs.v2." + userId + "." + clientRegion();
 export function readTabs(userId: string): {
   restored: boolean;
   view: View;

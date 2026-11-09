@@ -37,7 +37,7 @@ const { finishSceneEmailConfirmation, registerScene, resendSceneConfirmation, va
  assert.equal(submitted.options.data.display_name,'New member');
  assert.equal(submitted.options.data.terms_version,'2026-11-02');
  assert.ok(Number.isFinite(Date.parse(submitted.options.data.terms_accepted_at)));
- assert.deepEqual(Object.keys(submitted.options.data).sort(), ['display_name','terms_accepted_at','terms_version'], 'no role, active status or optional measurement consent comes from signup');
+ assert.deepEqual(Object.keys(submitted.options.data).sort(), ['display_name','region','terms_accepted_at','terms_version'], 'no role, active status or optional measurement consent comes from signup');
  await assert.rejects(registerScene({auth:{signUp:async()=>assert.fail('Terms refusal must not create an account')}},{...values,termsAccepted:false}),/Agree to the Terms/);
  assert.equal(submitted.options.emailRedirectTo, 'https://scene.test/?confirmed=1');
  await assert.rejects(registerScene({ auth: { signUp: async () => ({ data: {}, error: { status: 429 } }) } }, values), /Too many attempts/);

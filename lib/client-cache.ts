@@ -1,4 +1,5 @@
 "use client";
+import { clientRegion } from "./region-client";
 import { recordQuality } from "./quality";
 import { sceneFetch } from "./auth/client";
 import {
@@ -30,6 +31,7 @@ function restore() {
 }
 export function readCache<T>(key: string): T | null {
   if (!restore()) return null;
+  key = clientRegion() + ":" + key;
   const hit = entries.get(key);
   if (!hit || Date.now() - hit.at >= ttl) {
     entries.delete(key);
@@ -40,6 +42,7 @@ export function readCache<T>(key: string): T | null {
 export function writeCache(key: string, data: unknown, expected: SessionBoundary = sessionBoundary()) {
   assertSessionBoundary(expected);
   if (!expected.userId || !restore()) return;
+  key = clientRegion() + ":" + key;
   entries.delete(key);
   entries.set(key, { at: Date.now(), data });
   while (entries.size > 20) entries.delete(entries.keys().next().value!);
@@ -50,6 +53,7 @@ export function writeCache(key: string, data: unknown, expected: SessionBoundary
   }
 }
 export async function cachedJSON<T>(url: string, signal?: AbortSignal, force = false, cacheIf?: (data: T) => boolean): Promise<T> {
+  const region = clientRegion();
   const expected = sessionBoundary(),
     hit = force ? null : readCache<T>(url);
   if (hit) return hit;
@@ -63,6 +67,7 @@ export async function cachedJSON<T>(url: string, signal?: AbortSignal, force = f
       ),
       data = (await r.json()) as T & { error?: string };
     assertSessionBoundary(expected);
+    if (region !== clientRegion()) throw new DOMException("Region changed", "AbortError");
     if (!r.ok) throw Error(data.error || "This could not load. Please try again.");
     if (signal?.aborted) throw new DOMException("Aborted", "AbortError");
     if (!cacheIf || cacheIf(data)) writeCache(url, data, expected);

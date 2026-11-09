@@ -1,3 +1,4 @@
+import type { Region } from "./region";
 import type {Manga,MangaProgress} from "./manga-state";
 "use client";
 import {newCollectionId} from "./collections";
@@ -292,10 +293,11 @@ export function useLibrarySync(account: Account) {
     refreshTitles: (titles: Title[]) => enqueue(titles.map((title) => ({ type: "refresh" as const, title }))),
     setAutoAvailability: (value: boolean) => enqueue([{ type: "auto-availability", value }]),
     setSeasonal: (value: boolean) => enqueue([{ type: "seasonal", value }]),
+    setRegion: (value: Region) => enqueue([{ type: "region", value }]),
     setHome: (fields: Partial<HomePreferences>) => enqueue([{ type: "home", fields }]),
     review: (title: Title, fields: ReviewFields) => enqueue([{ type: "review", title, fields }]),
-    completeSetup: (selected: string[], theme: ThemeId, gaming: boolean) =>
-      enqueue(setupOperations(selected, theme, gaming)),
+    completeSetup: (selected: string[], theme: ThemeId, gaming: boolean, region: Region = "GB") =>
+      enqueue(setupOperations(selected, theme, gaming, region)),
     track: (title: Title, value: boolean) => enqueue([{ type: "tracking", title, value }]),
     episode: (title: Title, season: number, episodes: number[], value: boolean) => {
       const entry = Object.values(visible(envelope.current).entries).find(e => sameTitle(e.title, title));

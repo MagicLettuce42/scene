@@ -1,4 +1,5 @@
 "use client";
+import { clientRegion } from "../../lib/region-client";
 import SelectControl from "./select-control";
 import UpcomingOptions from "./upcoming-options";
 import ReleaseCalendar from "./release-calendar";
@@ -36,7 +37,7 @@ export default function ServiceArrivals({
     [retry, setRetry] = useState(0);
   useEffect(() => {
     const timer = setInterval(() => setToday(londonDate()), 60000);
-    return () => clearInterval(timer);
+  return () => clearInterval(timer);
   }, []);
   const provider = filters.provider || "mine",
     kind = filters.serviceKind || "all";
@@ -97,6 +98,7 @@ export default function ServiceArrivals({
       ))}
     </div>
   );
+  if (clientRegion() === "US") return <section className="discover-section"><h2>Streaming announcements</h2><p>US arrival dates are not covered yet. Browse and search show current availability on your US services.</p></section>;
   return (
     <div className="service-arrivals">
 

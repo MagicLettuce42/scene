@@ -1,3 +1,4 @@
+import { resolveRegion, regionInfo, type Region } from "./region";
 import { correctedOffers } from "./availability-corrections";
 import seed from "./seed.json";
 import type { UpcomingRelease } from "./upcoming";
@@ -11,6 +12,7 @@ export type Offer = {
   linkKind?: "guide" | "direct";
 };
 export type Title = {
+  availabilityRegion?: Region;
   upcomingRelease?: UpcomingRelease;
   id: string;
   name: string;
@@ -53,8 +55,21 @@ export const services = [
   { key: "channel4", name: "Channel 4", short: "4", color: "#6de9be" },
   { key: "paramount", name: "Paramount+", short: "P+", color: "#9abaff" },
   { key: "sky", name: "Sky Go", short: "sky", color: "#eaa0e4" },
+  { key: "hulu", name: "Hulu", short: "hulu", color: "#1ce783" },
+  { key: "peacock", name: "Peacock", short: "P", color: "#ffffff" },
+  { key: "tubi", name: "Tubi", short: "tubi", color: "#f7f08c" },
+  { key: "pluto", name: "Pluto TV", short: "pluto", color: "#ffe100" },
   { key: "max", name: "HBO Max", short: "HBO", color: "#c1b2ff" },
 ];
+export function servicesForRegion(region: Region) {
+  const onlyGB = ["bbc", "now", "itv", "channel4", "sky"];
+  const onlyUS = ["hulu", "peacock", "tubi", "pluto"];
+  return services.filter(s => !(region === "US" ? onlyGB : onlyUS).includes(s.key));
+}
+export function titleForRegion(t: Title, region: Region): Title {
+  if (resolveRegion(t.availabilityRegion) === region) return t;
+  return { ...t, availabilityRegion: region, offers: [], checked: undefined, live: false, availabilitySource: undefined, upcomingRelease: t.upcomingRelease?.region === "original" ? t.upcomingRelease : undefined };
+}
 export function serviceKey(name: string) {
   const s = name.trim().toLowerCase();
   if (s === "channel 4" || s === "all 4") return "channel4";
@@ -63,6 +78,10 @@ export function serviceKey(name: string) {
   if (s.includes("store") || s === "amazon video" || s === "itunes") return "store";
   // These are aliases only for confirmed UK viewing offers, never broadcast-network credits.
   if (/^bbc(?:one|two|1|2)(?:hd)?$/.test(s.replace(/[\s-]+/g, ""))) return "bbc";
+  if (s === "hulu") return "hulu";
+  if (/^peacock(?: premium(?: plus)?)?$/.test(s)) return "peacock";
+  if (s === "tubi" || s === "tubi tv") return "tubi";
+  if (s === "pluto tv" || s === "plutotv") return "pluto";
   if (s.includes("netflix")) return "netflix";
   if (s.includes("prime")) return "prime";
   if (s.includes("disney")) return "disney";
@@ -83,9 +102,9 @@ export function safeUrl(url?: string | null): string | undefined {
     if (u.protocol === "https:") return u.href;
   } catch {}
 }
-export function availabilityUrl(t: Pick<Title, "name" | "availabilitySource">) {
+export function availabilityUrl(t: Pick<Title, "name" | "availabilitySource" | "availabilityRegion">) {
   return (
-    safeUrl(t.availabilitySource) || `https://www.justwatch.com/uk/search?q=${encodeURIComponent(t.name)}`
+    safeUrl(t.availabilitySource) || `https://www.justwatch.com/${regionInfo(t.availabilityRegion).guide}/search?q=${encodeURIComponent(t.name)}`
   );
 }
 export function filterTitles(

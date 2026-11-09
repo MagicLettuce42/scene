@@ -1,10 +1,11 @@
+import { regionalHandler } from "../../../../lib/region-server";
 import { runWithFreshCatalogueData } from "../../../../lib/catalogue-edge-cache";
 import { serviceDepartureTitle } from "../../../../lib/service-activity";
 import { serviceArrivalTitle } from "../../../../lib/service-arrivals";
 import { requireSceneMember } from "../../../../lib/auth/server";
 import { getTitle, getDirectOffers } from "../../../../lib/server-catalogue";
 import { tmdbDetails, type TitleHint } from "../../../../lib/tmdb";
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+async function handleGET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const access = await requireSceneMember(req);
   if (access.error) return access.error;
   const { id } = await params;
@@ -61,3 +62,5 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     );
   }
 }
+
+export const GET = regionalHandler(handleGET);

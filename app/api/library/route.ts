@@ -1,3 +1,4 @@
+import { resolveRegion } from "../../../lib/region";
 import { applyAvailabilitySnapshots } from "../../../lib/watchlist-snapshots";
 import { readReleaseFeed } from "../../../lib/release-feed";
 import { requireSceneMember } from "../../../lib/auth/server";
@@ -20,6 +21,7 @@ async function read(auth: Auth) {
     .maybeSingle();
   if (error) throw error;
   let document = (data?.payload as LibraryDocument) || emptyLibrary();
+  if (!document.preferences?.region) document = { ...document, preferences: { ...document.preferences, region: resolveRegion(auth.user!.user_metadata?.region) } };
   if (document.preferences?.autoAvailability !== false) {
     const [snapshots, feed] = await Promise.all([
       auth

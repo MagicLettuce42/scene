@@ -1,12 +1,13 @@
+import { isRegion, regionInfo, type Region } from "./region";
 import { services } from "./catalogue";
 import { addDays, londonDate, validCalendarDate } from "./episode-calendar";
 
 export type UpcomingRelease =
-  | { date: string; kind: "cinema" | "digital" | "series"; region: "GB" | "original" }
+  | { date: string; kind: "cinema" | "digital" | "series"; region: Region | "original" }
   | {
       date: string;
       kind: "streaming";
-      region: "GB";
+      region: Region;
       service: string;
       label: string;
       sourceUrl: string;
@@ -75,7 +76,7 @@ export function cleanUpcomingRelease(value: unknown): UpcomingRelease | undefine
   if (typeof v.date !== "string" || !validCalendarDate(v.date)) return;
   if (
     v.kind === "streaming" &&
-    v.region === "GB" &&
+    isRegion(v.region) &&
     services.some((s) => s.key === v.service) &&
     typeof v.label === "string" &&
     v.label.length <= 60 &&
@@ -100,7 +101,7 @@ export function cleanUpcomingRelease(value: unknown): UpcomingRelease | undefine
     return;
   }
   if (
-    ((v.kind === "cinema" || v.kind === "digital") && v.region === "GB") ||
+    ((v.kind === "cinema" || v.kind === "digital") && isRegion(v.region)) ||
     (v.kind === "series" && v.region === "original")
   )
     return { date: v.date, kind: v.kind, region: v.region };
@@ -113,6 +114,7 @@ export function selectUpcomingRelease(
   from = londonDate(),
   to = "2100-12-31",
   format: UpcomingFilters["format"] = "all",
+  region: Region = "GB",
 ): UpcomingRelease | undefined {
   if (kind === "tv") {
     const date = source.first_air_date;
@@ -120,7 +122,7 @@ export function selectUpcomingRelease(
       ? { date, kind: "series", region: "original" }
       : undefined;
   }
-  const rows = source.release_dates?.results?.find((r: any) => r.iso_3166_1 === "GB")?.release_dates;
+  const rows = source.release_dates?.results?.find((r: any) => r.iso_3166_1 === region)?.release_dates;
   if (!Array.isArray(rows)) return;
   const matches: UpcomingRelease[] = [];
   for (const row of rows) {
@@ -133,7 +135,7 @@ export function selectUpcomingRelease(
       date >= from &&
       date <= to
     )
-      matches.push({ date, kind: releaseKind, region: "GB" });
+      matches.push({ date, kind: releaseKind, region });
   }
   return matches.sort((a, b) => a.date.localeCompare(b.date) || a.kind.localeCompare(b.kind))[0];
 }
@@ -141,9 +143,9 @@ export function releaseLabel(release: UpcomingRelease) {
   return release.kind === "streaming"
     ? `${services.find((s) => s.key === release.service)?.name || "Streaming"} · ${release.label}`
     : release.kind === "cinema"
-      ? "UK cinema"
+      ? `${regionInfo(release.region).short} cinema`
       : release.kind === "digital"
-        ? "UK digital"
+        ? `${regionInfo(release.region).short} digital`
         : "Series premiere";
 }
 export function releaseDateText(date: string) {

@@ -1,3 +1,4 @@
+import { catalogueRegion } from "./region-server";
 import { correctedOffers } from "./availability-corrections";
 import { personSummary, creditCandidates, type PersonRole, type Filmography } from "./people";
 import { datedCredits, isUnreadRelease, type FollowedPerson, type PeopleUpdate } from "./people-following";
@@ -68,9 +69,9 @@ async function tmdb(path: string, params: Record<string, string> = {}) {
     pending.delete(key);
   }
 }
-export function normalizeTMDB(s: any, kind: "movie" | "tv"): Title {
-  const uk = s["watch/providers"]?.results?.GB;
-  const guide = safeUrl(uk?.link) || `https://www.themoviedb.org/${kind}/${s.id}/watch?locale=GB`;
+export function normalizeTMDB(s: any, kind: "movie" | "tv", region = catalogueRegion()): Title {
+  const regional = s["watch/providers"]?.results?.[region];
+  const guide = safeUrl(regional?.link) || `https://www.themoviedb.org/${kind}/${s.id}/watch?locale=${region}`;
   const offers: Offer[] = [];
   const seen = new Set<string>();
   for (const [group, type] of [
@@ -80,7 +81,7 @@ export function normalizeTMDB(s: any, kind: "movie" | "tv"): Title {
     ["rent", "rent"],
     ["buy", "buy"],
   ] as const) {
-    for (const provider of uk?.[group] || []) {
+    for (const provider of regional?.[group] || []) {
       if (typeof provider.provider_name !== "string") continue;
       const unique = provider.provider_id + ":" + type;
       if (seen.has(unique)) continue;
@@ -96,7 +97,8 @@ export function normalizeTMDB(s: any, kind: "movie" | "tv"): Title {
   }
   const release = kind === "movie" ? s.release_date : s.first_air_date;
   return {
-    upcomingRelease: selectUpcomingRelease(s, kind),
+    availabilityRegion: region,
+    upcomingRelease: selectUpcomingRelease(s, kind, undefined, undefined, "all", region),
     id: `tmdb-${kind}-${s.id}`,
     tmdbId: s.id,
     imdbId: s.imdb_id || s.external_ids?.imdb_id || null,
@@ -119,7 +121,7 @@ export function normalizeTMDB(s: any, kind: "movie" | "tv"): Title {
     voteCount: Number(s.vote_count) || 0,
     sourceUrl: `https://www.themoviedb.org/${kind}/${s.id}`,
     availabilitySource: guide,
-    offers: correctedOffers({ id: `tmdb-${kind}-${s.id}`, tmdbId: s.id, kind: kind === "movie" ? "movie" : "series" }, offers),
+    offers: correctedOffers({ id: `tmdb-${kind}-${s.id}`, tmdbId: s.id, kind: kind === "movie" ? "movie" : "series", availabilityRegion: region }, offers),
     live: true,
     dataSource: "tmdb",
     checked: new Date(retrievedAt.get(s) || Date.now()).toISOString(),
@@ -135,7 +137,7 @@ export async function tmdbDetails(
       kind === "movie" ? "watch/providers,external_ids,release_dates" : "watch/providers,external_ids",
   });
   const title = normalizeTMDB(source, kind);
-  if (format) title.upcomingRelease = selectUpcomingRelease(source, kind, undefined, undefined, format);
+  if (format) title.upcomingRelease = selectUpcomingRelease(source, kind, undefined, undefined, format, catalogueRegion());
   return title;
 }
 export async function upcomingTMDB(options: UpcomingOptions) {
@@ -147,7 +149,7 @@ export async function upcomingTMDB(options: UpcomingOptions) {
   };
   if (kind === "movie")
     Object.assign(params, {
-      region: "GB",
+      region: catalogueRegion(),
       include_video: "false",
       "release_date.gte": from,
       "release_date.lte": to,
@@ -173,7 +175,7 @@ export async function upcomingTMDB(options: UpcomingOptions) {
             kind === "movie" ? "watch/providers,external_ids,release_dates" : "watch/providers,external_ids",
         });
         if (source.adult) return null;
-        const release = selectUpcomingRelease(source, kind, from, to, format);
+        const release = selectUpcomingRelease(source, kind, from, to, format, catalogueRegion());
         return release ? { ...normalizeTMDB(source, kind), upcomingRelease: release } : null;
       }),
     );
@@ -293,7 +295,7 @@ export async function browseTMDB(options: BrowseOptions) {
   const params: Record<string, string> = {
     page: String(page),
     include_adult: "false",
-    watch_region: "GB",
+    watch_region: catalogueRegion(),
     sort_by:
       sort === "az"
         ? kind === "movie"
@@ -358,7 +360,7 @@ export async function browseTMDB(options: BrowseOptions) {
     return empty();
   const wanted = provider !== "all" ? [provider] : mine ? selected : [];
   if (wanted.length) {
-    const providers = await tmdb(`watch/providers/${kind}`, { watch_region: "GB" });
+    const providers = await tmdb(`watch/providers/${kind}`, { watch_region: catalogueRegion() });
     const ids = (providers.results || [])
       .filter((p: any) => wanted.includes(serviceKey(p.provider_name)))
       .map((p: any) => String(p.provider_id));

@@ -1,3 +1,5 @@
+import { catalogueRegion, runWithRegion } from "../../../../lib/region-server";
+import { regionalHandler } from "../../../../lib/region-server";
 import { requireSceneMember } from "../../../../lib/auth/server";
 import { readReleaseFeed } from "../../../../lib/release-feed";
 import { normalizedTitleName } from "../../../../lib/tmdb";
@@ -5,7 +7,7 @@ import { londonDate } from "../../../../lib/episode-calendar";
 import { getTitle } from "../../../../lib/server-catalogue";
 import { serviceArrivalTitle } from "../../../../lib/service-arrivals";
 import type { LibraryDocument } from "../../../../lib/library-state";
-export async function POST(req: Request) {
+async function handlePOST(req: Request) {
   const auth = await requireSceneMember(req);
   if (auth.error) return auth.error;
   const reply = (body: unknown, status = 200) =>
@@ -36,12 +38,13 @@ export async function POST(req: Request) {
   const owned = Object.values((data?.payload as LibraryDocument)?.entries || {})
     .filter((e) => e.saved && ids.includes(e.title.id))
     .map((e) => e.title);
-  const feed = await readReleaseFeed(auth.client),
+  const region = catalogueRegion();
+  const feed = await runWithRegion(region, () => readReleaseFeed(auth.client)),
     selected = Object.entries((data?.payload as LibraryDocument)?.services || {})
       .filter(([, v]) => v)
       .map(([k]) => k);
   const results = await Promise.allSettled(
-    owned.map(async (old) => {
+    owned.map((old) => runWithRegion(region, async () => {
       const id = old.id.startsWith("arrival-")
         ? old.id
         : old.tmdbId
@@ -84,10 +87,12 @@ export async function POST(req: Request) {
             }
           : {}),
       };
-    }),
+    })),
   );
   return reply({
     titles: results.flatMap((r) => (r.status === "fulfilled" ? [r.value] : [])),
     failed: ids.length - results.filter((r) => r.status === "fulfilled").length,
   });
 }
+
+export const POST = regionalHandler(handlePOST);

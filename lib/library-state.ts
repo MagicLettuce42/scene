@@ -1,3 +1,4 @@
+import { isRegion, resolveRegion, type Region } from "./region";
 import {cleanManga,cleanMangaCollection,validMangaFields,type Manga,type MangaProgress,type MangaCollection} from "./manga-state";
 import { collectionId, collectionName, readCollections, type PersonalCollection } from "./collections";
 import { cleanPreset, isRecommendationMode, type FilterPreset, type RecommendationMode } from "./filter-presets";
@@ -19,7 +20,7 @@ import {
 } from "./gaming-state";
 import { cleanUpcomingRelease } from "./upcoming";
 import { resolveHome, validHomePatch, migrateHomePatch, type HomePreferences } from "./home-preferences";
-import { services, sameTitle, type Title } from "./catalogue";
+import { services, servicesForRegion, titleForRegion, sameTitle, type Title } from "./catalogue";
 import { type Feedback } from "./preferences";
 import { isTheme, resolveTheme, type ThemeId } from "./themes";
 import { validEpisodeNumber, type SeriesProgress } from "./episodes";
@@ -42,6 +43,7 @@ export type LibraryDocument = {
   games?: GameCollection;
   gameDetails?: Record<string, Game>;
   preferences?: {
+    region?: Region;
     collections?: Record<string, PersonalCollection | null>;
     followedPeople?: Record<string, FollowedPerson | null>;
     filterPresets?: Record<string, FilterPreset | null>;
@@ -60,6 +62,7 @@ export type LibraryDocument = {
 };
 export type ReviewFields = { rating?: number | null; note?: string };
 export type LibraryOperation =
+  | { type: "region"; value: Region }
   | {type:"manga-progress";manga:Manga;fields:Partial<MangaProgress>|null}
   | {type:"collection";id:string;action:"create"|"rename"|"delete";name?:string}
   | {type:"collection-member";id:string;key:string;value:boolean}
@@ -116,6 +119,12 @@ export function applyOperations(source: LibraryDocument, operations: LibraryOper
     preferences: { ...source.preferences },
   };
   for (const op of operations) {
+    if (op.type === "region") {
+      if (resolveRegion(doc.preferences.region) !== op.value) {
+        for (const [key, entry] of Object.entries(doc.entries)) doc.entries[key] = { ...entry, title: titleForRegion(entry.title, op.value) };
+      }
+      doc.preferences.region = op.value; continue;
+    }
     if(op.type==="manga-progress"){const id=op.manga.id,old=doc.manga[id];if(op.fields===null)delete doc.manga[id];else {if(!old&&Object.keys(doc.manga).length>=500)throw Error("You can track up to 500 manga.");doc.manga[id]={manga:op.manga,progress:{...(old?.progress||{status:"planned",chapters:0,volumes:0}),...op.fields}};}continue;}
     if(op.type === "collection" || op.type === "collection-member") {
       const collections = {...doc.preferences.collections}, old = collections[op.id];
@@ -253,8 +262,10 @@ export function applyOperations(source: LibraryDocument, operations: LibraryOper
   return doc;
 }
 export function projectLibrary(doc: LibraryDocument) {
-  const entries = Object.values(doc.entries);
+  const region = resolveRegion(doc.preferences?.region);
+  const entries = Object.values(doc.entries).map(e => ({ ...e, title: titleForRegion(e.title, region) }));
   return {
+    region,
     collections: readCollections(doc.preferences?.collections),
     followedPeople: readFollows(doc.preferences?.followedPeople),
     filterPresets: Object.values(doc.preferences?.filterPresets || {}).map(cleanPreset).filter((p): p is FilterPreset => !!p).slice(0, 12),
@@ -287,7 +298,7 @@ export function projectLibrary(doc: LibraryDocument) {
       .filter((e) => e.saved)
       .map((e) => e.title)
       .reverse(),
-    selected: services.filter((s) => doc.services[s.key]).map((s) => s.key),
+    selected: servicesForRegion(region).filter((s) => doc.services[s.key]).map((s) => s.key),
     feedback: entries
       .filter((e) => e.watched || e.liked || e.hidden)
       .map((e) => ({ title: e.title, watched: !!e.watched, liked: !!e.liked, hidden: !!e.hidden })),
@@ -332,6 +343,7 @@ export function cleanTitle(value: any): Title | null {
       (value.kind === "series") === (value.upcomingRelease?.kind === "series")
         ? cleanUpcomingRelease(value.upcomingRelease)
         : undefined,
+    availabilityRegion: resolveRegion(value.availabilityRegion),
     id: value.id,
     name: value.name.slice(0, 250),
     year: Number.isInteger(value.year) ? value.year : null,
@@ -398,6 +410,7 @@ export function validateMutation(body: any): { revision: number; mutation: Mutat
     return null;
   const operations: LibraryOperation[] = [];
   for (const op of body.operations) {
+    if (op?.type === "region") { if (!isRegion(op.value)) return null; operations.push({ type: "region", value: op.value }); continue; }
     if(op?.type==="manga-progress"){const manga=cleanManga(op.manga);if(!manga||(op.fields!==null&&!validMangaFields(op.fields)))return null;operations.push({type:"manga-progress",manga,fields:op.fields});continue;}
     if(op?.type === "collection") {
       if(!collectionId(op.id)||!["create","rename","delete"].includes(op.action)||(op.action!=="delete"&&!collectionName(op.name)))return null;
@@ -559,8 +572,9 @@ export function validateMutation(body: any): { revision: number; mutation: Mutat
   return { revision: body.revision, mutation: { id: body.id, operations, ...(body.undoOf ? { undoOf: body.undoOf, undoBase: body.undoBase } : {}) } };
 }
 
-export function setupOperations(selected: string[], theme: ThemeId, gaming: boolean): LibraryOperation[] {
+export function setupOperations(selected: string[], theme: ThemeId, gaming: boolean, region: Region = "GB"): LibraryOperation[] {
   return [
+    { type: "region", value: region },
     ...services.map((s) => ({ type: "service" as const, key: s.key, value: selected.includes(s.key) })),
     { type: "theme", value: theme },
     { type: "gaming", value: gaming },

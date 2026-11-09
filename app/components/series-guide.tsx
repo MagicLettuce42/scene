@@ -40,7 +40,7 @@ export default function SeriesGuide({ title, progress }: { title: Title; progres
           <strong>{guide.remaining === 0 ? "All listed episodes watched" : guide.remaining === null ? "Time left is not available yet" : `${guide.remaining} ${guide.remaining === 1 ? "episode" : "episodes"} left${guide.remainingMinutes !== null ? ` · about ${durationLabel(guide.remainingMinutes)}` : ""}`}</strong>
           <span>{guide.watched} marked watched{guide.countComplete ? ` of ${guide.episodeCount}` : ""}</span>
         </div>}
-        <p className="fine-print">{guide.runtime ? `Time estimates use ${guide.runtime} minutes per episode; actual lengths vary. ` : "An episode runtime is not listed. "}Counts exclude specials and may include announced future episodes. {guide.countComplete ? "" : "Some episode counts are not available yet. "}TMDB series information does not confirm UK streaming availability.</p>
+        <p className="fine-print">{guide.runtime ? `Time estimates use ${guide.runtime} minutes per episode; actual lengths vary. ` : "An episode runtime is not listed. "}Counts exclude specials and may include announced future episodes. {guide.countComplete ? "" : "Some episode counts are not available yet. "}TMDB series information does not confirm regional streaming availability.</p>
       </>}
   </section>;
 }

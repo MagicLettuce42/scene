@@ -4,7 +4,8 @@ import { watchlistAvailability, availabilityLabels } from "../../lib/watchlist-a
 import ReleaseBadge from "./release-badge";
 import { useEffect, useState } from "react";
 import { Clapperboard, Check, Bookmark, ArrowUpRight, Heart, Eye, EyeOff, Star } from "lucide-react";
-import { services, type Title, type Offer } from "../../lib/catalogue";
+import { clientRegion } from "../../lib/region-client";
+import { titleForRegion, services, type Title, type Offer } from "../../lib/catalogue";
 import { findFeedback, type Feedback, type FeedbackAction } from "../../lib/preferences";
 export function Poster({ title, priority = false, decorative = false }: { title: Title; priority?: boolean; decorative?: boolean }) {
   const [failed, setFailed] = useState(false);
@@ -89,6 +90,7 @@ export type CardActions = {
   onFeedback: (t: Title, action: FeedbackAction) => void;
 };
 export function TitleCard({ title: t, ...props }: CardActions & { title: Title }) {
+  t = titleForRegion(t, clientRegion());
   const offers = myOffers(correctedOffers(t, t.offers), props.selected, props.offer),
     f = findFeedback(props.feedback, t);
   return (

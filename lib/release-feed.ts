@@ -1,3 +1,4 @@
+import { catalogueRegion } from "./region-server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { services } from "./catalogue";
 import { validCalendarDate, londonDate, addDays } from "./episode-calendar";
@@ -58,6 +59,7 @@ export function feedAnnouncement(row: any): FeedAnnouncement | null {
   };
 }
 export async function readReleaseFeed(client?: SupabaseClient) {
+  if (catalogueRegion() === "US") return { entries: [] as FeedAnnouncement[], reviewedOn: null, live: false, message: "US streaming announcements are not covered yet. Browse and search show current US availability." };
   if (client) {
     try {
       const [{ data, error }, { data: status }] = await Promise.all([

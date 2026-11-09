@@ -46,7 +46,7 @@ export default function AvailabilityAlerts({ onOpen }: { onOpen: (title: Title) 
   return (
     <section id="availability-alerts" className="account-security">
       <h3>Now streaming alerts</h3>
-      <p>Know when a saved title becomes available on one of your selected UK services.</p>
+      <p>Know when a saved title becomes available on one of your selected services.</p>
       {data ? (
         <>
           <label className="check-filter">

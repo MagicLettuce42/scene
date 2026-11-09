@@ -1,3 +1,4 @@
+import { regionInfo } from "../../lib/region";
 import { CalendarDays } from "lucide-react";
 import { londonDate } from "../../lib/episode-calendar";
 import {
@@ -25,9 +26,9 @@ export default function ReleaseBadge({
         {detail && (
           <p>
             {value.kind === "streaming"
-              ? `Announced for ${releaseLabel(value)} in the UK. Provider announcement reviewed ${releaseDateText(value.verifiedOn)}.`
+              ? `Announced for ${releaseLabel(value)} in ${regionInfo(value.region).name}. Provider announcement reviewed ${releaseDateText(value.verifiedOn)}.`
               : value.kind === "series"
-                ? "Original series premiere date; UK streaming may be later."
+                ? "Original series premiere date; regional streaming may be later."
                 : value.kind === "digital"
                   ? "Digital release may be rental or purchase. Subscription availability is not confirmed by this date."
                   : "Cinema release date; this may include a re-release. Streaming availability may follow later."}{" "}

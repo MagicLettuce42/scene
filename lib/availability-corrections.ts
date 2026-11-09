@@ -12,13 +12,14 @@ const corrections = [{
   message: "Disney+ was removed from this listing after a UK availability review on 3 November 2026. The UK guide listed rental and purchase options only.",
 }] as const;
 
-export function availabilityCorrection(title: Pick<Title, "id" | "kind" | "tmdbId">, now = Date.now()) {
+export function availabilityCorrection(title: Pick<Title, "id" | "kind" | "tmdbId" | "availabilityRegion">, now = Date.now()) {
+  if (title.availabilityRegion === "US") return;
   return corrections.find(c => c.kind === title.kind &&
     (title.tmdbId === c.tmdbId || title.id === `tmdb-movie-${c.tmdbId}`) &&
     now >= Date.parse(c.reviewedOn) && now < Date.parse(c.expiresAt));
 }
 
-export function correctedOffers(title: Pick<Title, "id" | "kind" | "tmdbId">, offers: Offer[], now = Date.now()) {
+export function correctedOffers(title: Pick<Title, "id" | "kind" | "tmdbId" | "availabilityRegion">, offers: Offer[], now = Date.now()) {
   const correction = availabilityCorrection(title, now);
   return correction ? offers.filter(o => o.key !== correction.provider) : offers;
 }

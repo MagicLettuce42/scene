@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Gamepad2 } from "lucide-react";
-import { services } from "../../lib/catalogue";
+import RegionSelect from "./region-select";
+import { regionInfo, type Region } from "../../lib/region";
+import { servicesForRegion } from "../../lib/catalogue";
 import { themes, type ThemeId } from "../../lib/themes";
 import { ServiceMark } from "./catalogue-cards";
 import ThemePicker from "./theme-picker";
@@ -11,6 +13,7 @@ export default function Welcome({
   name,
   selected,
   theme,
+  region,
   gamingEnabled,
   onComplete,
   onCancel,
@@ -18,10 +21,12 @@ export default function Welcome({
   name: string;
   selected: string[];
   theme: ThemeId;
+  region: Region;
   gamingEnabled: boolean;
-  onComplete: (selected: string[], theme: ThemeId, gaming: boolean) => void;
+  onComplete: (selected: string[], theme: ThemeId, gaming: boolean, region: Region) => void;
   onCancel?: () => void;
 }) {
+  const [country, setCountry] = useState(region);
   const [step, setStep] = useState(0),
     [choices, setChoices] = useState(selected),
     [palette, setPalette] = useState(theme),
@@ -57,8 +62,9 @@ export default function Welcome({
             <p className="modal-intro">
               Which services do you watch? We’ll use these to find your films and series.
             </p>
+            <RegionSelect value={country} onChange={value => {setCountry(value);setChoices(old => old.filter(k => servicesForRegion(value).some(s => s.key === k)));}} />
             <div className="service-options">
-              {services.map((s) => (
+              {servicesForRegion(country).map((s) => (
                 <label key={s.key} className={choices.includes(s.key) ? "chosen" : ""}>
                   <ServiceMark serviceKey={s.key} />
                   <span>
@@ -97,7 +103,7 @@ export default function Welcome({
         ) : (
           <>
             <p className="modal-intro">
-              {choices.length} services · {themes.find((t) => t.id === palette)?.name} theme · Gaming {gaming ? "on" : "off"}
+              {regionInfo(country).name} · {choices.length} services · {themes.find((t) => t.id === palette)?.name} theme · Gaming {gaming ? "on" : "off"}
             </p>
             <div className="welcome-summary">
               <p>
@@ -128,7 +134,7 @@ export default function Welcome({
           <button
             className="button primary"
             disabled={step === 0 && !choices.length}
-            onClick={() => (step < 2 ? setStep((n) => n + 1) : onComplete(choices, palette, gaming))}
+            onClick={() => (step < 2 ? setStep((n) => n + 1) : onComplete(choices, palette, gaming, country))}
           >
             {step === 2 ? "Start browsing" : "Continue"} <ArrowRight size={16} />
           </button>

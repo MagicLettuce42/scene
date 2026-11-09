@@ -1,4 +1,5 @@
 "use client";
+import { clientRegion } from "../../lib/region-client";
 import {useDiscoverVariety} from "./discover-variety";
 import { useEffect, useState } from "react";
 import { cachedJSON } from "../../lib/client-cache";
@@ -32,7 +33,7 @@ export default function ServiceActivity({
       .catch((e) => {
         if (!controller.signal.aborted) setState({ url, data: null, error: e.message });
       });
-    return () => controller.abort();
+  return () => controller.abort();
   }, [url, retry]);
   const [showAll, setShowAll] = useState(false);
   const data = state.url === url ? state.data : null,
@@ -45,6 +46,7 @@ export default function ServiceActivity({
     candidates = data?.items.filter((i) => visible.has(i.title.id)) || [];
   const items=useDiscoverVariety(mode==="new"?"arrivals":"leaving",candidates,item=>item.title,showAll?100:6);
   if(candidates.length && !items.length)return null;
+  if (clientRegion() === "US") return <section className="discover-section"><h3>{mode === "new" ? "New on your services" : "Leaving soon"}</h3><p>US {mode === "new" ? "arrival announcements" : "leaving dates"} are not covered yet. Browse and search show current availability on your US services.</p></section>;
   return (
     <section className="discover-section service-activity" aria-labelledby={"service-" + mode}>
       <div className="discover-heading">

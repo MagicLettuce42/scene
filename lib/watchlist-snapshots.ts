@@ -1,3 +1,4 @@
+import { resolveRegion } from "./region";
 import { cleanTitle, titleKey, type LibraryDocument } from "./library-state";
 import { announcementsReviewedOn } from "./service-announcements";
 import type { FeedAnnouncement } from "./release-feed";
@@ -28,12 +29,13 @@ export function applyAvailabilitySnapshots(
       previous = Date.parse(entry.title.checked || "");
     if (
       !fresh ||
+      resolveRegion(fresh.availabilityRegion) !== resolveRegion(document.preferences?.region) ||
       !Number.isFinite(at) ||
       at > now.getTime() + 60000 ||
       (Number.isFinite(previous) && previous > at)
     )
       continue;
-    const announcement = releases
+    const announcement = (resolveRegion(document.preferences?.region) === "GB" ? releases : [])
       .filter(
         (a) =>
           a.date >= londonDate(now) &&

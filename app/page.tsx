@@ -1,4 +1,7 @@
 "use client";
+import { setClientRegion } from "../lib/region-client";
+import { regionInfo } from "../lib/region";
+import RegionSelect from "./components/region-select";
 import MotionDrawer from "./components/motion-drawer";
 import SceneMotion from "./components/scene-motion";
 import WatchlistToolbar from "./components/watchlist-toolbar";
@@ -111,7 +114,7 @@ import {
   Layers,
 } from "lucide-react";
 import {
-  titles,
+  titles, servicesForRegion, titleForRegion,
   services,
   availabilityUrl,
   filterTitles,
@@ -154,13 +157,35 @@ type BrowsePage = {
 export default function Home() {
   return (
     <SceneAccess>
-      <RemindersProvider>
-        <Catalogue />
-      </RemindersProvider>
+      <RegionalCatalogue />
     </SceneAccess>
   );
 }
-function Catalogue() {
+function RegionalCatalogue() {
+  const account = useAccount();
+  const library = useLibrarySync(account);
+  const [regionChanged, setRegionChanged] = useState(false);
+  setClientRegion(library.region);
+  useEffect(() => {
+    if (!library.loaded || !library.autoAvailability) return;
+    const pending = library.saved.filter(t => !t.checked);
+    if (!pending.length) return;
+    const controller = new AbortController();
+    void (async () => {
+      for (let i = 0; i < pending.length && !controller.signal.aborted; i += 6) {
+        try {
+          const r = await sceneFetch("/api/library/refresh", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: pending.slice(i, i + 6).map(t => t.id) }), signal: controller.signal }, account.id);
+          if (!r.ok) break;
+          const data = await r.json() as { titles: Title[] };
+          if (!controller.signal.aborted) library.refreshTitles(data.titles);
+        } catch { break; }
+      }
+    })();
+    return () => controller.abort();
+  }, [account.id, library.loaded, library.region, library.autoAvailability]);
+  return <RemindersProvider key={account.id + ":" + library.region}><Catalogue library={library} regionChanged={regionChanged} onRegionChange={value => { if (value !== library.region) { setRegionChanged(true); library.setRegion(value); } }} /></RemindersProvider>;
+}
+function Catalogue({ library, regionChanged = false, onRegionChange = library.setRegion }: { library: ReturnType<typeof useLibrarySync>; regionChanged?: boolean; onRegionChange?: (value: import("../lib/region").Region) => void }) {
   useMobileViewport();
   const privacyConsent = usePrivacyConsent();
   const account = useAccount(),
@@ -202,11 +227,12 @@ function Catalogue() {
   const [searchPeople, setSearchPeople] = useState<Person[]>([]),
     [searchPeopleHasMore, setSearchPeopleHasMore] = useState(false),
     [searchPeopleMessage, setSearchPeopleMessage] = useState("");
-  const [results, setResults] = useState<Title[]>(titles),
+  const [results, setResults] = useState<Title[]>(titles.map(t => titleForRegion(t, library.region))),
     [searching, setSearching] = useState(false),
     [searchChecking, setSearchChecking] = useState(false),
     [searchError, setSearchError] = useState("");
-  const library = useLibrarySync(account);
+  const country = regionInfo(library.region);
+  const regionalServices = servicesForRegion(library.region);
   const halloween = useHalloween();
   const { saved, selected, feedback, ready } = library;
   const [provider, setProvider] = useState("mine");
@@ -249,7 +275,7 @@ function Catalogue() {
     [detailError, setDetailError] = useState("");
   const [dialog, setDialog] = useState<
       "services" | "about" | "title" | "account" | "releases" | "people" | "feedback" | "updates" | null
-    >(null),
+    >(regionChanged ? "services" : null),
     [toast, setToastText] = useState(""),
     [toastWarning, setToastWarning] = useState(false),
     [live, setLive] = useState(false),
@@ -797,6 +823,7 @@ function Catalogue() {
     setSearchError("");
   }
   async function openTitle(t: Title, refresh = false) {
+    t = titleForRegion(t, library.region);
     setDirectOffers(null);
     setDirectBusy(false);
     setDirectMessage("");
@@ -1188,11 +1215,12 @@ function Catalogue() {
       <Welcome
         name={account.name}
         selected={selected}
+        region={library.region}
         theme={library.theme}
         gamingEnabled={library.gamingEnabled}
         onCancel={library.onboarded ? () => setSetup(false) : undefined}
-        onComplete={(services, theme, gaming) => {
-          library.completeSetup(services, theme, gaming);
+        onComplete={(services, theme, gaming, region) => {
+          library.completeSetup(services, theme, gaming, region);
           setSetup(false);
           if (sharedToken) {
             navigate("watchlist");
@@ -1524,7 +1552,7 @@ function Catalogue() {
                         : activeCollection ? "Open Manage collection to choose saved titles. If you have already added some, check your service and genre filters." : "Save titles with the bookmark, or open a title to mark it watched, liked or not interested. Your lists save to your own Scene account."
                       : hasFilters
                         ? "Try clearing your filters or updating My services. Only titles with confirmed availability on your selected services appear."
-                        : "Try another title, or search the full UK guide on JustWatch."}
+                        : "Try another title, or search the full regional guide on JustWatch."}
               </p>
               {!(browsing && browseError) && filterDescription && <p>{filterDescription}</p>}
               {hasFilters && !(browsing && browseError) && <button className="button secondary" onClick={changeFilters}>Change filters</button>}
@@ -1568,13 +1596,13 @@ function Catalogue() {
           {submitted && (
             <a
               className="full-search"
-              href={`https://www.justwatch.com/uk/search?q=${encodeURIComponent(submitted)}`}
+              href={`https://www.justwatch.com/${country.guide}/search?q=${encodeURIComponent(submitted)}`}
               target="_blank"
               rel="noopener noreferrer"
             >
               <span>
                 <strong>Looking for more results?</strong>
-                <span>Check the full UK streaming guide for “{submitted}” on JustWatch.</span>
+                <span>Check the full {country.short} streaming guide for “{submitted}” on JustWatch.</span>
               </span>
               <ArrowUpRight size={22} />
             </a>
@@ -1587,7 +1615,7 @@ function Catalogue() {
             Your search starts here. Playback stays with the provider.
             <a
               className="footer-attribution"
-              href="https://www.justwatch.com/uk"
+              href={`https://www.justwatch.com/${country.guide}`}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -1597,7 +1625,7 @@ function Catalogue() {
           <button onClick={() => setDialog("about")}>About & data sources</button>
           <button onClick={() => setDialog("feedback")}>Feedback</button>
           <span className="footer-region">
-            <Globe2 size={14} /> UK
+            <Globe2 size={14} /> {country.short}
           </span>
         </footer>
       </main>
@@ -1633,6 +1661,7 @@ function Catalogue() {
           {dialog === "account" && (
             <>
               <AccountPanel
+                regionSettings={<><RegionSelect value={library.region} onChange={onRegionChange} /><button className="button secondary" onClick={() => setDialog("services")}>Choose my services</button></>}
                 initialSection={accountSection}
                 onInitialSectionHandled={() => setAccountSection(null)}
                 viewingSettings={<SpoilerSettings enabled={library.spoilerFree} onChange={library.setSpoilerFree} />}
@@ -1683,8 +1712,9 @@ function Catalogue() {
                 services, and saves your choices to your own Scene account.
               </p>
               <SyncStatus {...library} />
+              <RegionSelect value={library.region} onChange={onRegionChange} />
               <div className="service-options">
-                {services.map((s) => (
+                {regionalServices.map((s) => (
                   <label key={s.key} className={selected.includes(s.key) ? "chosen" : ""}>
                     <ServiceMark serviceKey={s.key} />
                     <span>
@@ -1717,7 +1747,7 @@ function Catalogue() {
               <h2 id="dialog-title">One place to start watching.</h2>
               <div className="about-body">
                 <p>
-                  Scene helps you find films and series, remember what you want to watch, and open UK viewing
+                  Scene helps you find films and series, remember what you want to watch, and open regional viewing
                   options. You watch through the provider and keep your existing subscriptions.
                 </p>
                 <h3>{live ? "Live catalogue connected" : "This is the starter version"}</h3>
@@ -1767,18 +1797,18 @@ function Catalogue() {
                         account for a reminder on its announced date.
                       </li>
                       <li>
-                        Upcoming → Cinema & digital shows announced UK cinema and digital film dates,
+                        Upcoming → Cinema & digital shows announced cinema and digital film dates for your region,
                         regardless of My services.
                       </li>
                       <li>
                         The episode calendar shows published air dates for tracked series, which may differ
-                        from UK streaming dates. None of these dates confirm a title is in your subscription,
+                        from regional streaming dates. None of these dates confirm a title is in your subscription,
                         and they can change.
                       </li>
                     </ul>
                     <h4>Where the data comes from</h4>
                     <ul className="about-list">
-                      <li>Search and title checks use TMDB. UK availability is supplied by JustWatch.</li>
+                      <li>Search and title checks use TMDB. Regional availability is supplied by JustWatch.</li>
                       <li>Standard viewing links open TMDB’s watch-options page.</li>
                       <li>Optional direct provider links use Watchmode, only when you ask for them.</li>
                     </ul>
@@ -1786,8 +1816,8 @@ function Catalogue() {
                 ) : (
                   <p>
                     {live
-                      ? "Search uses Watchmode for films, TV and UK availability. Curated picks and watchlist cards show saved listings; opening a title refreshes them. Coverage varies by provider, title and subscription tier. Confirm the offer with the provider before paying."
-                      : "The starting collection includes curated films and series. TV title search connects to TVmaze. Offers on curated titles were checked on 17 October 2026: a snapshot, not continuously updated. New TV results may have no confirmed UK offers. Use “Check on JustWatch” to verify."}
+                      ? "Search uses Watchmode for films, TV and regional availability. Curated picks and watchlist cards show saved listings; opening a title refreshes them. Coverage varies by provider, title and subscription tier. Confirm the offer with the provider before paying."
+                      : "The starting collection includes curated films and series. TV title search connects to TVmaze. Offers on curated titles were checked on 17 October 2026: a snapshot, not continuously updated. New TV results may have no confirmed regional offers. Use “Check on JustWatch” to verify."}
                   </p>
                 )}
                 {!live && (
@@ -1813,7 +1843,7 @@ function Catalogue() {
                   </li>
                   <li>
                     Your theme, home layout, private ratings and notes, watchlist, liked, watched and hidden
-                    titles, followed actors and directors, and selected services save to your Scene account and sync across devices.
+                    titles, servicesForRegion, titleForRegion, followed actors and directors, and selected services save to your Scene account and sync across devices.
                   </li>
                   <li>
                     Each person has a separate library. Members can’t read each other’s private libraries.
@@ -1855,7 +1885,7 @@ function Catalogue() {
                   <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
                   <p>
                     Streaming availability data is provided by{" "}
-                    <a href="https://www.justwatch.com/uk" target="_blank" rel="noopener noreferrer">
+                    <a href={`https://www.justwatch.com/${country.guide}`} target="_blank" rel="noopener noreferrer">
                       JustWatch
                     </a>
                     .
@@ -1871,8 +1901,8 @@ function Catalogue() {
                     CC BY-SA
                   </a>
                   . Curated availability and film references:{" "}
-                  <a href="https://www.justwatch.com/uk" target="_blank" rel="noreferrer">
-                    JustWatch UK
+                  <a href={`https://www.justwatch.com/${country.guide}`} target="_blank" rel="noreferrer">
+                    JustWatch {country.short}
                   </a>
                   . Optional direct provider links:{" "}
                   <a href="https://api.watchmode.com/" target="_blank" rel="noreferrer">
@@ -1954,7 +1984,7 @@ function Catalogue() {
                 <WatchOptions title={detail} offers={detailOffers} selected={activeServices}/>
                 <details className="detail-disclosure"><summary>Availability details & other links</summary>
                 <p className="fine-print availability-credit">
-                  {detail.dataSource === "tmdb" ? <>Availability by <a href="https://www.justwatch.com/uk" target="_blank" rel="noopener noreferrer">JustWatch</a> via TMDB. </> : "UK availability listings. "}
+                  {detail.dataSource === "tmdb" ? <>Availability by <a href={`https://www.justwatch.com/${country.guide}`} target="_blank" rel="noopener noreferrer">JustWatch</a> via TMDB. </> : `${country.short} availability listings. `}
                   {checkedDate ? `Retrieved ${checkedDate}. ` : "Last check date unavailable. "}
                   {directOffers ? "Direct provider links refreshed. " : ""}Retrieval time is not a provider verification. Listings can be outdated; confirm the title, season and plan with the provider.
                 </p>
@@ -1984,7 +2014,7 @@ function Catalogue() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {detail.dataSource === "tmdb" ? "View UK watch options" : "Check on JustWatch UK"}{" "}
+                  {detail.dataSource === "tmdb" ? `View ${country.short} watch options` : `Check on JustWatch ${country.short}`}{" "}
                   <ArrowUpRight size={17} />
                 </a>
                 </details>

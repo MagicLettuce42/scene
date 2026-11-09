@@ -20,6 +20,7 @@ const fresh = { ...old, offers: [] };
 const state = { results: [old], browse: { titles: [old] } };
 let requests = [], writes = [], saved = [], pending = [];
 const context = {
+  titleForRegion: title => title,
   modal: { current: { scrollTop: 20 } }, detailRequest: { current: 0 },
   setDirectOffers() {}, setDirectBusy() {}, setDirectMessage() {}, setDialog() {},
   setDetail: value => state.detail = value,

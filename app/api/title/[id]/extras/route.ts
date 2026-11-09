@@ -1,7 +1,8 @@
+import { regionalHandler } from "../../../../../lib/region-server";
 import { requireSceneMember } from "../../../../../lib/auth/server";
 import { extrasTMDB, hasTMDB } from "../../../../../lib/tmdb";
 import { requestServices } from "../../../../../lib/request-services";
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+async function handleGET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const access = await requireSceneMember(req);
   if (access.error) return access.error;
   const { id } = await params,
@@ -21,3 +22,5 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     );
   }
 }
+
+export const GET = regionalHandler(handleGET);

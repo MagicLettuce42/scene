@@ -1,5 +1,6 @@
+import { catalogueRegion } from "./region-server";
 import { serviceArrivalTitle } from "./service-arrivals";
-import { titles, serviceKey, safeUrl, type Title, type Offer } from "./catalogue";
+import { titles, titleForRegion, serviceKey, safeUrl, type Title, type Offer } from "./catalogue";
 import { hasTMDB, searchTMDB, tmdbDetails, resolveTMDB, type TitleHint, type SearchOptions } from "./tmdb";
 const cache = new Map<string, { at: number; value: any }>();
 async function json(url: string, headers: Record<string, string> = {}) {
@@ -44,14 +45,15 @@ export function normalizeTV(s: any): Title {
     sourceUrl: safeUrl(s.url),
     officialUrl: safeUrl(s.officialSite),
     imdbId: s.externals?.imdb,
-    offers: existing?.offers || [],
+    availabilityRegion: catalogueRegion(),
+    offers: catalogueRegion() === "GB" ? existing?.offers || [] : [],
   };
 }
 export function normalizeWM(s: any): Title {
   const offers: Offer[] = (s.sources || [])
     .filter(
       (o: any) =>
-        o.region === "GB" &&
+        o.region === catalogueRegion() &&
         ["sub", "free", "rent", "buy", "tve"].includes(o.type) &&
         typeof o.name === "string" &&
         safeUrl(o.web_url),
@@ -65,6 +67,7 @@ export function normalizeWM(s: any): Title {
     }));
   const seen = new Set<string>();
   return {
+    availabilityRegion: catalogueRegion(),
     id: `wm-${s.id}`,
     name: s.title,
     year: s.year || null,
@@ -87,7 +90,7 @@ export function normalizeWM(s: any): Title {
   };
 }
 export async function searchCatalogue(q: string, page = 1, options: SearchOptions = {}) {
-  const local = titles.filter((t) => t.name.toLowerCase().includes(q.toLowerCase()));
+  const local = titles.map(t => titleForRegion(t, catalogueRegion())).filter((t) => t.name.toLowerCase().includes(q.toLowerCase()));
   if (options.preview && !hasTMDB()) return { titles: local, page, hasMore: false, mode: "limited", message: null };
   if (hasTMDB()) {
     try {
@@ -100,7 +103,7 @@ export async function searchCatalogue(q: string, page = 1, options: SearchOption
         mode: "limited",
         source: "tmdb",
         message:
-          "TMDB is temporarily unavailable. Showing matching saved picks. Try again shortly or check JustWatch UK.",
+          "TMDB is temporarily unavailable. Showing matching saved picks. Try again shortly or check JustWatch.",
       };
     }
   }
@@ -119,7 +122,7 @@ export async function searchCatalogue(q: string, page = 1, options: SearchOption
         const batch = await Promise.allSettled(
           ids
             .slice(i, i + 4)
-            .map((x: any) => wm(`title/${x.id}/details`, { append_to_response: "sources", regions: "GB" })),
+            .map((x: any) => wm(`title/${x.id}/details`, { append_to_response: "sources", regions: catalogueRegion() })),
         );
         for (const x of batch) {
           if (x.status === "fulfilled") out.push(normalizeWM(x.value));
@@ -137,7 +140,7 @@ export async function searchCatalogue(q: string, page = 1, options: SearchOption
         titles: local,
         mode: "limited",
         message:
-          "The live listings feed is unavailable. Showing matching saved picks; you can also check JustWatch UK.",
+          "The live listings feed is unavailable. Showing matching saved picks; you can also check JustWatch.",
       };
     }
   }
@@ -177,7 +180,7 @@ export async function getTitle(id: string, hint?: TitleHint): Promise<Title | nu
   }
   if (/^wm-\d+$/.test(id) && hasDirectLinks())
     return normalizeWM(
-      await wm(`title/${id.slice(3)}/details`, { append_to_response: "sources", regions: "GB" }),
+      await wm(`title/${id.slice(3)}/details`, { append_to_response: "sources", regions: catalogueRegion() }),
     );
   if (seed && hasDirectLinks()) return refreshFromWatchmode(seed);
   if (/^tv-\d+$/.test(id)) {
@@ -185,7 +188,7 @@ export async function getTitle(id: string, hint?: TitleHint): Promise<Title | nu
     if (hasDirectLinks()) return refreshFromWatchmode(tv);
     return tv;
   }
-  return seed || null;
+  return seed ? titleForRegion(seed, catalogueRegion()) : null;
 }
 // Only called by the explicit direct-links action; ordinary TMDB lookups never
 // fall through to Watchmode, including during a TMDB outage.
@@ -210,7 +213,7 @@ async function refreshFromWatchmode(title: Title): Promise<Title> {
   );
   if (!match) throw new Error("No matching live title");
   const fresh = normalizeWM(
-    await wm(`title/${match.id}/details`, { append_to_response: "sources", regions: "GB" }),
+    await wm(`title/${match.id}/details`, { append_to_response: "sources", regions: catalogueRegion() }),
   );
   return { ...fresh, id: title.id, poster: title.poster || fresh.poster };
 }

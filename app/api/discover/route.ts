@@ -1,9 +1,10 @@
+import { regionalHandler } from "../../../lib/region-server";
 import { parseExtraFilters } from "../../../lib/catalogue-filters";
 import { requireSceneMember } from "../../../lib/auth/server";
 import { discoverTMDB, discoverSections, halloweenTMDB, hasTMDB } from "../../../lib/tmdb";
 import { isHalloweenMood } from "../../../lib/halloween";
 import { requestServices } from "../../../lib/request-services";
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const access = await requireSceneMember(req);
   if (access.error) return access.error;
   const p = new URL(req.url).searchParams,
@@ -41,3 +42,5 @@ export async function GET(req: Request) {
     });
   }
 }
+
+export const GET = regionalHandler(handleGET);

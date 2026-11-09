@@ -106,7 +106,7 @@ export default function PeopleExplorer({
           </button>
           {following&&<PersonFollowControls person={person} follow={following.follows.find(f=>f.person.id===person.id)} onFollow={following.onFollow} onPreferences={following.onPreferences} limitReached={following.follows.length>=20}/>}
           <p className="modal-intro">
-            Films and series with confirmed subscription or free viewing on your selected UK services.
+            Films and series with confirmed subscription or free viewing on your selected services.
           </p>
           <label className="people-role">
             Credits
@@ -195,7 +195,7 @@ export default function PeopleExplorer({
           {submitted && !busy && !error && !people.length && <p>No people found. Try another spelling.</p>}
         </>
       )}
-      {(person||view==="search")&&busy && <p role="status">{person ? "Checking UK viewing options…" : "Searching people…"}</p>}
+      {(person||view==="search")&&busy && <p role="status">{person ? "Checking viewing options…" : "Searching people…"}</p>}
       {(person||view==="search")&&error && (
         <div className="error-notice" role="alert">
           {error}

@@ -1,4 +1,5 @@
 "use client";
+import { clientRegion, isRegionalPath, regionalPath } from "../region-client";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { setSessionAccount } from "./session-boundary";
 import { fetchForSession } from "./session-request";
@@ -32,15 +33,18 @@ export function getSceneClient(): Promise<SupabaseClient> {
   return pending;
 }
 export async function sceneFetch(path: string, options: RequestInit = {}, expectedUserId?: string) {
+  const region = clientRegion();
   const result = await fetchForSession(
     async () => {
       const client = await getSceneClient();
       return (await client.auth.getSession()).data.session;
     },
-    path,
+    regionalPath(path, region),
     options,
     expectedUserId,
   );
+  if (isRegionalPath(path) && (!options.method || options.method === "GET") && region !== clientRegion())
+    throw new DOMException("Your region changed. Try again.", "AbortError");
   if ((result.status === 401 || result.status === 403) && path !== "/api/account")
     window.dispatchEvent(new Event("scene:session-check"));
   return result;

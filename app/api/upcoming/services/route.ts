@@ -1,6 +1,7 @@
+import { regionalHandler } from "../../../../lib/region-server";
 import { requireSceneMember } from "../../../../lib/auth/server";
 import { parseArrivalQuery, serviceArrivals } from "../../../../lib/service-arrivals";
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const access = await requireSceneMember(req);
   if (access.error) return access.error;
   const options = parseArrivalQuery(new URL(req.url).searchParams);
@@ -13,3 +14,5 @@ export async function GET(req: Request) {
     return Response.json({ error: "Service arrivals could not load. Please try again." }, { status: 503 });
   }
 }
+
+export const GET = regionalHandler(handleGET);

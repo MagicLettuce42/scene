@@ -1,4 +1,6 @@
 "use client";
+import { clientRegion } from "../../lib/region-client";
+import { regionInfo } from "../../lib/region";
 import SelectControl from "./select-control";
 import UpcomingOptions from "./upcoming-options";
 import ReleaseCalendar from "./release-calendar";
@@ -176,10 +178,10 @@ function ReleaseCatalogue({ filters, onFilters, ...actions }: UpcomingProps) {
     <div className="upcoming-releases">
 
       <UpcomingOptions
-        summary={`${filters.format === "cinema" ? "UK cinema" : filters.format === "digital" ? "UK digital" : "Cinema & digital"} · Next ${filters.days} days`}
+        summary={`${filters.format === "cinema" ? `${regionInfo(clientRegion()).short} cinema` : filters.format === "digital" ? `${regionInfo(clientRegion()).short} digital` : "Cinema & digital"} · Next ${filters.days} days`}
       >
       <p className="upcoming-intro">
-        Upcoming UK cinema and digital film releases. Save a film to keep its announced date in your
+        Upcoming {regionInfo(clientRegion()).short} cinema and digital film releases. Save a film to keep its announced date in your
         watchlist.
       </p>
         <div className="upcoming-controls">
@@ -201,15 +203,15 @@ function ReleaseCatalogue({ filters, onFilters, ...actions }: UpcomingProps) {
               onChange={(e) => change({ format: e.target.value as UpcomingFilters["format"] })}
             >
               <option value="all">Cinema & digital</option>
-              <option value="cinema">UK cinema</option>
-              <option value="digital">UK digital</option>
+              <option value="cinema">{regionInfo(clientRegion()).short} cinema</option>
+              <option value="digital">{regionInfo(clientRegion()).short} digital</option>
             </SelectControl>
           </label>
         </div>
         <div className="upcoming-note">
           <CalendarDays size={20} aria-hidden="true" />
           <p>
-            UK cinema and digital dates, including re-releases. Digital can mean rental or purchase; a date
+            {regionInfo(clientRegion()).short} cinema and digital dates, including re-releases. Digital can mean rental or purchase; a date
             does not confirm inclusion in a subscription. These film releases aren’t filtered by My services.
             Dates can change.
           </p>

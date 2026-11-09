@@ -1,3 +1,4 @@
+import { regionalHandler } from "../../../lib/region-server";
 import { isRecommendationMode } from "../../../lib/filter-presets";
 import { requireSceneMember } from "../../../lib/auth/server";
 import { emptyLibrary, type LibraryDocument } from "../../../lib/library-state";
@@ -7,7 +8,7 @@ import { requestServices } from "../../../lib/request-services";
 import { parseExtraFilters } from "../../../lib/catalogue-filters";
 const reply = (data: unknown, status = 200) =>
   Response.json(data, { status, headers: { "Cache-Control": "no-store" } });
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const auth = await requireSceneMember(req);
   if (auth.error) return auth.error;
   const p = new URL(req.url).searchParams,
@@ -38,3 +39,5 @@ export async function GET(req: Request) {
     return reply({ error: "Your recommendations could not load. Try again shortly." }, 503);
   }
 }
+
+export const GET = regionalHandler(handleGET);

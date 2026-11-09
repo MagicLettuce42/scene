@@ -1,0 +1,34 @@
+begin;
+select set_config('scene.qa_member',gen_random_uuid()::text,true),set_config('scene.qa_other',gen_random_uuid()::text,true),set_config('scene.qa_session',gen_random_uuid()::text,true),set_config('scene.qa_factor',gen_random_uuid()::text,true);
+insert into auth.users(id,email,aud,role) select v::uuid,v||'@example.invalid','authenticated','authenticated' from unnest(array[current_setting('scene.qa_member'),current_setting('scene.qa_other')]) v;
+insert into public.scene_members(user_id,email,display_name,role) select v::uuid,v||'@example.invalid','Alert fixture','member' from unnest(array[current_setting('scene.qa_member'),current_setting('scene.qa_other')]) v;
+insert into auth.sessions(id,user_id,created_at,updated_at,aal) values(current_setting('scene.qa_session')::uuid,current_setting('scene.qa_member')::uuid,now(),now(),'aal1');
+insert into public.scene_libraries(user_id,payload) values(current_setting('scene.qa_member')::uuid,'{"entries":{"qa":{"title":{"id":"qa","name":"Fixture","kind":"series","tmdbId":999999999},"saved":true}},"preferences":{},"services":{"netflix":true,"prime":false},"receipts":[]}');
+insert into public.scene_watchlist_snapshots(user_id,title_key,hint,attempted_at) values(current_setting('scene.qa_member')::uuid,'tmdb-series-999999999','{}',now());
+select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('scene.qa_member'),'session_id',current_setting('scene.qa_session'),'role','authenticated','aal','aal1')::text,true);
+set local role authenticated;
+select public.scene_availability_alert_action('preference','{"enabled":true}');
+do $$begin
+ begin perform public.scene_claim_availability_pushes();raise exception 'Queue exposed';exception when insufficient_privilege then null;end;
+ begin insert into public.scene_availability_events(user_id,title_key,service_key,title) values(auth.uid(),'bad','netflix','{}');raise exception 'Client forged event';exception when insufficient_privilege then null;end;
+end$$;
+reset role;
+do $$declare uid uuid:=current_setting('scene.qa_member')::uuid; t jsonb:='{"id":"qa","name":"Fixture","kind":"series","live":true,"dataSource":"tmdb","availabilityRegion":"GB","offers":[]}'; us jsonb; eid uuid;begin
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),t);
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),jsonb_set(t,'{offers}','[{"key":"netflix","type":"sub"}]'));
+ select id into eid from public.scene_availability_events where user_id=uid;
+ if eid is null then raise exception 'UK availability fixture did not alert';end if;
+ update public.scene_libraries set payload=jsonb_set(payload,'{preferences,region}','"US"') where user_id=uid;
+ if scene_private.availability_event_allowed(eid) then raise exception 'UK alert leaked into US country';end if;
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),t);
+ if (select jsonb_array_length(title->'offers') from public.scene_watchlist_snapshots where user_id=uid)<>1 then raise exception 'Stale UK worker overwrote US baseline';end if;
+ us:=jsonb_set(t,'{availabilityRegion}','"US"');
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),jsonb_set(us,'{offers}','[{"key":"netflix","type":"sub"}]'));
+ if (select count(*) from public.scene_availability_events where user_id=uid)<>1 then raise exception 'Country change skipped alert baseline';end if;
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),us);
+ perform public.scene_finish_watchlist_check(uid,'tmdb-series-999999999',now(),jsonb_set(us,'{offers}','[{"key":"netflix","type":"sub"}]'));
+ if (select count(*) from public.scene_availability_events where user_id=uid)<>2 then raise exception 'US listing did not create its own regional alert';end if;
+ if not exists(select 1 from public.scene_availability_events where user_id=uid and title->>'availabilityRegion'='US' and scene_private.availability_event_allowed(id)) then raise exception 'US availability alert was blocked';end if;
+end$$;
+rollback;
+select 'PASS: country-specific alert baseline, stale worker rejection, regional deduplication and old-country push suppression' as result;

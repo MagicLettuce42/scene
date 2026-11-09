@@ -1,3 +1,4 @@
+import { resolveRegion } from "../../../lib/region";
 import { requireSceneMember } from "../../../lib/auth/server";
 import { cleanTitle } from "../../../lib/library-state";
 const reply = (body: unknown, status = 200) =>
@@ -28,7 +29,7 @@ export async function GET(req: Request) {
     automatic: library.data?.payload?.preferences?.autoAvailability !== false,
     events: events.data.flatMap((e) => {
       const title = cleanTitle(e.title);
-      return title ? [{ id: e.id, title, serviceKey: e.service_key, detectedAt: e.detected_at }] : [];
+      return title && resolveRegion(title.availabilityRegion) === resolveRegion(library.data?.payload?.preferences?.region) ? [{ id: e.id, title, serviceKey: e.service_key, detectedAt: e.detected_at }] : [];
     }),
   });
 }

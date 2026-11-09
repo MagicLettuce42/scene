@@ -1,3 +1,4 @@
+import { catalogueRegion } from "./region-server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { services, type Title } from "./catalogue";
 import { addDays, londonDate } from "./episode-calendar";
@@ -49,6 +50,7 @@ export function departureEntry(row: any) {
   return feedAnnouncement({ ...row, release_date: row?.last_available_date, label: "Last day to watch" });
 }
 export async function readDepartures(client: SupabaseClient) {
+  if (catalogueRegion() === "US") return { entries: [] as FeedAnnouncement[], reviewedOn: null, live: false, message: "US leaving dates are not covered yet. Browse and search show current US availability." };
   const [{ data, error }, { data: status, error: statusError }] = await Promise.all([
     client
       .from("scene_departures")
@@ -85,6 +87,7 @@ async function departureTitle(e: FeedAnnouncement) {
   };
 }
 export async function serviceDepartureTitle(id: string, client: SupabaseClient) {
+  if (catalogueRegion() === "US") return null;
   const { data, error } = await client
     .from("scene_departures")
     .select("*")

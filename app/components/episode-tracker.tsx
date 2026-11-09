@@ -92,7 +92,7 @@ export default function EpisodeTracker({
         <div className="episode-body">
           <p className="fine-print">
             Mark what you’ve watched here. Scene doesn’t read playback from streaming apps. This history stays
-            private. TMDB air dates may differ from UK streaming availability.
+            private. TMDB air dates may differ from regional streaming availability.
           </p>
           {onSpoilerFreeChange && <SpoilerSettings enabled={spoilerFree} onChange={onSpoilerFreeChange} />}
           <button

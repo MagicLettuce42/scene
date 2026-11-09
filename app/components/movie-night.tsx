@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { sceneFetch } from "../../lib/auth/client";
-import { services, type Title } from "../../lib/catalogue";
+import { clientRegion } from "../../lib/region-client";
+import { servicesForRegion, services, type Title } from "../../lib/catalogue";
 import { Poster } from "./catalogue-cards";
-type State = { people: { id: string; name: string; services: string[] }[]; ready: boolean; commonServices: string[];
+type State = { sameRegion?: boolean; people: { id: string; name: string; services: string[] }[]; ready: boolean; commonServices: string[];
   titles?: Title[]; hasMore?: boolean; page?: number; message?: string };
 export default function MovieNight({ listId, accountId, onAdd, onOpen, guided=false, onVote }: {
   guided?:boolean; onVote?:()=>void;
@@ -34,13 +35,13 @@ export default function MovieNight({ listId, accountId, onAdd, onOpen, guided=fa
   return <details className="movie-night" open={open} onToggle={e => setOpen(e.currentTarget.open)}><summary>Find a film for everyone</summary>
     <p>Each person chooses which services to share with this list. Scene suggests films on services everyone has chosen. Your personal watchlist and history are never used.</p>
     {open && <><p className="fine-print">Choose only services you want to share with this group. People joining and their choices update automatically.</p><fieldset disabled={busy}><legend>Services I can use for this movie night</legend><div className="movie-service-choices">
-      {services.map(s => <label key={s.key}><input type="checkbox" checked={choices.includes(s.key)} onChange={e => setChoices(old => e.target.checked ? [...old, s.key] : old.filter(k => k !== s.key))} />{s.name}</label>)}
+      {servicesForRegion(clientRegion()).map(s => <label key={s.key}><input type="checkbox" checked={choices.includes(s.key)} onChange={e => setChoices(old => e.target.checked ? [...old, s.key] : old.filter(k => k !== s.key))} />{s.name}</label>)}
     </div></fieldset>
     <div className="inline-actions"><button className="button secondary" disabled={busy || !choices.length} onClick={() => load(false, 1, choices)}>Share these services with this list</button>
       <button className="text-button" disabled={busy} onClick={() => load(false, 1, [])}>Stop sharing</button>
       <button className="text-button" disabled={busy} onClick={() => load()}>Refresh people</button></div>
     {state && <><ul>{state.people.map(p => <li key={p.id}>{p.id === accountId ? "You" : p.name}: {p.services.length ? p.services.map(k => services.find(s => s.key === k)?.name).join(", ") : "Hasn’t shared services yet"}</li>)}</ul>
-      {!state.ready ? <p>At least two people must join, and everyone must share their choices before Scene suggests a shortlist.</p> : !state.commonServices.length ? <p>No service is shared by everyone yet. Consider free services you all use, or update the choices above.</p> : <>
+      {state.sameRegion === false ? <p>Movie Night currently needs everyone to choose the same country in Region &amp; services.</p> : !state.ready ? <p>At least two people must join, and everyone must share their choices before Scene suggests a shortlist.</p> : !state.commonServices.length ? <p>No service is shared by everyone yet. Consider free services you all use, or update the choices above.</p> : <>
         <p><strong>Services in common:</strong> {state.commonServices.map(k => services.find(s => s.key === k)?.name).join(", ")}</p>
         <button className="button primary" disabled={busy} onClick={() => load(true, state.titles ? (state.hasMore ? (state.page || 1) + 1 : 1) : 1)}>{busy ? "Finding films…" : state.titles ? "Show another shortlist" : "Find our shortlist"}</button>
       </>}

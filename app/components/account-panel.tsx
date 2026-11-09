@@ -60,6 +60,7 @@ export default function AccountPanel({
   initialSection,
   onInitialSectionHandled,
   viewingSettings,
+  regionSettings,
   ...gaming
 }: GamingSettingsProps & {
   avatar: string | null;
@@ -82,6 +83,7 @@ export default function AccountPanel({
   initialSection?: string | null;
   onInitialSectionHandled?: () => void;
   viewingSettings?: ReactNode;
+  regionSettings?: ReactNode;
 }) {
   const account = useAccount(),
     [email, setEmail] = useState(""),
@@ -171,6 +173,7 @@ export default function AccountPanel({
       profile={<><p className="fine-print">{account.email}</p><ProfilePhotoEditor photo={avatar} name={account.name} userId={account.id} onChange={onAvatarChange} /></>}
       footer={<>{onOpenFollowing && <button className="account-menu-row" onClick={onOpenFollowing}><Users size={24} aria-hidden="true"/><span className="account-settings-copy"><strong>Following</strong><span>Actors and directors you follow</span></span><ChevronRight size={20} aria-hidden="true"/></button>}<div className="account-signout">{pending > 0 && <p className="fine-print">Let your pending changes finish syncing before signing out.</p>}<button className="account-menu-row" disabled={busy || pending > 0} onClick={signOut}><LogOut size={24} aria-hidden="true"/><span className="account-settings-copy"><strong>Sign out</strong></span><ChevronRight size={20} aria-hidden="true"/></button></div></>}
     >
+        {regionSettings && <AccountSettingsSection id="settings-region" title="Region & services" description="Your country and streaming services" Icon={Settings2}>{regionSettings}</AccountSettingsSection>}
         <AccountSettingsSection
           id="settings-appearance"
           group="Personalise"

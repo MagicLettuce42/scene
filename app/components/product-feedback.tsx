@@ -2,7 +2,8 @@
 import SelectControl from "./select-control";
 import { useState } from "react";
 import { sceneFetch } from "../../lib/auth/client";
-import { services, type Title } from "../../lib/catalogue";
+import { clientRegion } from "../../lib/region-client";
+import { servicesForRegion, services, type Title } from "../../lib/catalogue";
 import { newId } from "../../lib/shared-lists";
 import type { ReportKind } from "../../lib/product-feedback";
 const names: Record<ReportKind, string> = { suggestion: "Suggest an improvement", availability: "Incorrect availability", link: "Provider link problem", bug: "Something isn’t working" };
@@ -26,7 +27,7 @@ export function FeedbackForm({ title, defaultKind = "suggestion" }: { title?: Ti
         {Object.entries(names).map(([key, label]) => <option key={key} value={key}>{label}</option>)}
       </SelectControl></label>
       {(kind === "availability" || kind === "link") && <label>Service (optional)<SelectControl value={service} onChange={e => { setService(e.target.value); setId(""); }}>
-        <option value="">Choose a service…</option>{services.map(s => <option key={s.key} value={s.key}>{s.name}</option>)}
+        <option value="">Choose a service…</option>{servicesForRegion(clientRegion()).map(s => <option key={s.key} value={s.key}>{s.name}</option>)}
       </SelectControl></label>}
       <label>Your feedback<textarea value={message} maxLength={1500} required rows={4} onChange={e => { setMessage(e.target.value); setId(""); }} /></label>
       <p className="fine-print">Your account reference is saved with this report; your email is not shown in the owner’s feedback inbox. Include only what is needed to explain the issue. Do not send passwords, security codes or sensitive details. <a href="/privacy">Privacy Policy</a>.</p>

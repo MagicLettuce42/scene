@@ -1,6 +1,7 @@
+import { regionalHandler } from "../../../lib/region-server";
 import { requireSceneMember } from "../../../lib/auth/server";
 import { smartSearch } from "../../../lib/smart-search";
-export async function GET(req: Request) {
+async function handleGET(req: Request) {
   const access = await requireSceneMember(req);
   if (access.error) return access.error;
   const started = performance.now();
@@ -45,3 +46,5 @@ export async function GET(req: Request) {
     { headers: { "Cache-Control": "private, max-age=300", "Server-Timing": `search;dur=${Math.round(performance.now() - started)}` } });
   } catch { return Response.json({ error: "More search results could not load. Please retry." }, { status: 503 }); }
 }
+
+export const GET = regionalHandler(handleGET);

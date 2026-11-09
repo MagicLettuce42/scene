@@ -1,3 +1,4 @@
+import { isRegion, resolveRegion, type Region } from "../region";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { policyVersion } from "../privacy-consent";
 
@@ -54,15 +55,16 @@ export function validateRegistration(name: string, email: string, password: stri
 }
 
 export async function registerScene(client: SupabaseClient, values: {
-  name: string; email: string; password: string; confirmation: string; origin: string; termsAccepted: boolean; captchaToken?: string;
+  region?: Region; name: string; email: string; password: string; confirmation: string; origin: string; termsAccepted: boolean; captchaToken?: string;
 }) {
   if (values.termsAccepted !== true) throw Error("Agree to the Terms of service before creating your account.");
+  if (values.region !== undefined && !isRegion(values.region)) throw Error("Choose a supported country.");
   const error = validateRegistration(values.name, values.email, values.password, values.confirmation);
   if (error) throw Error(error);
   const result = await client.auth.signUp({
     email: values.email.trim().toLowerCase(), password: values.password,
     options: {
-      data: { display_name: values.name.trim(), terms_version: policyVersion, terms_accepted_at: new Date().toISOString() },
+      data: { region: resolveRegion(values.region), display_name: values.name.trim(), terms_version: policyVersion, terms_accepted_at: new Date().toISOString() },
       emailRedirectTo: values.origin + "/?confirmed=1",
       ...(values.captchaToken ? { captchaToken: values.captchaToken } : {}),
     },

@@ -2,6 +2,8 @@
 import SceneMotion from "./scene-motion";
 import SceneWordmark from "./scene-wordmark";
 import AuthIntroduction from "./auth-introduction";
+import RegionSelect from "./region-select";
+import type { Region } from "../../lib/region";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { LoaderCircle, LogIn, LockKeyhole, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { getSceneClient, sceneFetch, signOutScene } from "../../lib/auth/client";
@@ -48,6 +50,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
   const [confirmation, setConfirmation] = useState(""),
     [signupSent, setSignupSent] = useState(false);
   const [accountDeleted, setAccountDeleted] = useState(false);
+  const [region, setRegion] = useState<Region>("GB");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const captcha = useTurnstile();
   useEffect(() => {
@@ -185,7 +188,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
       if ((signup || invite) && !termsAccepted) throw Error("Agree to the Terms of service before creating your account.");
       const client = await getSceneClient();
       if (signup) {
-        const data = await registerScene(client, { name, email, password, confirmation, origin: location.origin, termsAccepted, captchaToken: captcha.token });
+        const data = await registerScene(client, { name, email, password, confirmation, region, origin: location.origin, termsAccepted, captchaToken: captcha.token });
         setPassword("");
         setConfirmation("");
         if (data.session) await check();
@@ -328,6 +331,7 @@ export default function SceneAccess({ children, initialMode = "signin" }: {
                     <small>A nickname is fine. Do not use sensitive information.</small>
                   </label>
                 )}
+                {signup && <RegionSelect value={region} onChange={setRegion} />}
                 <label>
                   Email
                   <input
