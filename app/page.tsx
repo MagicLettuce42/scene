@@ -1210,7 +1210,7 @@ function Catalogue() {
       >
         <AppUpdateNotice pending={library.pending} />
         <section className="intro">
-          <h1 className="daylight-page-heading">{discovering ? "Find your next favourite." : heading}</h1>
+          <h1 className={`daylight-page-heading${discovering ? " daylight-discover-title" : ""}`}>{discovering ? "Find your next favourite." : heading}</h1>
           {library.theme!=="daylight"&&<button className="daylight-theme-invite text-button" onClick={()=>library.setTheme("daylight")}>Try the new Daylight theme</button>}
           <div className="daylight-search-area">
             <div className="search-region" ref={searchRegion} onFocusCapture={()=>setSearchFocused(true)} onKeyDown={e=>{if(e.key==="Escape"){e.preventDefault();document.getElementById("search")?.focus();setSearchFocused(false);}}}>

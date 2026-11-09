@@ -38,3 +38,5 @@ html:not([data-theme="daylight"]):not([data-theme="pearl"]) .scene-brand-mark .s
 
 .tonight-featured .tonight-toggle{gap:14px}.tonight-featured .tonight-toggle>span{min-width:0;flex:1;white-space:normal}.tonight-featured .tonight-toggle svg{flex-shrink:0}.tonight-featured .tonight-toggle strong{overflow-wrap:anywhere}.updates-controls .text-button{min-height:44px}
 @media(max-width:360px){.tonight-featured .tonight-toggle strong{font-size:17px}.tonight-intro .text-button{text-align:left;white-space:normal}.install-brand{gap:12px}}
+
+@media(max-width:800px){.daylight-shell .intro .daylight-discover-title{max-width:none;font-size:clamp(18px,5.5vw,28px);line-height:1.25;letter-spacing:-.6px;white-space:nowrap}}
